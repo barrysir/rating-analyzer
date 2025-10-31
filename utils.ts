@@ -1,3 +1,5 @@
+import { GradeLamp } from "./data-types";
+
 export function findRegion<T>(arr: T[], val: number, key: (a: T) => number): number | null {
     function myInsert(element: number, array: T[]): number {
         if (array.length === 0)
@@ -26,4 +28,38 @@ export function findRegion<T>(arr: T[], val: number, key: (a: T) => number): num
 }
 export function maxIndex(array: number[]) {
     return array.reduce((iMax, x, i) => x > array[iMax]! ? i : iMax, 0);
+}// -----------------------------------------
+export function lerp(x: number, points: [number, number][]) {
+    // above the lerp range - return the highest point
+    if (x >= points[0]![0]) {
+        return points[0]![1];
+    }
+
+    for (let i = 1; i < points.length; i++) {
+        let upper = points[i - 1]!;
+        let lower = points[i]!;
+        if (x >= lower[0]) {
+            return lower[1] + (x - lower[0]) * (upper[1] - lower[1]) / (upper[0] - lower[0]);
+        }
+
+    }
+
+    // below the lerp range - return the lowest point
+    return points[points.length - 1]![1];
+}
+
+let pointsLampArray: [number, GradeLamp][] = [
+    [0, GradeLamp.NONE],
+    [970000, GradeLamp.S],
+    [990000, GradeLamp.SS],
+    [1000000, GradeLamp.SSS],
+    [1007500, GradeLamp.SSS_PLUS],
+];
+
+export function pointsToGradeLamp(points: number): GradeLamp {
+    let index = findRegion(pointsLampArray, points, x => x[0]);
+    if (index === null) {
+        throw new Error(`Could not identify grade lamp for point value ${points}`);
+    }
+    return pointsLampArray[index]![1];
 }

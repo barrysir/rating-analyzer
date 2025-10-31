@@ -1,26 +1,7 @@
 import type { ChartDb } from "./chartdb/ChartDb";
 import { BestFrame } from "./frames/BestFrame";
 import { OngekiRecentFrame } from "./frames/OngekiRecentFrame";
-
-// -----------------------------------------
-function lerp(x: number, points: [number, number][]) {
-    // above the lerp range - return the highest point
-    if (x >= points[0]![0]) {
-        return points[0]![1]; 
-    }
-
-    for (let i=1; i<points.length; i++) {
-        let upper = points[i-1]!;
-        let lower = points[i]!;
-        if (x >= lower[0]) {
-            return lower[1] + (x - lower[0]) * (upper[1] - lower[1])/(upper[0] - lower[0])
-        }
-
-    }
-
-    // below the lerp range - return the lowest point
-    return points[points.length-1]![1];
-}
+import { lerp } from "./utils";
 
 const technicalBonusLerp: [number, number][] = [
     [1007500, 2],

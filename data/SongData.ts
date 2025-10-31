@@ -15,6 +15,8 @@ export type SongDataSchema<Parsed extends boolean> = {
         date_removed?: Parsed extends true ? Date : string,
         charts: Partial<Record<OngekiDifficulty, {
             level: number,
+            maxPlatinumScore: number,
+            bells: number,
         }>>,
     }[],
     differences: {

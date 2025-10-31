@@ -122,8 +122,18 @@ export class HistoricalChartDb implements ChartDb<HistChart> {
     }
 
     getInternalLevel(search: HistChart): number {
-        let {song, chart} = this.findChart(search);
+        let {chart} = this.findChart(search);
         return chart.level;
+    }
+
+    getMaxPlatinum(search: HistChart): number {
+        let {chart} = this.findChart(search);
+        return chart.maxPlatinumScore;
+    }
+
+    getMaxBells(search: HistChart): number {
+        let {chart} = this.findChart(search);
+        return chart.bells;
     }
 
     isLunatic(search: HistChart): boolean {
