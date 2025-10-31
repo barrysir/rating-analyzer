@@ -1,5 +1,7 @@
 export interface ChartDb<Chart> {
-    getInternalLevel(song: Chart): number;
-    isLunatic(song: Chart): boolean;
-    isNew(song: Chart): boolean;
+    getInternalLevel(c: Chart): number;
+    isLunatic(c: Chart): boolean;
+    isNew(c: Chart): boolean;
+
+    getChartId(c: Chart): string;
 }

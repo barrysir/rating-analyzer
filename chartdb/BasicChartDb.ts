@@ -1,15 +1,21 @@
-type BasicChart = {level: number; isLunatic: boolean; isNew: boolean};
+import type { ChartDb } from "./ChartDb";
+
+type BasicChart = {id: string; level: number; isLunatic: boolean; isNew: boolean};
 
 export class BasicChartDb implements ChartDb<BasicChart> {
-    getInternalLevel(song: BasicChart): number {
-        return song.level;
+    getInternalLevel(chart: BasicChart): number {
+        return chart.level;
     }
 
-    isLunatic(song: BasicChart): boolean {
-        return song.isLunatic;
+    isLunatic(chart: BasicChart): boolean {
+        return chart.isLunatic;
     }
 
-    isNew(song: BasicChart): boolean {
-        return song.isNew;
+    isNew(chart: BasicChart): boolean {
+        return chart.isNew;
+    }
+
+    getChartId(chart: BasicChart): string {
+        return chart.id;
     }
 }

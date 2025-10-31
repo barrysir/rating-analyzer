@@ -11,7 +11,7 @@
  *  - keeps track of the best N rated scores
  *  - duplicates are not allowed / only one score is allowed per chart
  */
-export class BestFrame<ChartId, Score extends {rating: number}> {
+export class BestFrame<ChartId extends string, Score extends {rating: number}> {
   chartsInFrame: Map<ChartId, Score>; // database of scores in frame
   frame: ChartId[]; // frame scores sorted descending by rating, stored as indices into database
   

@@ -24,3 +24,6 @@ export function findRegion<T>(arr: T[], val: number, key: (a: T) => number): num
     let pivot = myInsert(val, arr);
     return (pivot != 0) ? pivot-1 : null;
 }
+export function maxIndex(array: number[]) {
+    return array.reduce((iMax, x, i) => x > array[iMax]! ? i : iMax, 0);
+}
