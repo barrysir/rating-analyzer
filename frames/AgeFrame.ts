@@ -1,3 +1,5 @@
+import { insertionIndex, maxIndex } from "../utils";
+
 /**
  * Frame which stores scores sorted by age and by rating
  */
@@ -19,41 +21,41 @@ export class AgeFrame<Score extends {rating: number}> {
     return this.byRating.length;
   }
 
-  insertionIndex(score: Score) {
-    let low = 0;
-    let high = this.byRating.length;
-
-    while (low < high) {
-        var mid = (low + high) >>> 1;
-        if (this.byRating[mid]!.rating < score.rating) low = mid + 1;
-        else high = mid;
-    }
-    return low;
-  }
-
-  _maxIndex(array: number[]) {
-    return array.reduce((iMax, x, i) => x > array[iMax]! ? i : iMax, 0);
-  }
-
   push(score: Score) {
-    let index = this.insertionIndex(score);
+    let index = insertionIndex(this.byRating, score, (s) => s.rating);
     this.byRating.splice(index, 0, score);
     this.age.splice(index, 0, this.ageCounter);
     this.ageCounter++;
     this.totalRating += score.rating;
+    return { inserted: index };
   }
 
   popOldest() {
     if (this.length == 0) {
         return;
     }
-    let oldestIndex = this._maxIndex(this.age);
-    this.popIndex(oldestIndex);
+    let oldestIndex = maxIndex(this.age);
+    return this.popIndex(oldestIndex);
   }
 
   popIndex(index: number) {
     let deletedScore = this.byRating.splice(index, 1)[0]!;
-    this.age.splice(index, 1);
+    let deletedAge = this.age.splice(index, 1)[0]!;
     this.totalRating -= deletedScore.rating;
+    return { removed: { index: index, age: deletedAge, score: deletedScore} };
+  }
+
+  undoScore(undo: { inserted: number } | { removed: {index: number, age: number, score: Score} }) {
+    if ('inserted' in undo) {
+      let scoreRating = this.byRating[undo.inserted]!.rating;
+      this.byRating.splice(undo.inserted, 1);
+      this.age.splice(undo.inserted, 1);
+      this.totalRating -= scoreRating;
+    } else if ('removed' in undo) {
+      let removed = undo.removed;
+      this.byRating.splice(removed.index, 0, removed.score);
+      this.age.splice(removed.index, 0, removed.age);
+      this.totalRating += removed.score.rating;
+    }
   }
 }

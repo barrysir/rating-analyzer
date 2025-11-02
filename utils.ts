@@ -1,5 +1,18 @@
 import { GradeLamp } from "./data-types";
 
+/** Returns the proper insertion index in a ascending or descending sorted array. */
+export function insertionIndex<T>(array: T[], score: T, key: (value: T) => number): number {
+    let low = 0;
+    let high = array.length;
+
+    while (low < high) {
+        var mid = (low + high) >>> 1;
+        if (key(array[mid]!) < key(score)) low = mid + 1;
+        else high = mid;
+    }
+    return low;
+}
+
 export function findRegion<T>(arr: T[], val: number, key: (a: T) => number): number | null {
     function myInsert(element: number, array: T[]): number {
         if (array.length === 0)
@@ -26,9 +39,11 @@ export function findRegion<T>(arr: T[], val: number, key: (a: T) => number): num
     let pivot = myInsert(val, arr);
     return (pivot != 0) ? pivot-1 : null;
 }
+
 export function maxIndex(array: number[]) {
     return array.reduce((iMax, x, i) => x > array[iMax]! ? i : iMax, 0);
-}// -----------------------------------------
+}
+
 export function lerp(x: number, points: [number, number][]) {
     // above the lerp range - return the highest point
     if (x >= points[0]![0]) {
