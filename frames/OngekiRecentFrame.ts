@@ -2,7 +2,7 @@ import type { ChartDb } from "../chartdb/ChartDb";
 import { AgeFrame } from "./AgeFrame";
 import { maxIndex } from "../utils";
 
-type UndoScore<Chart, Score> = null
+export type UndoScore<Chart, Score> = null
     | {inserted: number; removed?: {index: number, age: number, score: Score}};
 
 

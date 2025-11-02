@@ -7,7 +7,7 @@
 
 import { insertionIndex } from "../utils";
 
-type UndoScore<ChartId, Score> = null
+export type UndoScore<ChartId, Score> = null
  | { inserted: number; removed?: {chartId: ChartId, score: Score}; rating: number }
  | { old: {chartId: ChartId, score: Score}; rating: number }
 

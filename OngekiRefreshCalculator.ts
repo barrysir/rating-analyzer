@@ -1,6 +1,6 @@
 import type { ChartDb } from "./chartdb/ChartDb";
 import { BellLamp, ClearLamp, GradeLamp } from "./data-types";
-import { BestFrame } from "./frames/BestFrame";
+import { BestFrame, UndoScore as BestUndo } from "./frames/BestFrame";
 import { findRegion, lerp, pointsToGradeLamp } from "./utils";
 
 
@@ -72,6 +72,13 @@ type ScoreInput = {points: number, platinum: number} &
     {bells: number, judgements: {crit?: number, break: number, hit: number, miss: number}}
     | {lamps: {bell: BellLamp, clear: ClearLamp, grade?: GradeLamp}}
 );
+
+type UndoScore<Chart> = {
+    best?: BestUndo<string, OngekiScore>; 
+    new?: BestUndo<string, OngekiScore>; 
+    naive: BestUndo<string, OngekiScore>;
+    plat: BestUndo<string, PlatinumScore>;
+};
 
 type LampDisplay = {bell: BellLamp, clear: ClearLamp, grade: GradeLamp};
 
@@ -157,14 +164,23 @@ export class OngekiRefreshCalculator<Chart extends string> {
         let platinumRating = pRating(score.platinum, maxPlatinum, level);
         let platinumScore = {platinum: score.platinum, rating: platinumRating};
 
+        let undo: UndoScore<Chart> = {};
         let id = this.db.getChartId(chart);
         if (this.db.isNew(chart)) {
-            this.new.addScore(normalScore, id);
+            undo.new = this.new.addScore(normalScore, id);
         } else {
-            this.best.addScore(normalScore, id);
+            undo.best = this.best.addScore(normalScore, id);
         }
-        this.naive.addScore(normalScore, id);
-        this.plat.addScore(platinumScore, id);
+        undo.naive = this.naive.addScore(normalScore, id);
+        undo.plat = this.plat.addScore(platinumScore, id);
+        return undo;
+    }
+
+    undoScore(undo: UndoScore<Chart>) {
+        if ('new' in undo) { this.new.undoScore(undo.new!); }
+        if ('best' in undo) { this.best.undoScore(undo.best!); }
+        this.naive.undoScore(undo.naive);
+        this.plat.undoScore(undo.plat);
     }
 
     get overallRating() {

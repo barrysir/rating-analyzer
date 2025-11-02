@@ -1,6 +1,6 @@
 import type { ChartDb } from "./chartdb/ChartDb";
-import { BestFrame } from "./frames/BestFrame";
-import { OngekiRecentFrame } from "./frames/OngekiRecentFrame";
+import { BestFrame, UndoScore as BestUndo } from "./frames/BestFrame";
+import { OngekiRecentFrame, UndoScore as RecentUndo } from "./frames/OngekiRecentFrame";
 import { lerp } from "./utils";
 
 const technicalBonusLerp: [number, number][] = [
@@ -31,6 +31,13 @@ function scoreRating(points: number, level: number) {
 
 type OngekiScore = { points: number; rating: number; };
 
+type UndoScore<Chart> = {
+    best?: BestUndo<string, OngekiScore>; 
+    new?: BestUndo<string, OngekiScore>; 
+    naive: BestUndo<string, OngekiScore>;
+    recent: RecentUndo<Chart, OngekiScore>;
+};
+
 export class OngekiCalculator<Chart> {
     db: ChartDb<Chart>;
     best: BestFrame<string, OngekiScore>;
@@ -46,20 +53,30 @@ export class OngekiCalculator<Chart> {
         this.recent = new OngekiRecentFrame(10, 30, db);
     }
 
-    addScore(points: number, chart: Chart) {
+    addScore(points: number, chart: Chart): UndoScore<Chart> {
         let level = this.db.getInternalLevel(chart);
         let id = this.db.getChartId(chart);
+
+        let undo: UndoScore<Chart> = {};
 
         let rating = scoreRating(points, level);
         let score = {points, rating};
 
         if (this.db.isNew(chart)) {
-            this.new.addScore(score, id);
+            undo.new = this.new.addScore(score, id);
         } else {
-            this.best.addScore(score, id);
+            undo.best = this.best.addScore(score, id);
         }
-        this.naive.addScore(score, id);
-        this.recent.addScore(score, chart);
+        undo.naive = this.naive.addScore(score, id);
+        undo.recent = this.recent.addScore(score, chart);
+        return undo;
+    }
+
+    undoScore(undo: UndoScore<Chart>) {
+        if ('new' in undo) { this.new.undoScore(undo.new!); }
+        if ('best' in undo) { this.best.undoScore(undo.best!); }
+        this.naive.undoScore(undo.naive);
+        this.recent.undoScore(undo.recent);
     }
 
     get overallRating() {
