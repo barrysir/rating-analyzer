@@ -5,7 +5,7 @@
 //   rating: number;
 // };
 
-import { insertionIndex } from "../utils";
+import { insertionIndexDesc } from "../utils";
 
 export type UndoScore<ChartId, Score> = null
  | { inserted: number; removed?: {chartId: ChartId, score: Score}; rating: number }
@@ -102,7 +102,7 @@ export class BestFrame<ChartId extends string, Score extends {rating: number}> {
 
   _insert(chartID: ChartId, t: Score): number {
     this.chartsInFrame.set(chartID, t);
-    let insertIndex = insertionIndex(this.frame, chartID, (c) => this.chartsInFrame.get(c)!.rating);
+    let insertIndex = insertionIndexDesc(this.frame, chartID, (c) => this.chartsInFrame.get(c)!.rating);
     this.frame.splice(insertIndex, 0, chartID);
     this.#rating += t.rating;
     return insertIndex;

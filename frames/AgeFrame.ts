@@ -1,4 +1,4 @@
-import { insertionIndex, maxIndex } from "../utils";
+import { insertionIndexDesc, maxIndex } from "../utils";
 
 /**
  * Frame which stores scores sorted by age and by rating
@@ -22,7 +22,7 @@ export class AgeFrame<Score extends {rating: number}> {
   }
 
   push(score: Score) {
-    let index = insertionIndex(this.byRating, score, (s) => s.rating);
+    let index = insertionIndexDesc(this.byRating, score, (s) => s.rating);
     this.byRating.splice(index, 0, score);
     this.age.splice(index, 0, this.ageCounter);
     this.ageCounter++;

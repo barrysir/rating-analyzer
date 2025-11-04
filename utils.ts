@@ -1,13 +1,26 @@
 import { GradeLamp } from "./data-types";
 
-/** Returns the proper insertion index in a ascending or descending sorted array. */
-export function insertionIndex<T>(array: T[], score: T, key: (value: T) => number): number {
+/** Returns the proper insertion index in an ascending sorted array. */
+export function insertionIndexAsc<T>(array: T[], score: T, key: (value: T) => number): number {
     let low = 0;
     let high = array.length;
 
     while (low < high) {
         var mid = (low + high) >>> 1;
         if (key(array[mid]!) < key(score)) low = mid + 1;
+        else high = mid;
+    }
+    return low;
+}
+
+/** Returns the proper insertion index in a descending sorted array. */
+export function insertionIndexDesc<T>(array: T[], score: T, key: (value: T) => number): number {
+    let low = 0;
+    let high = array.length;
+
+    while (low < high) {
+        var mid = (low + high) >>> 1;
+        if (key(array[mid]!) > key(score)) low = mid + 1;
         else high = mid;
     }
     return low;
