@@ -1,6 +1,5 @@
 import type { ChartDb } from "../chartdb/ChartDb";
 import { AgeFrame } from "./AgeFrame";
-import { maxIndex } from "../utils";
 
 export type UndoScore<Chart, Score> = null
     | {inserted: number; removed?: {index: number, age: number, score: Score}};
@@ -37,8 +36,7 @@ export class OngekiRecentFrame<Score extends { points: number; rating: number; }
         const topScores = this.frame.byRating.slice(0, this.numTop);
         if (score.rating >= topScores[topScores.length - 1]!.rating) {
             // kick out the oldest score with lower rating
-            let largestAgeWithLowerRating = maxIndex(this.frame.age.slice(this.numTop, this.numMax));
-            let removed = this.frame.popIndex(largestAgeWithLowerRating);
+            let removed = this.frame.popOldestWithLowerRating(score.rating);
             // add the current score to the front
             let inserted = this.frame.push(score);
             return { ...removed, ...inserted };

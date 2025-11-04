@@ -1,4 +1,4 @@
-import { insertionIndexDesc, maxIndex } from "../utils";
+import { insertionIndexDesc, minIndex } from "../utils";
 
 /**
  * Frame which stores scores sorted by age and by rating
@@ -34,8 +34,25 @@ export class AgeFrame<Score extends {rating: number}> {
     if (this.length == 0) {
         return;
     }
-    let oldestIndex = maxIndex(this.age);
+    let oldestIndex = minIndex(this.age);
     return this.popIndex(oldestIndex);
+  }
+
+  popOldestWithLowerRating(rating: number) {
+    //  - find slice [i..] where all scores have lower rating
+    let firstScoreWithLowerRating = this.byRating.findIndex(v => v.rating < rating);
+
+    //  - find minimum age in [i..]
+    let ageIndex = firstScoreWithLowerRating;
+    let currentOldestAge = this.age[firstScoreWithLowerRating]!;
+    for (let i=firstScoreWithLowerRating+1; i<this.age.length; i++) {
+        let age = this.age[i]!;
+        if (age < currentOldestAge) {
+            ageIndex = i;
+            currentOldestAge = age;
+        }
+    }
+    return this.popIndex(ageIndex);
   }
 
   popIndex(index: number) {
