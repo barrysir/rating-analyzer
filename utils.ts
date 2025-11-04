@@ -1,6 +1,6 @@
 import { GradeLamp } from "./data-types";
 
-/** Returns the proper insertion index in an ascending sorted array. */
+/** Returns the proper insertion index in an ascending sorted array. In a tie, it returns the left-most element. */
 export function insertionIndexAsc<T>(array: T[], score: T, key: (value: T) => number): number {
     let low = 0;
     let high = array.length;
@@ -13,7 +13,7 @@ export function insertionIndexAsc<T>(array: T[], score: T, key: (value: T) => nu
     return low;
 }
 
-/** Returns the proper insertion index in a descending sorted array. */
+/** Returns the proper insertion index in a descending sorted array. In a tie, it returns the left-most element. */
 export function insertionIndexDesc<T>(array: T[], score: T, key: (value: T) => number): number {
     let low = 0;
     let high = array.length;
@@ -53,8 +53,8 @@ export function findRegion<T>(arr: T[], val: number, key: (a: T) => number): num
     return (pivot != 0) ? pivot-1 : null;
 }
 
-export function maxIndex(array: number[]) {
-    return array.reduce((iMax, x, i) => x > array[iMax]! ? i : iMax, 0);
+export function minIndex(array: number[]) {
+    return array.reduce((iMax, x, i) => x < array[iMax]! ? i : iMax, 0);
 }
 
 export function lerp(x: number, points: [number, number][]) {
