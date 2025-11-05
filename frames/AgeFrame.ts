@@ -1,5 +1,11 @@
 import { insertionIndexDesc, minIndex } from "../utils";
 
+
+type PushUndo = { inserted: number };
+type PopUndo<Score> = { removed: {index: number, age: number, score: Score} };
+
+export type UndoScore<Score> = PushUndo | PopUndo<Score>;
+
 /**
  * Frame which stores scores sorted by age and by rating
  */
@@ -21,7 +27,7 @@ export class AgeFrame<Score extends {rating: number}> {
     return this.byRating.length;
   }
 
-  push(score: Score) {
+  push(score: Score): PushUndo {
     let index = insertionIndexDesc(this.byRating, score, (s) => s.rating);
     this.byRating.splice(index, 0, score);
     this.age.splice(index, 0, this.ageCounter);
@@ -30,15 +36,19 @@ export class AgeFrame<Score extends {rating: number}> {
     return { inserted: index };
   }
 
-  popOldest() {
+  popOldest(): PopUndo<Score> | null {
     if (this.length == 0) {
-        return;
+        return null;
     }
     let oldestIndex = minIndex(this.age);
     return this.popIndex(oldestIndex);
   }
 
-  popOldestWithLowerRating(rating: number) {
+  popOldestWithLowerRating(rating: number): PopUndo<Score> | null {
+    if (this.length == 0) {
+        return null;
+    }
+
     //  - find slice [i..] where all scores have lower rating
     let firstScoreWithLowerRating = this.byRating.findIndex(v => v.rating < rating);
 
@@ -55,14 +65,14 @@ export class AgeFrame<Score extends {rating: number}> {
     return this.popIndex(ageIndex);
   }
 
-  popIndex(index: number) {
+  popIndex(index: number): PopUndo<Score> {
     let deletedScore = this.byRating.splice(index, 1)[0]!;
     let deletedAge = this.age.splice(index, 1)[0]!;
     this.totalRating -= deletedScore.rating;
     return { removed: { index: index, age: deletedAge, score: deletedScore} };
   }
 
-  undoScore(undo: { inserted: number } | { removed: {index: number, age: number, score: Score} }) {
+  undoScore(undo: UndoScore<Score>) {
     if ('inserted' in undo) {
       let scoreRating = this.byRating[undo.inserted]!.rating;
       this.byRating.splice(undo.inserted, 1);
