@@ -73,11 +73,14 @@ type ScoreInput = {points: number, platinum: number} &
     | {lamps: {bell: BellLamp, clear: ClearLamp, grade?: GradeLamp}}
 );
 
+type LampUndo = null | {chartId: string, prevLamps: LampDisplay|null};
+
 type UndoScore = {
     best?: BestUndo<string, OngekiScore>; 
     new?: BestUndo<string, OngekiScore>; 
     naive: BestUndo<string, OngekiScore>;
     plat: BestUndo<string, PlatinumScore>;
+    lamps: LampUndo;
 };
 
 type LampDisplay = {bell: BellLamp, clear: ClearLamp, grade: GradeLamp};
@@ -89,7 +92,6 @@ export class OngekiRefreshCalculator<Chart> {
     naive: BestFrame<string, OngekiScore>;
     plat: BestFrame<string, PlatinumScore>;
 
-    // TODO: store this in a "PBs" class, actually
     lamps: Map<string, LampDisplay>;
 
     constructor(db: ChartDb<Chart>) {
@@ -102,25 +104,50 @@ export class OngekiRefreshCalculator<Chart> {
     }
 
     // TODO: make this accept a Partial<LampDisplay> so API is easier to use
-    updateLamps(lamps: LampDisplay, chartId: string) {
+    updateLamps(lamps: LampDisplay, chartId: string): {} & {lamps: LampDisplay, changed: LampUndo} {
         let existingLamps = this.lamps.get(chartId);
         if (existingLamps === undefined) {
             this.lamps.set(chartId, lamps);
             existingLamps = lamps;
+            return {
+                lamps: existingLamps,
+                changed: {chartId, prevLamps: null},
+            }
         } else {
             // update lamps - don't overwrite lamps with a lower tier one
+            let prevLamps = structuredClone(existingLamps);
+            let changed = false;
             if (bellLampBonus[lamps.bell] > bellLampBonus[existingLamps.bell]) {
                 existingLamps.bell = lamps.bell;
+                changed = true;
             }
             if (clearLampBonus[lamps.clear] > clearLampBonus[existingLamps.clear]) {
                 existingLamps.clear = lamps.clear;
+                changed = true;
             }
             if (gradeLampBonus[lamps.grade] > gradeLampBonus[existingLamps.grade]) {
                 existingLamps.grade = lamps.grade;
+                changed = true;
             }
             this.lamps.set(chartId, existingLamps);
+            return {
+                lamps: existingLamps,
+                changed: (changed == false) ? null : { chartId, prevLamps },
+            };
         }
-        return existingLamps;
+    }
+
+    undoLamps(changed: LampUndo) {
+        if (changed == null) {
+            return;
+        }
+
+        let lamps = changed.prevLamps;
+        if (lamps === null) {
+            this.lamps.delete(changed.chartId);
+        } else {
+            this.lamps.set(changed.chartId, lamps);
+        }
     }
 
     addScore(score: ScoreInput, chart: Chart) {
@@ -158,7 +185,7 @@ export class OngekiRefreshCalculator<Chart> {
         }
 
         let chartId = this.db.getChartId(chart);
-        let lamps = this.updateLamps(scoreLamps, chartId);
+        let {lamps, changed} = this.updateLamps(scoreLamps, chartId);
 
         let normalRating = scoreRating(score.points, lamps, level);
         let normalScore = {points: score.points, rating: normalRating};
@@ -166,6 +193,7 @@ export class OngekiRefreshCalculator<Chart> {
         let platinumScore = {platinum: score.platinum, rating: platinumRating};
 
         let undo: UndoScore = {};
+        undo.lamps = changed;
         if (this.db.isNew(chart)) {
             undo.new = this.new.addScore(normalScore, chartId);
         } else {
@@ -181,6 +209,7 @@ export class OngekiRefreshCalculator<Chart> {
         if ('best' in undo) { this.best.undoScore(undo.best!); }
         this.naive.undoScore(undo.naive);
         this.plat.undoScore(undo.plat);
+        this.undoLamps(undo.lamps);
     }
 
     get overallRating() {
