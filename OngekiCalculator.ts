@@ -58,7 +58,7 @@ export class OngekiCalculator<Chart> {
         this.best = new BestFrame(30);
         this.new = new BestFrame(15);
         this.naive = new BestFrame(45);
-        this.recent = new OngekiRecentFrame(10, 30, db);
+        this.recent = new OngekiRecentFrame(10, 30);
     }
 
     makeSnapshot(): OngekiCalculatorSnapshot<string, OngekiScore> {
@@ -92,7 +92,7 @@ export class OngekiCalculator<Chart> {
             undo.best = this.best.addScore(score, id);
         }
         undo.naive = this.naive.addScore(score, id);
-        undo.recent = this.recent.addScore(score, chart);
+        undo.recent = this.recent.addScore(score, {isLunatic: this.db.isLunatic(chart)});
         return undo;
     }
 

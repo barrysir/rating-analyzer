@@ -9,13 +9,11 @@ export class OngekiRecentFrame<Chart, Score extends { points: number; rating: nu
     frame: AgeFrame<Score>;
     numTop: number;
     numMax: number;
-    db: ChartDb<Chart>;
     #temporaryRating: number | null;
 
-    constructor(numTop: number, numMax: number, db: ChartDb<Chart>) {
+    constructor(numTop: number, numMax: number) {
         this.numTop = numTop;
         this.numMax = numMax;
-        this.db = db;
         this.#temporaryRating = null;
 
         this.frame = new AgeFrame();
@@ -29,9 +27,9 @@ export class OngekiRecentFrame<Chart, Score extends { points: number; rating: nu
         this.frame.loadSnapshot(snapshot);
     }
 
-    addScore(score: Score, chart: Chart): UndoScore<Chart, Score> {
+    addScore(score: Score, chart: {isLunatic: boolean}): UndoScore<Chart, Score> {
         // Don't include LUNATIC songs in recent
-        if (this.db.isLunatic(chart)) {
+        if (chart.isLunatic) {
             return null;
         }
 
