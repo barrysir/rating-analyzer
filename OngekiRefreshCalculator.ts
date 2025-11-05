@@ -73,7 +73,7 @@ type ScoreInput = {points: number, platinum: number} &
     | {lamps: {bell: BellLamp, clear: ClearLamp, grade?: GradeLamp}}
 );
 
-type UndoScore<Chart> = {
+type UndoScore = {
     best?: BestUndo<string, OngekiScore>; 
     new?: BestUndo<string, OngekiScore>; 
     naive: BestUndo<string, OngekiScore>;
@@ -82,7 +82,7 @@ type UndoScore<Chart> = {
 
 type LampDisplay = {bell: BellLamp, clear: ClearLamp, grade: GradeLamp};
 
-export class OngekiRefreshCalculator<Chart extends string> {
+export class OngekiRefreshCalculator<Chart> {
     db: ChartDb<Chart>;
     best: BestFrame<string, OngekiScore>;
     new: BestFrame<string, OngekiScore>;
@@ -90,7 +90,7 @@ export class OngekiRefreshCalculator<Chart extends string> {
     plat: BestFrame<string, PlatinumScore>;
 
     // TODO: store this in a "PBs" class, actually
-    lamps: Map<Chart, LampDisplay>;
+    lamps: Map<string, LampDisplay>;
 
     constructor(db: ChartDb<Chart>) {
         this.db = db;
@@ -102,10 +102,10 @@ export class OngekiRefreshCalculator<Chart extends string> {
     }
 
     // TODO: make this accept a Partial<LampDisplay> so API is easier to use
-    updateLamps(lamps: LampDisplay, chart: Chart) {
-        let existingLamps = this.lamps.get(chart);
+    updateLamps(lamps: LampDisplay, chartId: string) {
+        let existingLamps = this.lamps.get(chartId);
         if (existingLamps === undefined) {
-            this.lamps.set(chart, lamps);
+            this.lamps.set(chartId, lamps);
             existingLamps = lamps;
         } else {
             // update lamps - don't overwrite lamps with a lower tier one
@@ -118,7 +118,7 @@ export class OngekiRefreshCalculator<Chart extends string> {
             if (gradeLampBonus[lamps.grade] > gradeLampBonus[existingLamps.grade]) {
                 existingLamps.grade = lamps.grade;
             }
-            this.lamps.set(chart, existingLamps);
+            this.lamps.set(chartId, existingLamps);
         }
         return existingLamps;
     }
@@ -157,26 +157,26 @@ export class OngekiRefreshCalculator<Chart extends string> {
             scoreLamps = score.lamps as LampDisplay;
         }
 
-        let lamps = this.updateLamps(scoreLamps, chart);
+        let chartId = this.db.getChartId(chart);
+        let lamps = this.updateLamps(scoreLamps, chartId);
 
         let normalRating = scoreRating(score.points, lamps, level);
         let normalScore = {points: score.points, rating: normalRating};
         let platinumRating = pRating(score.platinum, maxPlatinum, level);
         let platinumScore = {platinum: score.platinum, rating: platinumRating};
 
-        let undo: UndoScore<Chart> = {};
-        let id = this.db.getChartId(chart);
+        let undo: UndoScore = {};
         if (this.db.isNew(chart)) {
-            undo.new = this.new.addScore(normalScore, id);
+            undo.new = this.new.addScore(normalScore, chartId);
         } else {
-            undo.best = this.best.addScore(normalScore, id);
+            undo.best = this.best.addScore(normalScore, chartId);
         }
-        undo.naive = this.naive.addScore(normalScore, id);
-        undo.plat = this.plat.addScore(platinumScore, id);
+        undo.naive = this.naive.addScore(normalScore, chartId);
+        undo.plat = this.plat.addScore(platinumScore, chartId);
         return undo;
     }
 
-    undoScore(undo: UndoScore<Chart>) {
+    undoScore(undo: UndoScore) {
         if ('new' in undo) { this.new.undoScore(undo.new!); }
         if ('best' in undo) { this.best.undoScore(undo.best!); }
         this.naive.undoScore(undo.naive);
