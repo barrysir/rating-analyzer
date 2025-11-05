@@ -40,8 +40,8 @@ export class RatingHistory<Score, Chart, UndoType> {
         if (index < 0) {
             throw new Error(`Trying to seek rating history before score 0 (${index})`);
         }
-        if (index >= this.scores.length) {
-            throw new Error(`Trying to seek rating history after the last score (${index} >= ${this.scores.length})`);
+        if (index > this.scores.length) {
+            throw new Error(`Trying to seek rating history after the last score (${index} > ${this.scores.length})`);
         }
 
         if (index < this.currentIndex) {
@@ -56,5 +56,9 @@ export class RatingHistory<Score, Chart, UndoType> {
             }
         }
         this.currentIndex = index;
+    }
+
+    seek(delta: number) {
+        this.goto(this.currentIndex + delta);
     }
 }
