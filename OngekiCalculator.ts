@@ -43,7 +43,7 @@ export class OngekiCalculator<Chart> {
     best: BestFrame<string, OngekiScore>;
     new: BestFrame<string, OngekiScore>;
     naive: BestFrame<string, OngekiScore>;
-    recent: OngekiRecentFrame<OngekiScore, Chart>;
+    recent: OngekiRecentFrame<Chart, OngekiScore>;
 
     constructor(db: ChartDb<Chart>) {
         this.db = db;

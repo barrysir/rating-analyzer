@@ -5,7 +5,7 @@ export type UndoScore<Chart, Score> = null
     | {inserted: number; removed?: {index: number, age: number, score: Score}};
 
 
-export class OngekiRecentFrame<Score extends { points: number; rating: number; }, Chart> {
+export class OngekiRecentFrame<Chart, Score extends { points: number; rating: number; }> {
     frame: AgeFrame<Score>;
     numTop: number;
     numMax: number;
