@@ -6,6 +6,13 @@ type PopUndo<Score> = { removed: {index: number, age: number, score: Score} };
 
 export type UndoScore<Score> = PushUndo | PopUndo<Score>;
 
+export type AgeFrameSnapshot<Score> = {
+  byRating: Score[];
+  age: number[];
+  ageCounter: number;
+  totalRating: number;
+}
+
 /**
  * Frame which stores scores sorted by age and by rating
  */
@@ -21,6 +28,22 @@ export class AgeFrame<Score extends {rating: number}> {
     this.age = [];
     this.ageCounter = 0;
     this.totalRating = 0;
+  }
+
+  makeSnapshot(): AgeFrameSnapshot<Score> {
+    return {
+      byRating: this.byRating,
+      age: this.age,
+      ageCounter: this.ageCounter,
+      totalRating: this.totalRating,
+    };
+  }
+
+  loadSnapshot(snapshot: AgeFrameSnapshot<Score>) {
+    this.byRating = snapshot.byRating;
+    this.age = snapshot.age;
+    this.ageCounter = snapshot.ageCounter;
+    this.totalRating = snapshot.totalRating;
   }
 
   get length() {

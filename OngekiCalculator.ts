@@ -1,5 +1,6 @@
 import type { ChartDb } from "./chartdb/ChartDb";
-import { BestFrame, UndoScore as BestUndo } from "./frames/BestFrame";
+import type { AgeFrameSnapshot } from "./frames/AgeFrame";
+import { BestFrame, UndoScore as BestUndo, type BestFrameSnapshot } from "./frames/BestFrame";
 import { OngekiRecentFrame, UndoScore as RecentUndo } from "./frames/OngekiRecentFrame";
 import { lerp } from "./utils";
 
@@ -38,6 +39,13 @@ type UndoScore<Chart> = {
     recent: RecentUndo<Chart, OngekiScore>;
 };
 
+export type OngekiCalculatorSnapshot<ChartId, Score> = {
+    best: BestFrameSnapshot<ChartId, Score>,
+    new: BestFrameSnapshot<ChartId, Score>,
+    naive: BestFrameSnapshot<ChartId, Score>,
+    recent: AgeFrameSnapshot<Score>,
+}
+
 export class OngekiCalculator<Chart> {
     db: ChartDb<Chart>;
     best: BestFrame<string, OngekiScore>;
@@ -51,6 +59,22 @@ export class OngekiCalculator<Chart> {
         this.new = new BestFrame(15);
         this.naive = new BestFrame(45);
         this.recent = new OngekiRecentFrame(10, 30, db);
+    }
+
+    makeSnapshot(): OngekiCalculatorSnapshot<string, OngekiScore> {
+        return {
+            best: this.best.makeSnapshot(),
+            new: this.new.makeSnapshot(),
+            naive: this.naive.makeSnapshot(),
+            recent: this.recent.makeSnapshot(),
+        }
+    }
+
+    loadSnapshot(snapshot: OngekiCalculatorSnapshot<string, OngekiScore>) {
+        this.best.loadSnapshot(snapshot.best);
+        this.new.loadSnapshot(snapshot.new);
+        this.naive.loadSnapshot(snapshot.naive);
+        this.recent.loadSnapshot(snapshot.recent);
     }
 
     addScore(points: number, chart: Chart): UndoScore<Chart> {

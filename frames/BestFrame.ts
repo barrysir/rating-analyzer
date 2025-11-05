@@ -14,6 +14,11 @@ export type UndoScore<ChartId, Score> = null
  | { inserted: InsertUndo; removed?: PopUndo<ChartId, Score> }
  | { updated: UpdateUndo<Score> };
 
+export type BestFrameSnapshot<ChartId, Score> = {
+  frame: {id: ChartId, score: Score}[];
+  rating: number;
+}
+
 function moveIndex<T>(array: T[], a: number, b: number) {
   let item = array.splice(a, 1)[0]!;
   array.splice(b, 0, item);
@@ -44,6 +49,18 @@ export class BestFrame<ChartId extends string, Score extends {rating: number}> {
     this.frame = [];
     this.max = max;
     this.#rating = 0;
+  }
+
+  makeSnapshot(): BestFrameSnapshot<ChartId, Score> {
+    return {
+      frame: this.frame,
+      rating: this.#rating,
+    };
+  }
+
+  loadSnapshot(snapshot: BestFrameSnapshot<ChartId, Score>) {
+    this.frame = snapshot.frame;
+    this.#rating = snapshot.rating;
   }
 
   get totalRating(): number {

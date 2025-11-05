@@ -1,5 +1,5 @@
 import type { ChartDb } from "../chartdb/ChartDb";
-import { AgeFrame } from "./AgeFrame";
+import { AgeFrame, type AgeFrameSnapshot } from "./AgeFrame";
 
 export type UndoScore<Chart, Score> = null
     | {inserted: number; removed?: {index: number, age: number, score: Score}};
@@ -19,6 +19,14 @@ export class OngekiRecentFrame<Chart, Score extends { points: number; rating: nu
         this.#temporaryRating = null;
 
         this.frame = new AgeFrame();
+    }
+    
+    makeSnapshot(): AgeFrameSnapshot<Score> {
+        return this.frame.makeSnapshot();
+    }
+
+    loadSnapshot(snapshot: AgeFrameSnapshot<Score>) {
+        this.frame.loadSnapshot(snapshot);
     }
 
     addScore(score: Score, chart: Chart): UndoScore<Chart, Score> {
