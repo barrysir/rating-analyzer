@@ -53,13 +53,13 @@ export class BestFrame<ChartId extends string, Score extends {rating: number}> {
 
   makeSnapshot(): BestFrameSnapshot<ChartId, Score> {
     return {
-      frame: this.frame,
+      frame: structuredClone(this.frame),
       rating: this.#rating,
     };
   }
 
   loadSnapshot(snapshot: BestFrameSnapshot<ChartId, Score>) {
-    this.frame = snapshot.frame;
+    this.frame = structuredClone(snapshot.frame);
     this.#rating = snapshot.rating;
   }
 

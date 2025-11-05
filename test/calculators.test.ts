@@ -131,3 +131,31 @@ test("undo", () => {
         expect(Math.abs(ongeki.overallRating - rating)).toBeLessThanOrEqual(0.01);
     }
 });
+
+test("snapshot", () => {
+    let {ongeki} = makeFixture();
+    let ratings = [];
+    let snapshot;
+    for (let i=0; i<barrageScores.length; i++) {
+        let [points, chart] = barrageScores[i]!;
+        if (i == 20) {
+            snapshot = ongeki.makeSnapshot();
+        }
+
+        ongeki.addScore(points, makeChart(chart));
+        ratings.push(ongeki.overallRating);
+    }
+
+    // load the snapshot twice -- if the snapshot memory wasn't copied properly,
+    // the snapshot itself could be mutated by the calculations
+    // loading it again should cause an error if the snapshot was mutated
+    for (let s=0; s<2; s++) {
+        ongeki.loadSnapshot(snapshot);
+        for (let i=20; i<barrageScores.length; i++) {
+            let [points, chart] = barrageScores[i]!;
+
+            ongeki.addScore(points, makeChart(chart));
+            expect(ongeki.overallRating).toBe(ratings[i]!);
+        }
+    }
+});

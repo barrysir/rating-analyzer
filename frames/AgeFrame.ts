@@ -32,16 +32,16 @@ export class AgeFrame<Score extends {rating: number}> {
 
   makeSnapshot(): AgeFrameSnapshot<Score> {
     return {
-      byRating: this.byRating,
-      age: this.age,
+      byRating: structuredClone(this.byRating),
+      age: structuredClone(this.age),
       ageCounter: this.ageCounter,
       totalRating: this.totalRating,
     };
   }
 
   loadSnapshot(snapshot: AgeFrameSnapshot<Score>) {
-    this.byRating = snapshot.byRating;
-    this.age = snapshot.age;
+    this.byRating = structuredClone(snapshot.byRating);
+    this.age = structuredClone(snapshot.age);
     this.ageCounter = snapshot.ageCounter;
     this.totalRating = snapshot.totalRating;
   }
