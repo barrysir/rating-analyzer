@@ -6,7 +6,6 @@ function randint(min: number, max: number) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-
 test("random seeking", () => {
     let ratings = [];
     {
@@ -22,25 +21,11 @@ test("random seeking", () => {
     let a = barrageScores.map(([s,c]) => [s, makeChart(c)]);
     let history = new RatingHistory(ongeki, a);
 
-    // console.log(JSON.stringify(ongeki.best.getFrame()));
-    // function b() {
-    //     console.log(ongeki.best.frame, [...ongeki.best.chartsInFrame.keys()], ongeki.best.totalRating);
-    // }   
-    // history.seek(-30);
-    // history.seek(-1);
-    // b();
-    // history.seek(-1);
-    // b();
-    // history.seek(1);
-    // b();
-    // history.seek(1);
-    // b();
-
     // random indexes
-    let testIndexes = [];
-    for (let i=0; i<10; i++) {
-        testIndexes.push(randint(0, barrageScores.length-1));
-    }
+    let testIndexes = [ 10, 28, 57, 28, 10, 60, 71, 16, 13, 34 ];
+    // for (let i=0; i<10; i++) {
+    //     testIndexes.push(randint(0, barrageScores.length-1));
+    // }
 
     for (let index of testIndexes) {
         history.goto(index);
