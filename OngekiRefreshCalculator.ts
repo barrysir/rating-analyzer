@@ -1,7 +1,7 @@
 import type { ChartDb } from "./chartdb/ChartDb";
 import { BellLamp, ClearLamp, GradeLamp } from "./data-types";
 import { BestFrame, UndoScore as BestUndo } from "./frames/BestFrame";
-import { findRegion, lerp, pointsToGradeLamp } from "./utils";
+import { findRegion, lerp, pointsToGradeLamp, type Prettify } from "./utils";
 
 
 
@@ -64,10 +64,12 @@ function pRating(platinum: number, maxPlatinum: number, level: number) {
 
 // --------------------------------------
 
-type OngekiScore = { points: number; rating: number; };
-type PlatinumScore = { platinum: number; rating: number; };
+type OngekiScore<Score> = { points: number; rating: number; } & (Score extends undefined ? {} : {score: Score});
+type PlatinumScore<Score> = { platinum: number; rating: number; } & (Score extends undefined ? {} : {score: Score});
 
-type ScoreInput = {points: number, platinum: number} & 
+type ScoreInput<Score> = {points: number, platinum: number}
+& (Score extends undefined ? {} : {score: Score})
+& 
 (
     {bells: number, judgements: {crit?: number, break: number, hit: number, miss: number}}
     | {lamps: {bell: BellLamp, clear: ClearLamp, grade?: GradeLamp}}
@@ -75,26 +77,26 @@ type ScoreInput = {points: number, platinum: number} &
 
 type LampUndo = null | {chartId: string, prevLamps: LampDisplay|null};
 
-type UndoScore = {
-    best?: BestUndo<string, OngekiScore>; 
-    new?: BestUndo<string, OngekiScore>; 
-    naive: BestUndo<string, OngekiScore>;
-    plat: BestUndo<string, PlatinumScore>;
+type UndoScore<Score> = {
+    best?: BestUndo<string, OngekiScore<Score>>; 
+    new?: BestUndo<string, OngekiScore<Score>>; 
+    naive: BestUndo<string, OngekiScore<Score>>;
+    plat: BestUndo<string, PlatinumScore<Score>>;
     lamps: LampUndo;
 };
 
 type LampDisplay = {bell: BellLamp, clear: ClearLamp, grade: GradeLamp};
 
-export class OngekiRefreshCalculator<Chart> {
+export class OngekiRefreshCalculator<Chart, Score = undefined> {
     db: ChartDb<Chart>;
-    best: BestFrame<string, OngekiScore>;
-    new: BestFrame<string, OngekiScore>;
-    naive: BestFrame<string, OngekiScore>;
-    plat: BestFrame<string, PlatinumScore>;
+    best: BestFrame<string, OngekiScore<Score>>;
+    new: BestFrame<string, OngekiScore<Score>>;
+    naive: BestFrame<string, OngekiScore<Score>>;
+    plat: BestFrame<string, PlatinumScore<Score>>;
 
     lamps: Map<string, LampDisplay>;
 
-    constructor(db: ChartDb<Chart>) {
+    constructor(db: ChartDb<Chart>, extra?: Score) {
         this.db = db;
         this.best = new BestFrame(50);
         this.new = new BestFrame(10);
@@ -150,7 +152,7 @@ export class OngekiRefreshCalculator<Chart> {
         }
     }
 
-    addScore(score: ScoreInput, chart: Chart) {
+    addScore(score: ScoreInput<Score>, chart: Chart) {
         let level = this.db.getInternalLevel(chart);
         let maxPlatinum = this.db.getMaxPlatinum(chart);
 
@@ -187,12 +189,14 @@ export class OngekiRefreshCalculator<Chart> {
         let chartId = this.db.getChartId(chart);
         let {lamps, changed} = this.updateLamps(scoreLamps, chartId);
 
-        let normalRating = scoreRating(score.points, lamps, level);
-        let normalScore = {points: score.points, rating: normalRating};
-        let platinumRating = pRating(score.platinum, maxPlatinum, level);
-        let platinumScore = {platinum: score.platinum, rating: platinumRating};
+        let optionalScore = ('score' in score) ? { score: score.score } : {};
 
-        let undo: UndoScore = {};
+        let normalRating = scoreRating(score.points, lamps, level);
+        let normalScore: OngekiScore<Score> = {points: score.points, rating: normalRating, ...optionalScore};
+        let platinumRating = pRating(score.platinum, maxPlatinum, level);
+        let platinumScore: PlatinumScore<Score> = {platinum: score.platinum, rating: platinumRating, ...optionalScore};
+
+        let undo: UndoScore<Score> = {};
         undo.lamps = changed;
         if (this.db.isNew(chart)) {
             undo.new = this.new.addScore(normalScore, chartId);
@@ -204,7 +208,7 @@ export class OngekiRefreshCalculator<Chart> {
         return undo;
     }
 
-    undoScore(undo: UndoScore) {
+    undoScore(undo: UndoScore<Score>) {
         if ('new' in undo) { this.new.undoScore(undo.new!); }
         if ('best' in undo) { this.best.undoScore(undo.best!); }
         this.naive.undoScore(undo.naive);

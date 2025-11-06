@@ -1,5 +1,6 @@
 import { BasicChartDb, type BasicChart } from "../chartdb/BasicChartDb";
 import { OngekiCalculator } from "../OngekiCalculator";
+import { OngekiRefreshCalculator } from "../OngekiRefreshCalculator";
 
 function makeDb(): BasicChartDb {
     return new BasicChartDb();
@@ -20,6 +21,12 @@ export function makeChart(options: {
 export function makeFixture() {
     let songdb = makeDb();
     let ongeki = new OngekiCalculator(songdb);
+    return {songdb, ongeki};
+}
+
+export function makeFixtureWithExtra() {
+    let songdb = makeDb();
+    let ongeki = OngekiCalculator.create<string>()(songdb);
     return {songdb, ongeki};
 }
 

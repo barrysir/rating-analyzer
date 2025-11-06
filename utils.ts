@@ -91,3 +91,7 @@ export function pointsToGradeLamp(points: number): GradeLamp {
     }
     return pointsLampArray[index]![1];
 }
+
+export type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};
