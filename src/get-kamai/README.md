@@ -1,0 +1,1 @@
+Script to download score data from Kamai.

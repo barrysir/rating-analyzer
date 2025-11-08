@@ -19,7 +19,7 @@ export class HistoricalChartDb implements ChartDb<HistChart> {
         end: Date,
     };
 
-    constructor(data: SongData, options: {date?: Date; version?: string; omnimix?: boolean}) {
+    constructor(data: SongData, options: {date?: Date; version?: string; omnimix?: boolean} = {}) {
         this.songs = {};
         this.currentVersion = {};
         let date;
