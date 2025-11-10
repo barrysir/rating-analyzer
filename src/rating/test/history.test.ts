@@ -12,13 +12,13 @@ test("random seeking", () => {
         let {ongeki} = makeFixture();
         for (let [score,chart] of barrageScores) {
             ratings.push(ongeki.overallRating);
-            ongeki.addScore(score, makeChart(chart));
+            ongeki.addScore({points: score}, makeChart(chart));
         }
         ratings.push(ongeki.overallRating);
     }
     
     let {ongeki} = makeFixture();
-    let a = barrageScores.map(([s,c]) => [s, makeChart(c)]);
+    let a = barrageScores.map(([s,c]) => [{points: s}, makeChart(c)]);
     let history = new RatingHistory(ongeki, a);
 
     // random indexes
