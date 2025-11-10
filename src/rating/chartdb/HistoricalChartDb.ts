@@ -121,33 +121,16 @@ export class HistoricalChartDb implements ChartDb<HistChart> {
         return {song, chart, difficulty: search.difficulty};
     }
 
-    getInternalLevel(search: HistChart): number {
-        let {chart} = this.findChart(search);
-        return chart.level;
-    }
-
-    getMaxPlatinum(search: HistChart): number {
-        let {chart} = this.findChart(search);
-        return chart.maxPlatinumScore;
-    }
-
-    getMaxBells(search: HistChart): number {
-        let {chart} = this.findChart(search);
-        return chart.bells;
-    }
-
-    isLunatic(search: HistChart): boolean {
+    getChartInfo(search: HistChart) {
         let {song, chart, difficulty} = this.findChart(search);
-        return difficulty == OngekiDifficulty.LUNATIC;
-    }
 
-    isNew(search: HistChart): boolean {
-        let {song, chart, difficulty} = this.findChart(search);
-        return (song.date_added >= this.currentVersion.start);
-    }
-
-    getChartId(search: HistChart): string {
-        let {song, chart, difficulty} = this.findChart(search);
-        return `${song.tag} ${difficulty}`;
+        return {
+            internalLevel: chart.level,
+            maxPlatinum: chart.maxPlatinumScore,
+            maxBells: chart.bells,
+            isLunatic: (difficulty == OngekiDifficulty.LUNATIC),
+            isNew: (song.date_added >= this.currentVersion.start),
+            chartId: `${song.tag} ${difficulty}`,
+        };
     }
 }

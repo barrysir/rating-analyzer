@@ -10,27 +10,14 @@ export type BasicChart = {
 };
 
 export class BasicChartDb implements ChartDb<BasicChart> {
-    getInternalLevel(chart: BasicChart): number {
-        return chart.level;
-    }
-
-    getMaxPlatinum(chart: BasicChart): number {
-        return chart.maxPlatinumScore;
-    }
-
-    getMaxBells(chart: BasicChart): number {
-        return chart.bells;
-    }
-
-    isLunatic(chart: BasicChart): boolean {
-        return chart.isLunatic;
-    }
-
-    isNew(chart: BasicChart): boolean {
-        return chart.isNew;
-    }
-
-    getChartId(chart: BasicChart): string {
-        return chart.id;
+    getChartInfo(chart: BasicChart) {
+        return {
+            chartId: chart.id,
+            internalLevel: chart.level,
+            maxPlatinum: chart.maxPlatinumScore,
+            maxBells: chart.bells,
+            isLunatic: chart.isLunatic,
+            isNew: chart.isNew,
+        };
     }
 }

@@ -1,10 +1,12 @@
-export interface ChartDb<Chart> {
-    // TODO: maybe I can return all this information at once rather than repeating the lookup multiple times
-    getInternalLevel(c: Chart): number;
-    getMaxPlatinum(c: Chart): number;
-    getMaxBells(c: Chart): number;
-    isLunatic(c: Chart): boolean;
-    isNew(c: Chart): boolean;
+export type ChartInfo = {
+    internalLevel: number;
+    maxPlatinum: number;
+    maxBells: number;
+    isLunatic: boolean;
+    isNew: boolean;
+    chartId: string;
+};
 
-    getChartId(c: Chart): string;
+export interface ChartDb<Chart> {
+    getChartInfo(c: Chart): ChartInfo;
 }

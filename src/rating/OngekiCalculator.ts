@@ -96,9 +96,7 @@ export class OngekiCalculator<Chart, Score = undefined> {
     }
 
     addScore(score: {points: number} & (Score extends undefined ? {} : {score: Score}), chart: Chart): UndoScore<Chart, Score> {
-        let level = this.db.getInternalLevel(chart);
-        let id = this.db.getChartId(chart);
-
+        let { internalLevel: level, chartId: id, isNew, isLunatic } = this.db.getChartInfo(chart);
 
         let rating = scoreRating(score.points, level);
         let entry: OngekiScore<Score> = {
@@ -110,13 +108,13 @@ export class OngekiCalculator<Chart, Score = undefined> {
         }
 
         let undo: UndoScore<Chart, Score> = {};
-        if (this.db.isNew(chart)) {
+        if (isNew) {
             undo.new = this.new.addScore(entry, id);
         } else {
             undo.best = this.best.addScore(entry, id);
         }
         undo.naive = this.naive.addScore(entry, id);
-        undo.recent = this.recent.addScore(entry, {isLunatic: this.db.isLunatic(chart)});
+        undo.recent = this.recent.addScore(entry, {isLunatic});
         return undo;
     }
 
