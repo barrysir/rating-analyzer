@@ -153,7 +153,11 @@ export class OngekiRefreshCalculator<Chart, Score = undefined> {
     }
 
     addScore(score: ScoreInput<Score>, chart: Chart) {
-        let { internalLevel: level, maxPlatinum, maxBells, chartId, isNew } = this.db.getChartInfo(chart);
+        let chartData = this.db.getChartInfo(chart);
+        if (chartData === null) {
+            return null;
+        }
+        let { internalLevel: level, maxPlatinum, maxBells, chartId, isNew } = chartData;
 
         let scoreLamps;
         if ('bells' in score) {
@@ -205,7 +209,10 @@ export class OngekiRefreshCalculator<Chart, Score = undefined> {
         return undo;
     }
 
-    undoScore(undo: UndoScore<Score>) {
+    undoScore(undo: UndoScore<Score> | null) {
+        if (undo === null) { 
+            return; 
+        }
         if ('new' in undo) { this.new.undoScore(undo.new!); }
         if ('best' in undo) { this.best.undoScore(undo.best!); }
         this.naive.undoScore(undo.naive);

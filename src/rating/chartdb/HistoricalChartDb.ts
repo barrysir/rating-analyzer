@@ -95,7 +95,8 @@ export class HistoricalChartDb implements ChartDb<HistChart> {
         if ('tag' in search) {
             song = this.songs[search.tag];
             if (song === undefined) {
-                throw new Error(`Could not find song with tag ${search.tag}`);
+                console.log(`Couldn't find song with tag ${search.tag}`);
+                return null;
             }
         } else {
             // TODO: make this search feature better
@@ -107,23 +108,30 @@ export class HistoricalChartDb implements ChartDb<HistChart> {
             }
 
             if (titleCandidates.length > 1) {
-                throw new Error(`Multiple songs with title ${search.title} found`);
+                console.log(`Multiple songs with title ${search.title} found`);
+                return null;
             } else if (titleCandidates.length == 0) {
-                throw new Error(`No song with title ${search.title} found`)
+                console.log(`No song with title ${search.title} found`);
+                return null;
             }
             song = titleCandidates[0]!;
         }
 
         let chart = song.charts[search.difficulty];
         if (chart === undefined) {
-            throw new Error(`Could not find ${search.difficulty} chart for song ${search}`);
+            console.log(`Could not find ${search.difficulty} chart for song ${search}`);
+            return null;
         }
         return {song, chart, difficulty: search.difficulty};
     }
 
     getChartInfo(search: HistChart) {
-        let {song, chart, difficulty} = this.findChart(search);
+        let data = this.findChart(search);
+        if (data === null) {
+            return null;
+        }
 
+        let {song, chart, difficulty} = data;
         return {
             internalLevel: chart.level,
             maxPlatinum: chart.maxPlatinumScore,

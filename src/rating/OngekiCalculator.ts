@@ -95,8 +95,12 @@ export class OngekiCalculator<Chart, Score = undefined> {
         this.recent.loadSnapshot(snapshot.recent);
     }
 
-    addScore(score: {points: number} & (Score extends undefined ? {} : {score: Score}), chart: Chart): UndoScore<Chart, Score> {
-        let { internalLevel: level, chartId: id, isNew, isLunatic } = this.db.getChartInfo(chart);
+    addScore(score: {points: number} & (Score extends undefined ? {} : {score: Score}), chart: Chart): UndoScore<Chart, Score> | null {
+        let chartData = this.db.getChartInfo(chart);
+        if (chartData === null) {
+            return null;
+        }
+        let { internalLevel: level, chartId: id, isNew, isLunatic } = chartData;
 
         let rating = scoreRating(score.points, level);
         let entry: OngekiScore<Score> = {
@@ -118,7 +122,10 @@ export class OngekiCalculator<Chart, Score = undefined> {
         return undo;
     }
 
-    undoScore(undo: UndoScore<Chart, Score>) {
+    undoScore(undo: UndoScore<Chart, Score> | null) {
+        if (undo === null) { 
+            return; 
+        }
         if ('new' in undo) { this.new.undoScore(undo.new!); }
         if ('best' in undo) { this.best.undoScore(undo.best!); }
         this.naive.undoScore(undo.naive);
