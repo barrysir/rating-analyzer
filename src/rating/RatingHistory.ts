@@ -8,15 +8,13 @@ interface Calculator<Score, Chart, UndoType, Snapshot> {
 
 export class RatingHistory<Calc extends Calculator<Score, Chart, UndoType, Snapshot>, Score, Chart, UndoType, Snapshot> {
     calc: Calc;
-    scores: [Score, Chart][];
-    undos: UndoType[];
+    scores: [Score, Chart][];       // scores[i] contains the action to move from i -> i+1
+    undos: UndoType[];              // undo[i] contains the action to undo from i+1 -> i
     snapshots: Snapshot[];
     currentIndex: number;
     snapshotInterval: number;
 
-    // "callback" argument is a crazy hack I'll re-evaluate when I get more of the program put together
-    // might be better to have RatingHistory not process any scores when constructed and do it lazily
-    constructor(calc: Calc, scores: [Score, Chart][], options: {snapshotInterval?: number, callback?: (calc: Calc, score: Score, chart: Chart) => unknown} = {}) {
+    constructor(calc: Calc, scores: [Score, Chart][], options: {snapshotInterval?: number} = {}) {
         this.calc = calc;
         this.scores = scores;
         this.undos = [];
@@ -24,23 +22,14 @@ export class RatingHistory<Calc extends Calculator<Score, Chart, UndoType, Snaps
         this.currentIndex = 0;
 
         this.snapshotInterval = options.snapshotInterval ?? 100;
+    }
 
-        for (let [score,chart] of scores) {
-            if (this.currentIndex % this.snapshotInterval == 0) {
-                this.snapshots.push(this.calc.makeSnapshot());
-            }
-            // scores[i] contains the action to move from i -> i+1
-            let r = this.calc.addScore(score, chart);
-            if (options.callback !== undefined) {
-                options.callback(this.calc, score, chart);
-            }
-            this.undos.push(r);
-            // undo[i] contains the action to undo from i+1 -> i
-            this.currentIndex++;
-        }
-        // if (this.currentIndex % this.snapshotInterval > this.snapshotInterval/2) {
-        //     this.snapshots.push(this.calc.makeSnapshot());
-        // }
+    get lastExploredIndex() {
+        return this.undos.length;
+    }
+
+    get length() {
+        return this.scores.length;
     }
 
     // has problems with calling addScore() when calculator is seeked somewhere in the middle
@@ -63,11 +52,38 @@ export class RatingHistory<Calc extends Calculator<Score, Chart, UndoType, Snaps
     }
 
     goto(index: number) {
+        // Do nothing if already at the given index
+        if (index == this.currentIndex) {
+            return;
+        }
+
         if (index < 0) {
             throw new Error(`Trying to seek rating history before score 0 (${index})`);
         }
         if (index > this.scores.length) {
             throw new Error(`Trying to seek rating history after the last score (${index} > ${this.scores.length})`);
+        }
+
+        // If we're seeking to an index that hasn't been generated yet, 
+        // start from the last explored index and save scores one at a time
+        if (index > this.lastExploredIndex) {
+            this.goto(this.lastExploredIndex);
+            while (this.currentIndex < index) {
+                if (this.currentIndex % this.snapshotInterval == 0) {
+                    this.snapshots.push(this.calc.makeSnapshot());
+                }
+                let [score,chart] = this.scores[this.currentIndex]!;
+                let r = this.calc.addScore(score, chart);
+                this.undos.push(r);
+                this.currentIndex++;
+            }
+            // maybe put a snapshot at the last score too -- 
+            // right now snapshots are expected to be evenly spaced, this would require coding some kind of exception
+            // or allowing snapshots at arbitrary indexes
+            // if (this.currentIndex % this.snapshotInterval > this.snapshotInterval/2) {
+            //     this.snapshots.push(this.calc.makeSnapshot());
+            // }
+            return;
         }
 
         let deltaScores = Math.abs(index - this.currentIndex);

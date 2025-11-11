@@ -17,15 +17,8 @@ function createHistory(scoredb: UserScoreDatabase) {
 
   // let historyScores = ;
 
-  // maybe it's better to have it as lazy and generate undos and snapshots as asked (but it's more complicated to implement that way)
-
-  let chartData = {
-    timestamps: [] as number[],
-    overallRating: [] as number[],
-    naiveRating: [] as number[],
-  };
-
   let scores = scoredb.scores;
+  // TODO: move sorting into scoredb code; make sure scores are always sorted ascending by timestamp
   scores.sort((a, b) => a.kamai.timeAchieved - b.kamai.timeAchieved);
 
   let history = new RatingHistory(
@@ -35,16 +28,24 @@ function createHistory(scoredb: UserScoreDatabase) {
         {points: score.kamai.scoreData.score, score: i}, 
         {tag: score.tag, difficulty: score.difficulty},
       ]
-    }), 
-    {
-      callback: (calc, score, chart) => {
-        let kamai = scoredb.scores[score.score]!.kamai;
-        chartData.timestamps.push(kamai.timeAchieved);
-        chartData.overallRating.push(calc.overallRating);
-        chartData.naiveRating.push(calc.overallNaiveRating);
-      }
-    }
+    })
   );
+  
+  let chartData = {
+    timestamps: [] as number[],
+    overallRating: [] as number[],
+    naiveRating: [] as number[],
+  };
+  
+  for (let i=0; i<history.length; i++) {
+    history.seek(1);
+    let [score, chart] = history.scores[i]!;
+    let kamai = scoredb.scores[score.score]!.kamai; // score.score -> score.extra.id
+    chartData.timestamps.push(kamai.timeAchieved);
+    chartData.overallRating.push(history.calc.overallRating);
+    chartData.naiveRating.push(history.calc.overallNaiveRating);
+  }
+
   return {
     history, 
     chartData

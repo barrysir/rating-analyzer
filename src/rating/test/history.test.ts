@@ -2,9 +2,21 @@ import { expect, test } from "bun:test";
 import { barrageScores, makeChart, makeFixture } from "./fixture";
 import { RatingHistory } from "../RatingHistory";
 
-function randint(min: number, max: number) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+function makeHistory(scores) {
+    let {ongeki} = makeFixture();
+    // todo: turn the scores that are passed into RatingHistory into an argument to this function
+    let a = scores.map(([s,c]) => [{points: s}, makeChart(c)]);
+    let history = new RatingHistory(ongeki, a);
+    return {ongeki, history};
 }
+
+test("initialize", () => {
+    let {history} = makeHistory(barrageScores);
+
+    // Freshly initialized history should be at index 0
+    // (in past versions, history would process the whole score array at initialization and leave the current index at the end)
+    expect(history.currentIndex).toBe(0);
+});
 
 test("random seeking", () => {
     let ratings = [];
@@ -16,19 +28,25 @@ test("random seeking", () => {
         }
         ratings.push(ongeki.overallRating);
     }
-    
-    let {ongeki} = makeFixture();
-    let a = barrageScores.map(([s,c]) => [{points: s}, makeChart(c)]);
-    let history = new RatingHistory(ongeki, a);
+
+    let {ongeki, history} = makeHistory(barrageScores);
 
     // random indexes
     let testIndexes = [ 10, 28, 57, 28, 10, 60, 71, 16, 13, 34 ];
-    // for (let i=0; i<10; i++) {
-    //     testIndexes.push(randint(0, barrageScores.length-1));
-    // }
-
     for (let index of testIndexes) {
         history.goto(index);
         expect(ongeki.overallRating).toBeCloseTo(ratings[index]!);
+    }
+});
+
+test("code sample - iterate over every score", () => {
+    // Whether this code works doesn't really matter (the functionality is tested by other tests),
+    // just make sure that this code doesn't error
+    let {history} = makeHistory(barrageScores);
+    let ratings = [];
+    for (let i=0; i<history.length; i++) {
+        history.seek(1);
+        let [score, chart] = history.scores[i]!;
+        ratings.push(history.calc.overallRating);
     }
 });
