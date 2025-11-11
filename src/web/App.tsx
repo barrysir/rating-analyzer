@@ -1,67 +1,85 @@
 import type { Component } from 'solid-js';
-import { UserScoreDatabase } from '../get-kamai/UserScores';
-import { RatingHistory } from '../rating/RatingHistory';
-import { OngekiCalculator } from '../rating/OngekiCalculator';
-import { HistoricalChartDb } from '../rating/chartdb/HistoricalChartDb';
-import SONG_DATA from '../rating/data/song-db.json';
-import MY_SCORE_DATA from "../../1243.json";
-import { OngekiDifficulty } from '../rating/data-types';
-import { SongData } from '../rating/data/SongData';
+import { createMemo } from 'solid-js';
 import { RatingChart } from './RatingChart';
+import { createHistory, loadScoreData } from './Temp';
+import { Icon } from '@iconify-icon/solid';
+import { Popover } from '@ark-ui/solid';
+import { settings, setSettings } from './stores/settingsStore';
 
-function createHistory(scoredb: UserScoreDatabase) {
-  let db = new HistoricalChartDb(new SongData(SONG_DATA), { version: 'bright MEMORY Act.3' });
-  let ongeki = new OngekiCalculator(db);
 
-  // let generateRatingPoint = 
 
-  // let historyScores = ;
-
-  let scores = scoredb.scores;
-  // TODO: move sorting into scoredb code; make sure scores are always sorted ascending by timestamp
-  scores.sort((a, b) => a.kamai.timeAchieved - b.kamai.timeAchieved);
-
-  let history = new RatingHistory(
-    ongeki, 
-    scores.map((score, i) => {
-      return [
-        {points: score.kamai.scoreData.score, score: i}, 
-        {tag: score.tag, difficulty: score.difficulty},
-      ]
-    })
+function SettingsWindow() {
+  return (
+    <div style="display: grid; grid-template-columns: auto auto; column-gap: 12px; align-items: center;">
+      <label for="decimal-places">
+        Decimal Places
+      </label>
+      <input
+        id="decimal-places"
+        type="number"
+        min="0"
+        max="10"
+        value={settings.decimalPlaces}
+        onInput={(e) => setSettings('decimalPlaces', parseInt(e.currentTarget.value) || 0)}
+      />
+      <label for="version">
+        Version
+      </label>
+      <select
+        id="version"
+        value={settings.version}
+        onChange={(e) => setSettings('version', e.currentTarget.value)}
+      >
+        <option value="latest">latest</option>
+        <option value="beta">beta</option>
+        <option value="new">new</option>
+      </select>
+    </div>
   );
-  
-  let chartData = {
-    timestamps: [] as number[],
-    overallRating: [] as number[],
-    naiveRating: [] as number[],
-  };
-  
-  for (let i=0; i<history.length; i++) {
-    history.seek(1);
-    let [score, chart] = history.scores[i]!;
-    let kamai = scoredb.scores[score.score]!.kamai; // score.score -> score.extra.id
-    chartData.timestamps.push(kamai.timeAchieved);
-    chartData.overallRating.push(history.calc.overallRating);
-    chartData.naiveRating.push(history.calc.overallNaiveRating);
-  }
-
-  return {
-    history, 
-    chartData
-  };
 }
 
-function loadScoreData(): UserScoreDatabase {
-  return MY_SCORE_DATA;
+function SettingsButton() {
+  return <Popover.Root open={true}>
+      <Popover.Trigger
+        style="position: absolute; top: 16px; right: 16px; padding: 8px;"
+        aria-label="Settings"
+      >
+        <Icon icon="lucide:settings" />
+      </Popover.Trigger>
+      <Popover.Positioner>
+        <Popover.Content
+          style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); z-index: 50;"
+        >
+          {/* <Popover.Title style="font-weight: 600; margin-bottom: 8px;">Settings</Popover.Title> */}
+          <Popover.Description style="font-size: 12px;">
+            <SettingsWindow />
+          </Popover.Description>
+          {/* <Popover.CloseTrigger
+            style="position: absolute; top: 8px; right: 8px; padding: 4px;"
+            aria-label="Close"
+          >
+            <Icon icon="lucide:x" />
+          </Popover.CloseTrigger> */}
+        </Popover.Content>
+      </Popover.Positioner>
+    </Popover.Root>;
 }
 
 const App: Component = () => {
-  let { history, chartData } = createHistory(loadScoreData());
+  const scoreData = loadScoreData();
+  
+  const historyData = createMemo(() => (
+    createHistory(scoreData, { decimalPlaces: settings.decimalPlaces })
+  ));
 
-  return <div style="width: 100vh; height: 100vh; display: grid; grid-template-columns: 7fr 3fr;">
-    <RatingChart data={chartData} />
-    <div>Hi!</div>
+  return <div style="width: 100vw; height: 100vh;">
+    <SettingsButton />
+    <div style="width: 100%; height: 100%; display: grid; grid-template-columns: 4fr 6fr; align-items: center;">
+      <div style="height: 50vh">
+        <RatingChart data={historyData().chartData} options={{decimalPlaces: settings.decimalPlaces}} />
+      </div>
+      <div></div>
+    </div>
   </div>
 };
 

@@ -1,13 +1,36 @@
-import { Component, createMemo } from 'solid-js';
+import { Component, createMemo, createEffect, mergeProps } from 'solid-js';
 import ApexCharts from 'apexcharts';
 import { onMount, onCleanup } from 'solid-js';
 
-export function RatingChart(props: { 
+export function RatingChart(incomingProps: { 
   data: { timestamps: number[]; overallRating: number[], naiveRating: number[] };
   onClick?: (index: number) => void;
+  options?: {decimalPlaces?: number};
 }) {
   let chartRef: HTMLDivElement | undefined;
   let chart: ApexCharts | undefined;
+
+  const defaultProps = {
+    options: {decimalPlaces: 2}
+  };
+  const props = mergeProps(defaultProps, incomingProps);
+
+  const seriesData = createMemo(() => [
+    {
+      name: 'Overall Rating',
+      data: props.data.timestamps.map((timestamp, i) => ({
+        x: timestamp,
+        y: props.data.overallRating[i]
+      }))
+    },
+    {
+      name: 'Naive Rating',
+      data: props.data.timestamps.map((timestamp, i) => ({
+        x: timestamp,
+        y: props.data.naiveRating[i]
+      }))
+    }
+  ]);
 
   const chartOptions = createMemo(() => ({
     chart: {
@@ -17,11 +40,12 @@ export function RatingChart(props: {
         enabled: false,
       },
       events: {
-        dataPointSelection: (_event: any, _chartContext: any, config: any) => {
+        click: function(event, chartContext, config) {
+          console.log(config.dataPointIndex);
           if (props.onClick) {
             props.onClick(config.dataPointIndex);
           }
-        }
+        },
       },
       zoom: {
         autoScaleYaxis: true,
@@ -40,24 +64,13 @@ export function RatingChart(props: {
     yaxis: {
       title: {
         text: 'Rating'
-      }
-    },
-    series: [
-      {
-        name: 'Overall Rating',
-        data: props.data.timestamps.map((timestamp, i) => ({
-          x: timestamp,
-          y: props.data.overallRating[i]
-        }))
       },
-      {
-        name: 'Naive Rating',
-        data: props.data.timestamps.map((timestamp, i) => ({
-          x: timestamp,
-          y: props.data.naiveRating[i]
-        }))
-      }
-    ],
+      labels: {
+        formatter: function(val) {
+          return val.toFixed(props.options.decimalPlaces);
+        }
+      },
+    },
     stroke: {
       curve: 'smooth' as const,
       width: 2
@@ -76,7 +89,7 @@ export function RatingChart(props: {
 
   onMount(() => {
     if (chartRef) {
-      chart = new ApexCharts(chartRef, chartOptions());
+      chart = new ApexCharts(chartRef, { ...chartOptions(), series: seriesData() });
       chart.render();
     }
   });
@@ -85,9 +98,10 @@ export function RatingChart(props: {
     chart?.destroy();
   });
 
-  createMemo(() => {
+  createEffect(() => {
+    const series = seriesData();
     if (chart) {
-      chart.updateOptions(chartOptions());
+      chart.updateSeries(series, true);
     }
   });
 
