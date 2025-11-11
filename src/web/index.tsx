@@ -1,5 +1,6 @@
 /* @refresh reload */
 import './index.css';
+import './main.css';
 import { render } from 'solid-js/web';
 import 'solid-devtools';
 

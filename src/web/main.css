@@ -1,0 +1,11 @@
+button {
+    cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+}
+
+/* Set default font. */
+* {
+    font-family: Helvetica, 'Segoe UI', Arial, Helvetica, sans-serif;
+}
