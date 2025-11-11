@@ -1,61 +1,95 @@
-import * as echarts from 'echarts';
-import { format } from 'date-fns';
-import { ECharts, EChartsAutoSize } from 'echarts-solid';
+import { Component, createMemo } from 'solid-js';
+import ApexCharts from 'apexcharts';
+import { onMount, onCleanup } from 'solid-js';
 
-function unixTimeToDate(t: number): Date {
-    return new Date(t * 1000);
-}
+export function RatingChart(props: { 
+  data: { timestamps: number[]; overallRating: number[], naiveRating: number[] };
+  onClick?: (index: number) => void;
+}) {
+  let chartRef: HTMLDivElement | undefined;
+  let chart: ApexCharts | undefined;
 
-export function RatingChart(props: {data: {timestamps: number[]; overallRating: number[]}}) {
-  const options: echarts.EChartsOption = {
-    dataset: [
-      {
-        id: 'dataset',
-        source: props.data,
+  const chartOptions = createMemo(() => ({
+    chart: {
+      type: 'line' as const,
+      height: '100%',
+      animations: {
+        enabled: false,
       },
-    ],
-    tooltip: {
-      trigger: 'axis'
+      events: {
+        dataPointSelection: (_event: any, _chartContext: any, config: any) => {
+          if (props.onClick) {
+            props.onClick(config.dataPointIndex);
+          }
+        }
+      },
+      zoom: {
+        autoScaleYaxis: true,
+      },
     },
     title: {
-      text: "Rating",
-      left: 'center',
+      text: 'Rating',
+      align: 'center' as const,
     },
-    legend: {
-      type: 'plain',
+    xaxis: {
+      type: 'datetime' as const,
+      title: {
+        text: 'Date'
+      }
     },
-    xAxis: {
-      type: 'time',
-      name: 'Date',
-    },
-    yAxis: {
-        type: 'value',
-        name: 'Rating',
+    yaxis: {
+      title: {
+        text: 'Rating'
+      }
     },
     series: [
-        {
-            name: 'Overall Rating',
-            type: 'line',
-            datasetId: 'dataset',
-            smooth: true,
-            showSymbol: false,
-            encode: {
-                x: 'timestamps',
-                y: 'overallRating',
-            }
-        },
-        {
-            name: 'Naive Rating',
-            type: 'line',
-            datasetId: 'dataset',
-            smooth: true,
-            showSymbol: false,
-            encode: {
-                x: 'timestamps',
-                y: 'naiveRating',
-            }
-        },
-    ]
-  };
-  return <EChartsAutoSize option={options} />;
+      {
+        name: 'Overall Rating',
+        data: props.data.timestamps.map((timestamp, i) => ({
+          x: timestamp,
+          y: props.data.overallRating[i]
+        }))
+      },
+      {
+        name: 'Naive Rating',
+        data: props.data.timestamps.map((timestamp, i) => ({
+          x: timestamp,
+          y: props.data.naiveRating[i]
+        }))
+      }
+    ],
+    stroke: {
+      curve: 'smooth' as const,
+      width: 2
+    },
+    markers: {
+      size: 0
+    },
+    tooltip: {
+      shared: true,
+      intersect: false,
+      x: {
+        format: 'dd MMM yyyy'
+      }
+    }
+  }));
+
+  onMount(() => {
+    if (chartRef) {
+      chart = new ApexCharts(chartRef, chartOptions());
+      chart.render();
+    }
+  });
+
+  onCleanup(() => {
+    chart?.destroy();
+  });
+
+  createMemo(() => {
+    if (chart) {
+      chart.updateOptions(chartOptions());
+    }
+  });
+
+  return <div ref={chartRef} style={{ width: '100%', height: '100%' }} />;
 }
