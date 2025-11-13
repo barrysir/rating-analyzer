@@ -95,3 +95,36 @@ export function pointsToGradeLamp(points: number): GradeLamp {
 export type Prettify<T> = {
   [K in keyof T]: T[K];
 } & {};
+
+/**
+ * Function which models this behaviour, converting "eventIndex" into ["scoreIndex", "versionIndex"]
+ * 
+ *                  eventIndex  scoreIndex  versionIndex
+ * score 310        310         310         0
+ * score 311        311         311         0
+ * version change   312         311         1
+ * score 312        313         312         1
+ * score 313        314         313         1
+ * version change   315         313         2
+ * version change   316         313         3
+ * score 314        317         314         3
+ * 
+ * This can be modeled as a function which counts up with "bumps" at certain score indexes [311, 313, 313]
+ * where the score count stops for 1 unit and increments the version count instead
+ */
+export function xWithBumps(x: number, bumps: (number | null)[]): [number, number, boolean] {
+    let bumpsBeforeX = bumps.findIndex((b, i) => b == null || (x - i) <= b);
+    if (bumpsBeforeX == -1) {
+        bumpsBeforeX = bumps.length;
+    }
+
+    let adjustedX = x - bumpsBeforeX;
+    let justBumped: boolean;
+    if (bumpsBeforeX < 1) {
+        justBumped = false;
+    } else {
+        let previousBump = bumps[bumpsBeforeX - 1];
+        justBumped = (adjustedX == previousBump);
+    }
+    return [adjustedX, bumpsBeforeX, justBumped];
+}

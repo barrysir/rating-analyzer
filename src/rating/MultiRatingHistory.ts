@@ -1,6 +1,6 @@
 import { Calculator, RatingHistory } from "./RatingHistory";
 
-
+/* This class might be dead code unless I use it for something else */
 export class MultiRatingHistory<Score, Chart> {
     histories: RatingHistory<Calculator<Score, Chart, unknown, unknown>, Score, Chart, unknown, unknown>[];
     scores: [Score, Chart][];

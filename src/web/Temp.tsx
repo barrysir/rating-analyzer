@@ -8,6 +8,7 @@ import { SongData } from '../rating/data/SongData';
 import { MultiRatingHistory } from '../rating/MultiRatingHistory';
 import { findRegion } from '../rating/utils';
 import { OngekiDifficulty } from '../rating/data-types';
+import { VersionChangeHistory } from '../rating/VersionChangeHistory';
 
 function dateToUnix(date: Date): number {
   return Math.floor(date.getTime());
@@ -59,18 +60,34 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
   // TODO: move sorting into scoredb code; make sure scores are always sorted ascending by timestamp
   scores.sort((a, b) => a.kamai.timeAchieved - b.kamai.timeAchieved);
 
-  let multi = new MultiRatingHistory(
-    calculators,
+  let multi = new VersionChangeHistory(
+    versionChanges.map(entry => (
+      {
+        calculator: OngekiCalculator.create<{id: number, timestamp: number}>()(entry.db),
+        timestamp: entry.timestamp,
+      }
+    )),
     scores.map((score, i) => {
       return [
         {points: score.kamai.scoreData.score, score: {id: i, timestamp: score.kamai.timeAchieved}}, 
         {tag: score.tag, difficulty: score.difficulty},
       ]
     }),
-    (score) => {
-      return findRegion(versionChanges, score.score.timestamp, x => x.timestamp)!;
-    }
+    (s) => s.score.timestamp
   );
+
+  // let multi = new MultiRatingHistory(
+  //   calculators,
+    // scores.map((score, i) => {
+    //   return [
+    //     {points: score.kamai.scoreData.score, score: {id: i, timestamp: score.kamai.timeAchieved}}, 
+    //     {tag: score.tag, difficulty: score.difficulty},
+    //   ]
+    // }),
+  //   (score) => {
+  //     return findRegion(versionChanges, score.score.timestamp, x => x.timestamp)!;
+  //   }
+  // );
 
   let history = multi;
 
@@ -98,13 +115,15 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
   
   for (let i=0; i<history.length; i++) {
     history.seek(1);
-    let [score, chart] = history.scores[i]!;
-    let kamai = scoredb.scores[score.score.id]!.kamai;
-    chartData.timestamps.push(kamai.timeAchieved);
+    chartData.timestamps.push(history.currentTimestamp);
+    if (chartData.timestamps.length >= 2 && chartData.timestamps.at(-1) < chartData.timestamps.at(-2)) {
+      console.log(history.versionChangeTimestamps);
+      throw new Error(`timestamp went backwards at index ${i} ${history.currentTimestamp}`);
+    }
     chartData.overallRating.push(history.calc.overallRating);
     chartData.naiveRating.push(history.calc.overallNaiveRating);
-    chartData.version.push(history.selectedCalc);
-    chartData.maxRating.push(maxRatings[history.selectedCalc]);
+    chartData.version.push(history.whichCalc);
+    chartData.maxRating.push(maxRatings[history.whichCalc]);
   }
 
   return {
