@@ -10,7 +10,7 @@
     "esModuleInterop": true,
     "isolatedModules": true,
     "module": "ESNext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node10",
     "noEmit": true,
 
     // Type Checking & Safety
