@@ -6,22 +6,24 @@ interface Calculator<Score, Chart, UndoType, Snapshot> {
     loadSnapshot(snapshot: Snapshot): unknown;
 }
 
-export class RatingHistory<Score, Chart, UndoType, Snapshot> {
-    calc: Calculator<Score, Chart, UndoType, Snapshot>;
+export class RatingHistory<Calc extends Calculator<Score, Chart, UndoType, Snapshot>, Score, Chart, UndoType, Snapshot> {
+    calc: Calc;
     scores: [Score, Chart][];
     undos: UndoType[];
     snapshots: Snapshot[];
     currentIndex: number;
     snapshotInterval: number;
 
-    constructor(calc: Calculator<Score, Chart, UndoType, Snapshot>, scores: [Score, Chart][], options: {snapshotInterval: number} = {snapshotInterval: 100}) {
+    // "callback" argument is a crazy hack I'll re-evaluate when I get more of the program put together
+    // might be better to have RatingHistory not process any scores when constructed and do it lazily
+    constructor(calc: Calc, scores: [Score, Chart][], options: {snapshotInterval?: number, callback?: (calc: Calc, score: Score, chart: Chart) => unknown} = {}) {
         this.calc = calc;
         this.scores = scores;
         this.undos = [];
         this.snapshots = [];
         this.currentIndex = 0;
 
-        this.snapshotInterval = options.snapshotInterval;
+        this.snapshotInterval = options.snapshotInterval ?? 100;
 
         for (let [score,chart] of scores) {
             if (this.currentIndex % this.snapshotInterval == 0) {
@@ -29,6 +31,9 @@ export class RatingHistory<Score, Chart, UndoType, Snapshot> {
             }
             // scores[i] contains the action to move from i -> i+1
             let r = this.calc.addScore(score, chart);
+            if (options.callback !== undefined) {
+                options.callback(this.calc, score, chart);
+            }
             this.undos.push(r);
             // undo[i] contains the action to undo from i+1 -> i
             this.currentIndex++;

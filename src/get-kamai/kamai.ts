@@ -27,6 +27,7 @@ let TACHI_ENDPOINT = `https://kamai.tachi.ac/api/v1`;
 // };
 
 export type KamaiScore = {
+  timeAchieved: number;
   scoreData: {
     score: number;
     platinumScore: number;

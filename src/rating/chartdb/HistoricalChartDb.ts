@@ -31,7 +31,7 @@ export class HistoricalChartDb implements ChartDb<HistChart> {
             // BUG: Set this to accept all songs instead
             date = new Date();
         }
-        let omnimix = options.omnimix ?? false;
+        let omnimix = options.omnimix ?? true;
         this.load(data, date, omnimix);
     }
 
