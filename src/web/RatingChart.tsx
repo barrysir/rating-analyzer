@@ -3,7 +3,7 @@ import ApexCharts from 'apexcharts';
 import { onMount, onCleanup } from 'solid-js';
 
 export function RatingChart(incomingProps: { 
-  data: { timestamps: number[]; overallRating: number[], naiveRating: number[] };
+  data: { timestamps: number[]; overallRating: number[], naiveRating: number[], version: number[] };
   onClick?: (index: number) => void;
   options?: {decimalPlaces?: number};
 }) {
@@ -31,6 +31,40 @@ export function RatingChart(incomingProps: {
       }))
     }
   ]);
+
+  const annotations = createMemo(() => {
+    const xaxis: any[] = [];
+    
+    let lastIndex = 0;
+    let lastFillColor = undefined;
+    for (let i = 1; i < props.data.timestamps.length; i++) {
+      const isLast = (i == props.data.timestamps.length-1);
+
+      const version = props.data.version[i];
+      let fillColor: string | undefined;
+      
+      if (version === 0) {
+        fillColor = '#3b82f6';
+      } else if (version === 1) {
+        fillColor = '#fbbf24';
+      } else if (version === 2) {
+        fillColor = '#ef4444';
+      }
+      
+      if (isLast || fillColor !== lastFillColor) {
+        xaxis.push({
+          x: props.data.timestamps[lastIndex],
+          x2: props.data.timestamps[i],
+          fillColor: lastFillColor,
+          opacity: 0.2,
+        });
+        lastIndex = i;
+        lastFillColor = fillColor;
+      }
+    }
+    
+    return { xaxis };
+  });
 
   const chartOptions = createMemo(() => ({
     chart: {
@@ -84,7 +118,8 @@ export function RatingChart(incomingProps: {
       x: {
         format: 'dd MMM yyyy'
       }
-    }
+    },
+    annotations: annotations()
   }));
 
   onMount(() => {
@@ -102,6 +137,13 @@ export function RatingChart(incomingProps: {
     const series = seriesData();
     if (chart) {
       chart.updateSeries(series, true);
+    }
+  });
+
+  createEffect(() => {
+    const opts = chartOptions();
+    if (chart) {
+      chart.updateOptions(opts, false, true);
     }
   });
 

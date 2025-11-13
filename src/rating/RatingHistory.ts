@@ -1,4 +1,4 @@
-interface Calculator<Score, Chart, UndoType, Snapshot> {
+export interface Calculator<Score, Chart, UndoType, Snapshot> {
     addScore(score: Score, chart: Chart): UndoType;
     undoScore(undo: UndoType): unknown;
 
