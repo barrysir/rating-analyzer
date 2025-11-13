@@ -3,7 +3,7 @@ import ApexCharts from 'apexcharts';
 import { onMount, onCleanup } from 'solid-js';
 
 export function RatingChart(incomingProps: { 
-  data: { timestamps: number[]; overallRating: number[], naiveRating: number[], version: number[] };
+  data: { timestamps: number[]; overallRating: number[], naiveRating: number[], version: number[], maxRating: [number, number][] };
   onClick?: (index: number) => void;
   options?: {decimalPlaces?: number};
 }) {
@@ -29,7 +29,14 @@ export function RatingChart(incomingProps: {
         x: timestamp,
         y: props.data.naiveRating[i]
       }))
-    }
+    },
+    {
+      name: 'Max Rating',
+      data: props.data.timestamps.map((timestamp, i) => ({
+        x: timestamp,
+        y: props.data.maxRating[i]
+      }))
+    },
   ]);
 
   const annotations = createMemo(() => {
