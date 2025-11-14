@@ -1,11 +1,11 @@
 import type { Component } from 'solid-js';
-import { createMemo } from 'solid-js';
+import { createEffect, createMemo, createSignal } from 'solid-js';
 import { RatingChart } from './RatingChart';
 import { createHistory, loadScoreData } from './Temp';
 import { Icon } from '@iconify-icon/solid';
 import { Popover } from '@ark-ui/solid';
 import { settings, setSettings } from './stores/settingsStore';
-
+import { history, initializeHistory, setScoreIndex } from './stores/historyStore';
 
 
 function SettingsWindow() {
@@ -67,16 +67,16 @@ function SettingsButton() {
 
 const App: Component = () => {
   const scoreData = loadScoreData();
-  
-  const historyData = createMemo(() => (
-    createHistory(scoreData, { decimalPlaces: settings.decimalPlaces })
-  ));
+
+  createEffect(() => {
+    initializeHistory(scoreData, { decimalPlaces: settings.decimalPlaces });
+  });
 
   return <div style="width: 100vw; height: 100vh;">
     <SettingsButton />
     <div style="width: 100%; height: 100%; display: grid; grid-template-columns: 4fr 6fr; align-items: center;">
       <div style="height: 50vh">
-        <RatingChart data={historyData().chartData} options={{decimalPlaces: settings.decimalPlaces}} />
+        <RatingChart data={history.chartData} options={{decimalPlaces: settings.decimalPlaces}} onClick={(index) => setEventIndex(index)} />
       </div>
       <div></div>
     </div>
