@@ -54,8 +54,6 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
     {db: new HistoricalChartDb(songData, { version: 'bright MEMORY Act.3' }), timestamp: dateToUnix(new Date("2025-04-27"))},
   ];
 
-  let calculators = versionChanges.map(x => OngekiCalculator.create<{id: number, timestamp: number}>()(x.db));
-
   let scores = scoredb.scores;
   // TODO: move sorting into scoredb code; make sure scores are always sorted ascending by timestamp
   scores.sort((a, b) => a.kamai.timeAchieved - b.kamai.timeAchieved);

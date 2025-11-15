@@ -9,4 +9,5 @@ export type ChartInfo = {
 
 export interface ChartDb<Chart> {
     getChartInfo(c: Chart): ChartInfo | null;
+    parseChartId(c: string): Chart;
 }

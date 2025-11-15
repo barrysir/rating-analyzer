@@ -1,12 +1,7 @@
-import { createStore } from 'solid-js/store';
-import { VersionChangeHistory } from '../../rating/VersionChangeHistory';
+import { createMutable, createStore } from 'solid-js/store';
 import { UserScoreDatabase } from '../../get-kamai/UserScores';
 import { createHistory } from '../Temp';
 import { batch } from 'solid-js';
-
-// interface History {
-
-// }
 
 type HistoryType = ReturnType<typeof createHistory>['history'];
 type ChartDataType = ReturnType<typeof createHistory>['chartData'];
@@ -32,8 +27,9 @@ const [history, setHistory] = createStore<HistoryStore>({
 function initializeHistory(scoredb: UserScoreDatabase, options: Parameters<typeof createHistory>[1]) {
   let {history, chartData} = createHistory(scoredb, options);
   batch(() => {
-    setHistory('history', history);
+    setHistory('history', createMutable(history));
     setHistory('chartData', chartData);
+    setHistory('scoreIndex', history.currentIndex);
   });
 }
 

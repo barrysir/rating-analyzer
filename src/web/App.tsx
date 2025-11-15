@@ -1,11 +1,12 @@
 import type { Component } from 'solid-js';
-import { createEffect, createMemo, createSignal } from 'solid-js';
+import { createEffect, Show } from 'solid-js';
 import { RatingChart } from './RatingChart';
-import { createHistory, loadScoreData } from './Temp';
+import { loadScoreData } from './Temp';
 import { Icon } from '@iconify-icon/solid';
 import { Popover } from '@ark-ui/solid';
 import { settings, setSettings } from './stores/settingsStore';
 import { history, initializeHistory, setScoreIndex } from './stores/historyStore';
+import { FrameRenderer } from './FrameRenderer';
 
 
 function SettingsWindow() {
@@ -76,9 +77,13 @@ const App: Component = () => {
     <SettingsButton />
     <div style="width: 100%; height: 100%; display: grid; grid-template-columns: 4fr 6fr; align-items: center;">
       <div style="height: 50vh">
-        <RatingChart data={history.chartData} options={{decimalPlaces: settings.decimalPlaces}} onClick={(index) => setEventIndex(index)} />
+        <RatingChart data={history.chartData} options={{decimalPlaces: settings.decimalPlaces}} onClick={(index) => setScoreIndex(index)} />
       </div>
-      <div></div>
+      <div>
+        <Show when={history.history !== null}>
+          <FrameRenderer scoreIndex={history.scoreIndex} frame={history.history!.calc.best.frame} />
+        </Show>
+      </div>
     </div>
   </div>
 };

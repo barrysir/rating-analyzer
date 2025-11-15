@@ -141,4 +141,14 @@ export class HistoricalChartDb implements ChartDb<HistChart> {
             chartId: `${song.tag} ${difficulty}`,
         };
     }
+
+    parseChartId(chartId: string) {
+        const index = chartId.lastIndexOf(" ");
+        if (index === -1) {
+            throw new Error(`Could not parse chartId ${chartId}`);
+        }
+        let tag = chartId.substring(0, index);
+        let difficulty = chartId.substring(index+1) as OngekiDifficulty;
+        return {tag, difficulty};
+    }
 }
