@@ -113,7 +113,7 @@ export function RatingChart(incomingProps: {
       },
     },
     stroke: {
-      curve: 'smooth' as const,
+      curve: 'stepline',
       width: 2
     },
     markers: {
