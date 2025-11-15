@@ -3,7 +3,7 @@ import ApexCharts from 'apexcharts';
 import { onMount, onCleanup } from 'solid-js';
 
 export function RatingChart(incomingProps: { 
-  data: { timestamps: number[]; overallRating: number[], naiveRating: number[], version: number[], maxRating: [number, number][] };
+  data: { timestamps: number[]; overallRating: number[], naiveRating: number[], version: number[], maxRating: number[] };
   onClick?: (index: number) => void;
   options?: {decimalPlaces?: number};
 }) {
@@ -75,7 +75,7 @@ export function RatingChart(incomingProps: {
 
   const chartOptions = createMemo(() => ({
     chart: {
-      type: 'line' as const,
+      type: 'line',
       height: '100%',
       animations: {
         enabled: false,
@@ -83,6 +83,10 @@ export function RatingChart(incomingProps: {
       events: {
         click: function(event, chartContext, config) {
           console.log(config.dataPointIndex);
+          // The index is null if clicking on the zoom buttons
+          if (config.dataPointIndex === null) {
+            return;
+          }
           if (props.onClick) {
             props.onClick(config.dataPointIndex);
           }
@@ -94,10 +98,10 @@ export function RatingChart(incomingProps: {
     },
     title: {
       text: 'Rating',
-      align: 'center' as const,
+      align: 'center',
     },
     xaxis: {
-      type: 'datetime' as const,
+      type: 'datetime',
       title: {
         text: 'Date'
       }
