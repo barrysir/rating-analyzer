@@ -20,6 +20,9 @@ export type BestFrameSnapshot<ChartId, Score> = {
 }
 
 function moveIndex<T>(array: T[], a: number, b: number) {
+  if (a == b) {
+    return;
+  }
   let item = array.splice(a, 1)[0]!;
   array.splice(b, 0, item);
   // since the array changes size between the splice operations there could be an off-by-one error, but it turns out it works out
@@ -156,6 +159,8 @@ export class BestFrame<ChartId extends string, Score extends {rating: number}> {
       return;
     }
 
+    let before = JSON.stringify(this.frame);
+
     if ('inserted' in undo) {
       this._undoInsert(undo.inserted);
       if ('removed' in undo) {
@@ -164,5 +169,20 @@ export class BestFrame<ChartId extends string, Score extends {rating: number}> {
     } else {
       this._undoUpdate(undo.updated);
     }
+
+    if (!this.validateFrame()) {
+      console.log(before);
+      console.log(this.frame);
+      throw new Error(`Something didn't process correctly on undo ${JSON.stringify(undo)}`);
+    }
+  }
+
+  validateFrame() {
+    for (let i=1; i<this.frame.length; i++) {
+      if (this.frame.at(i)?.score.rating < this.frame.at(i+1)?.score.rating) {
+        return false;
+      }
+    }
+    return true;
   }
 }
