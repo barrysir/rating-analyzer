@@ -3,7 +3,7 @@ import { hideBin } from 'yargs/helpers';
 import { KamaiSongData } from './KamaiSongData';
 import { UserScoreDatabase } from './UserScores';
 import { OngekiDifficulty } from '../rating/data-types';
-import SONG_DB_DATA from "../rating/data/song-db.json";
+import SONG_DB_DATA from "../../data/song-db.json";
 
 // Maybe this should be a bookmarklet instead
 
@@ -93,8 +93,8 @@ function loadKamaiSongData(): KamaiSongData {
   return new KamaiSongData(SONG_DB_DATA);
 }
 
-function kamaiSongIdToTag(kamai: KamaiSongData, songId: number): string | undefined {
-  return kamai.toTag(songId);
+function kamaiSongIdToTag(kamai: KamaiSongData, songId: number, difficulty: OngekiDifficulty): string | undefined {
+  return kamai.toTag(songId, difficulty);
 }
 
 function convertKamai(resp: ScoresResponse): UserScoreDatabase {
@@ -111,12 +111,12 @@ function convertKamai(resp: ScoresResponse): UserScoreDatabase {
       throw new Error(`Missing chart data ${score.chartID}, ${JSON.stringify(score)}`);
     }
 
-    let tag = kamaiSongIdToTag(kamai, chart.songID);
+    let difficulty = kamaiToOngekiDifficulty[chart.difficulty];
+    let tag = kamaiSongIdToTag(kamai, chart.songID, difficulty);
     if (tag === undefined) {
       throw new Error(`Unknown kamai song ID ${chart.songID}`);
     }
 
-    let difficulty = kamaiToOngekiDifficulty[chart.difficulty];
     if (difficulty === undefined) {
       throw new Error(`Unknown kamai difficulty ${chart.difficulty}`);
     }
