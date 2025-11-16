@@ -3,10 +3,10 @@ import { createEffect, Show } from 'solid-js';
 import { RatingChart } from './RatingChart';
 import { loadScoreData } from './Temp';
 import { Icon } from '@iconify-icon/solid';
-import { Popover } from '@ark-ui/solid';
+import { Popover, Tabs } from '@ark-ui/solid';
 import { settings, setSettings } from './stores/settingsStore';
 import { history, initializeHistory, setScoreIndex } from './stores/historyStore';
-import { FrameRenderer } from './FrameRenderer';
+import { OngekiRatingRenderer } from './OngekiRatingRenderer';
 
 
 function SettingsWindow() {
@@ -81,7 +81,18 @@ const App: Component = () => {
       </div>
       <div>
         <Show when={history.history !== null}>
-          <FrameRenderer scoreIndex={history.scoreIndex} frame={history.history!.calc.best.frame} />
+          <Tabs.Root>
+            <Tabs.List>
+              <Tabs.Trigger value="frame">Frame</Tabs.Trigger>
+              <Tabs.Trigger value="image">Reiwa</Tabs.Trigger>
+            </Tabs.List>
+            <Tabs.Content value="frame">
+              <OngekiRatingRenderer scoreIndex={history.scoreIndex} calc={history.history!.calc} />
+            </Tabs.Content>
+            <Tabs.Content value="image">
+              WIP
+            </Tabs.Content>
+          </Tabs.Root>
         </Show>
       </div>
     </div>
