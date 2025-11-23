@@ -26,7 +26,19 @@ export class OngekiRecentFrame<Score extends { points: number; rating: number; }
         this.frame.loadSnapshot(snapshot);
     }
 
-    addScore(score: Score, chart: {chartId: string, isLunatic: boolean}): UndoScore<Chart, Score> {
+    getTop(options: {mode: 'age' | 'top' | 'all'} = {mode: 'top'}): {id: string, score: Score}[] {
+        switch (options.mode) {
+            case "age":
+                // todo
+                throw new Error("sorting recent frame by age unimplemented");
+            case "top": 
+                return this.frame.byRating.slice(0, this.numTop);
+            case "all":
+                return this.frame.byRating;
+        }
+    }
+
+    addScore(score: Score, chart: {chartId: string, isLunatic: boolean}): UndoScore<Score> {
         // Don't include LUNATIC songs in recent
         if (chart.isLunatic) {
             return null;
