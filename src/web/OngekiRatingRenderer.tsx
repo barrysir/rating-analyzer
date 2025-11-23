@@ -11,10 +11,10 @@ export function OngekiRatingRenderer<Chart, Score>(props: { scoreIndex: number, 
     <h2>{props.scoreIndex} - {props.calc.overallRating} ({props.calc.best.totalRating} - {props.calc.new.totalRating} - {props.calc.recent.totalRating})</h2>
     <div style="display: grid; grid-template-columns: 1fr 1fr;">
       <div style="display: flex; flex-direction: column">
-        <BestFrameRenderer snapshot={props.calc.best.makeSnapshot()} />
+        <BestFrameRenderer snapshot={props.calc.best} />
       </div>
       <div style="display: flex; flex-direction: column">
-        <BestFrameRenderer snapshot={props.calc.new.makeSnapshot()} />
+        <BestFrameRenderer snapshot={props.calc.new} />
         <RecentFrameRenderer snapshot={props.calc.recent.makeSnapshot()} />
       </div>
     </div>

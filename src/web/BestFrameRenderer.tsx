@@ -4,7 +4,7 @@ import { OngekiCalculator } from '../rating/OngekiCalculator';
 import { HistoricalChartDb } from '../rating/chartdb/HistoricalChartDb';
 import { BestFrame, BestFrameSnapshot } from '../rating/frames/BestFrame';
 
-export function BestFrameRenderer<ChartId extends string, Score extends {points: number, rating: number}>(props: {snapshot: BestFrameSnapshot<ChartId, Score>}) {
+export function BestFrameRenderer<ChartId extends string, Score extends {points: number, rating: number}>(props: {snapshot: BestFrame<ChartId, Score>}) {
   return <div style="display: flex; flex-direction: column; font-size: 0.8em; border: 1px solid black; border-radius: 4px;">
     <For each={props.snapshot.frame}>
       {(item, index) => {
