@@ -38,7 +38,7 @@ type UndoScore<Chart, Score> = {
     best?: BestUndo<string, OngekiScore<Score>>; 
     new?: BestUndo<string, OngekiScore<Score>>; 
     naive: BestUndo<string, OngekiScore<Score>>;
-    recent: RecentUndo<Chart, OngekiScore<Score>>;
+    recent: RecentUndo<OngekiScore<Score>>;
 };
 
 export type OngekiCalculatorSnapshot<ChartId, Score> = {
@@ -53,7 +53,7 @@ export class OngekiCalculator<Chart, Score = undefined> {
     best: BestFrame<string, OngekiScore<Score>>;
     new: BestFrame<string, OngekiScore<Score>>;
     naive: BestFrame<string, OngekiScore<Score>>;
-    recent: OngekiRecentFrame<Chart, OngekiScore<Score>>;
+    recent: OngekiRecentFrame<OngekiScore<Score>>;
 
     // constructor(db: ChartDb<Chart>);
     // constructor(db: ChartDb<Chart>, extra: Extra);

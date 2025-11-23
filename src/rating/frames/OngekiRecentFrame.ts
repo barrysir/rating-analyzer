@@ -1,10 +1,10 @@
 import { AgeFrame, type AgeFrameSnapshot } from "./AgeFrame";
 
-export type UndoScore<Chart, Score> = null
+export type UndoScore<Score> = null
     | {inserted: number; removed?: {index: number, age: number, score: {id: string, score: Score}}};
 
 
-export class OngekiRecentFrame<Chart, Score extends { points: number; rating: number; }> {
+export class OngekiRecentFrame<Score extends { points: number; rating: number; }> {
     frame: AgeFrame<Score>;
     numTop: number;
     numMax: number;
@@ -59,7 +59,7 @@ export class OngekiRecentFrame<Chart, Score extends { points: number; rating: nu
         }
     }
 
-    undoScore(undo: UndoScore<Chart, Score>) {
+    undoScore(undo: UndoScore<Score>) {
         if (undo === null) {
             return;
         }

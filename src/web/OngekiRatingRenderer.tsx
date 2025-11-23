@@ -15,7 +15,7 @@ export function OngekiRatingRenderer<Chart, Score>(props: { scoreIndex: number, 
       </div>
       <div style="display: flex; flex-direction: column">
         <BestFrameRenderer snapshot={props.calc.new} />
-        <RecentFrameRenderer snapshot={props.calc.recent.makeSnapshot()} />
+        <RecentFrameRenderer snapshot={props.calc.recent} />
       </div>
     </div>
   </div>
