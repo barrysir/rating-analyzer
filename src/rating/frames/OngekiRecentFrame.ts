@@ -1,8 +1,7 @@
-import type { ChartDb } from "../chartdb/ChartDb";
 import { AgeFrame, type AgeFrameSnapshot } from "./AgeFrame";
 
 export type UndoScore<Chart, Score> = null
-    | {inserted: number; removed?: {index: number, age: number, score: Score}};
+    | {inserted: number; removed?: {index: number, age: number, score: {id: string, score: Score}}};
 
 
 export class OngekiRecentFrame<Chart, Score extends { points: number; rating: number; }> {
@@ -27,7 +26,7 @@ export class OngekiRecentFrame<Chart, Score extends { points: number; rating: nu
         this.frame.loadSnapshot(snapshot);
     }
 
-    addScore(score: Score, chart: {isLunatic: boolean}): UndoScore<Chart, Score> {
+    addScore(score: Score, chart: {chartId: string, isLunatic: boolean}): UndoScore<Chart, Score> {
         // Don't include LUNATIC songs in recent
         if (chart.isLunatic) {
             return null;
@@ -35,27 +34,27 @@ export class OngekiRecentFrame<Chart, Score extends { points: number; rating: nu
 
         // if the frame is not full yet, add the score
         if (this.frame.length < this.numMax) {
-            return this.frame.push(score);
+            return this.frame.push(chart.chartId, score);
         }
 
         // if the score is in the top 10 ratings
         const topScores = this.frame.byRating.slice(0, this.numTop);
-        if (score.rating >= topScores[topScores.length - 1]!.rating) {
+        if (score.rating >= topScores[topScores.length - 1]!.score.rating) {
             // kick out the oldest score with lower rating
             let removed = this.frame.popOldestWithLowerRating(score.rating);
             // add the current score to the front
-            let inserted = this.frame.push(score);
+            let inserted = this.frame.push(chart.chartId, score);
             return { ...removed, ...inserted };
 
             // if score is better than the lowest score in the top 10, then skip this score
-        } else if (score.points >= Math.min(...topScores.map(s => s.points))) {
+        } else if (score.points >= Math.min(...topScores.map(s => s.score.points))) {
             // do nothing
             return null;
         } else {
             // remove the oldest score
             // add the current score as the newest
             let removed = this.frame.popOldest();
-            let inserted = this.frame.push(score);
+            let inserted = this.frame.push(chart.chartId, score);
             return { ...removed, ...inserted };
         }
     }
@@ -75,7 +74,7 @@ export class OngekiRecentFrame<Chart, Score extends { points: number; rating: nu
         if (this.#temporaryRating !== null) {
             return this.#temporaryRating;
         }
-        return this.frame.byRating.slice(0, this.numTop).reduce((sum, x) => sum + x.rating, 0);
+        return this.frame.byRating.slice(0, this.numTop).reduce((sum, x) => sum + x.score.rating, 0);
     }
 
     temporaryRating(totalRating: number): void {

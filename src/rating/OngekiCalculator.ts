@@ -118,7 +118,7 @@ export class OngekiCalculator<Chart, Score = undefined> {
             undo.best = this.best.addScore(entry, id);
         }
         undo.naive = this.naive.addScore(entry, id);
-        undo.recent = this.recent.addScore(entry, {isLunatic});
+        undo.recent = this.recent.addScore(entry, {chartId: id, isLunatic});
         return undo;
     }
 
