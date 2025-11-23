@@ -2,12 +2,12 @@ import { insertionIndexDesc, minIndex } from "../utils";
 
 
 type PushUndo = { inserted: number };
-type PopUndo<Score> = { removed: {index: number, age: number, score: Score} };
+type PopUndo<Score> = { removed: {index: number, age: number, score: {id: string, score: Score}} };
 
 export type UndoScore<Score> = PushUndo | PopUndo<Score>;
 
 export type AgeFrameSnapshot<Score> = {
-  byRating: Score[];
+  byRating: {id: string, score: Score}[];
   age: number[];
   ageCounter: number;
   totalRating: number;
@@ -18,7 +18,7 @@ export type AgeFrameSnapshot<Score> = {
  */
 export class AgeFrame<Score extends {rating: number}> {
   // scores in frame, sorted descending by rating
-  byRating: Score[];
+  byRating: {id: string, score: Score}[];
   age: number[];
   ageCounter: number;
   totalRating: number;
@@ -50,9 +50,10 @@ export class AgeFrame<Score extends {rating: number}> {
     return this.byRating.length;
   }
 
-  push(score: Score): PushUndo {
-    let index = insertionIndexDesc(this.byRating, score, (s) => s.rating);
-    this.byRating.splice(index, 0, score);
+  push(id: string, score: Score): PushUndo {
+    let pair = {id, score};
+    let index = insertionIndexDesc(this.byRating, pair, (s) => s.score.rating);
+    this.byRating.splice(index, 0, pair);
     this.age.splice(index, 0, this.ageCounter);
     this.ageCounter++;
     this.totalRating += score.rating;
@@ -73,7 +74,7 @@ export class AgeFrame<Score extends {rating: number}> {
     }
 
     //  - find slice [i..] where all scores have lower rating
-    let firstScoreWithLowerRating = this.byRating.findIndex(v => v.rating < rating);
+    let firstScoreWithLowerRating = this.byRating.findIndex(v => v.score.rating < rating);
 
     //  - find minimum age in [i..]
     let ageIndex = firstScoreWithLowerRating;
@@ -91,13 +92,13 @@ export class AgeFrame<Score extends {rating: number}> {
   popIndex(index: number): PopUndo<Score> {
     let deletedScore = this.byRating.splice(index, 1)[0]!;
     let deletedAge = this.age.splice(index, 1)[0]!;
-    this.totalRating -= deletedScore.rating;
+    this.totalRating -= deletedScore.score.rating;
     return { removed: { index: index, age: deletedAge, score: deletedScore} };
   }
 
   undoScore(undo: UndoScore<Score>) {
     if ('inserted' in undo) {
-      let scoreRating = this.byRating[undo.inserted]!.rating;
+      let scoreRating = this.byRating[undo.inserted]!.score.rating;
       this.byRating.splice(undo.inserted, 1);
       this.age.splice(undo.inserted, 1);
       this.totalRating -= scoreRating;
@@ -105,7 +106,7 @@ export class AgeFrame<Score extends {rating: number}> {
       let removed = undo.removed;
       this.byRating.splice(removed.index, 0, removed.score);
       this.age.splice(removed.index, 0, removed.age);
-      this.totalRating += removed.score.rating;
+      this.totalRating += removed.score.score.rating;
     }
   }
 }
