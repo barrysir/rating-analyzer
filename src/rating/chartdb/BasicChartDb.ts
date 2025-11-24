@@ -1,4 +1,4 @@
-import type { ChartDb } from "./ChartDb";
+import type { ChartDb, ChartInfo } from "./ChartDb";
 
 export type BasicChart = {
     id: string;
@@ -10,6 +10,10 @@ export type BasicChart = {
 };
 
 export class BasicChartDb implements ChartDb<BasicChart> {
+    getChart(chartId: string): ChartInfo | null {
+        throw new Error("getChart not implemented for BasicChartDb");
+    }
+
     getChartInfo(chart: BasicChart) {
         return {
             chartId: chart.id,

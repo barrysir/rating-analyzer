@@ -8,6 +8,7 @@ export type ChartInfo = {
 };
 
 export interface ChartDb<Chart> {
+    getChart(chartId: string): ChartInfo | null;
     getChartInfo(c: Chart): ChartInfo | null;
     parseChartId(c: string): Chart;
 }
