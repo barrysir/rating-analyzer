@@ -5,9 +5,10 @@ import { OngekiDifficulty } from "../data-types";
 import type { ChartDb } from "./ChartDb";
 import type { SongData } from "../data/SongData";
 
-export type HistChart = {
-    tag: string, difficulty: OngekiDifficulty
-} | { title: string, difficulty: OngekiDifficulty };
+export type HistChart = 
+    string 
+    | { tag: string, difficulty: OngekiDifficulty }
+    | { title: string, difficulty: OngekiDifficulty };
 
 export class HistoricalChartDb implements ChartDb<HistChart> {
     songs: {
@@ -58,11 +59,13 @@ export class HistoricalChartDb implements ChartDb<HistChart> {
         for (let rawSong of data.songs) {
             // Don't add songs which are too new
             if (rawSong.date_added > date) {
+                console.log("Skipping", rawSong);
                 continue;
             }
             let isRemoved = rawSong.date_removed !== undefined && rawSong.date_removed <= date;
             // Only add removed songs in omnimix mode
             if (!omnimix && isRemoved) {
+                console.log("Skipping", rawSong);
                 continue;
             }
             let song = structuredClone(rawSong);
@@ -90,7 +93,15 @@ export class HistoricalChartDb implements ChartDb<HistChart> {
         }
     }
 
+    // getChart(chartId: string) {
+    //     return this.getChartInfo(this.parseChartId(chartId));
+    // }
+
     findChart(search: HistChart) {
+        if (typeof search === 'string') {
+            search = this.parseChartId(search);
+        }
+
         let song;
         if ('tag' in search) {
             song = this.songs[search.tag];
