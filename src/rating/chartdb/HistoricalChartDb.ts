@@ -93,9 +93,9 @@ export class HistoricalChartDb implements ChartDb<HistChart> {
         }
     }
 
-    // getChart(chartId: string) {
-    //     return this.getChartInfo(this.parseChartId(chartId));
-    // }
+    getChart(chartId: string) {
+        return this.getChartInfo(this.parseChartId(chartId));
+    }
 
     findChart(search: HistChart) {
         if (typeof search === 'string') {

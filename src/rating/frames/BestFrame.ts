@@ -75,6 +75,18 @@ export class BestFrame<ChartId extends string, Score extends {rating: number}> {
   }
 
   addScore(t: Score, chartID: ChartId): UndoScore<ChartId, Score> {
+    let before = this.makeSnapshot();
+    let result = this._addScore(t, chartID);
+
+    if (!this.validateFrame()) {
+      console.log(before);
+      console.log(this.makeSnapshot());
+      throw new Error(`Something didn't process correctly on forward ${JSON.stringify({t, chartID})}`);
+    }
+    return result;
+  }
+
+  _addScore(t: Score, chartID: ChartId): UndoScore<ChartId, Score> {
     // Check if a score for this chart already exists
     let existingScore = this._findScore(chartID);
     if (existingScore !== null) {

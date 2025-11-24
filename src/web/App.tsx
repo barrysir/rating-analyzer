@@ -79,7 +79,7 @@ const App: Component = () => {
       <div style="height: 50vh">
         <RatingChart data={history.chartData} options={{decimalPlaces: settings.decimalPlaces}} onClick={(index) => setScoreIndex(index)} />
       </div>
-      <div>
+      <div style="overflow: scroll; height: 100vh">
         <Show when={history.history !== null}>
           <Tabs.Root>
             <Tabs.List>

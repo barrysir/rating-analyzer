@@ -5,15 +5,18 @@ import { batch } from 'solid-js';
 
 type HistoryType = ReturnType<typeof createHistory>['history'];
 type ChartDataType = ReturnType<typeof createHistory>['chartData'];
+type PersonalBestType = ReturnType<typeof createHistory>['bests'];
 
 interface HistoryStore {
   history: HistoryType | null;
+  bests: PersonalBestType | null,
   scoreIndex: number;
   chartData: ChartDataType;
 }
 
 const [history, setHistory] = createStore<HistoryStore>({
   history: null,
+  bests: null,
   scoreIndex: 0,
   chartData: {    
     timestamps: [] as number[],
@@ -25,9 +28,10 @@ const [history, setHistory] = createStore<HistoryStore>({
 });
 
 function initializeHistory(scoredb: UserScoreDatabase, options: Parameters<typeof createHistory>[1]) {
-  let {history, chartData} = createHistory(scoredb, options);
+  let {history, bests, chartData} = createHistory(scoredb, options);
   batch(() => {
     setHistory('history', createMutable(history));
+    setHistory('bests', createMutable(bests));
     setHistory('chartData', chartData);
     setHistory('scoreIndex', history.currentIndex);
   });
@@ -36,6 +40,7 @@ function initializeHistory(scoredb: UserScoreDatabase, options: Parameters<typeo
 function setScoreIndex(index: number) {
   batch(() => {
     history.history?.goto(index);
+    history.bests?.goto(index);
     setHistory('scoreIndex', index);
   });
 }

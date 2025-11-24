@@ -9,6 +9,7 @@ import { MultiRatingHistory } from '../rating/MultiRatingHistory';
 import { findRegion } from '../rating/utils';
 import { OngekiDifficulty } from '../rating/data-types';
 import { VersionChangeHistory } from '../rating/VersionChangeHistory';
+import { PersonalBests } from '../rating/PersonalBests';
 
 function dateToUnix(date: Date): number {
   return Math.floor(date.getTime());
@@ -58,46 +59,25 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
   // TODO: move sorting into scoredb code; make sure scores are always sorted ascending by timestamp
   scores.sort((a, b) => a.kamai.timeAchieved - b.kamai.timeAchieved);
 
-  let multi = new VersionChangeHistory(
+  let scoresArray = scores.map((score, i) => {
+    return [
+      {points: score.kamai.scoreData.score, score: {id: i, timestamp: score.kamai.timeAchieved}}, 
+      {tag: score.tag, difficulty: score.difficulty},
+    ] as [{points: number, score: {id: number, timestamp: number}}, {tag: string, difficulty: OngekiDifficulty}]
+  });
+
+  let history = new VersionChangeHistory(
     versionChanges.map(entry => (
       {
         calculator: OngekiCalculator.create<{id: number, timestamp: number}>()(entry.db),
         timestamp: entry.timestamp,
       }
     )),
-    scores.map((score, i) => {
-      return [
-        {points: score.kamai.scoreData.score, score: {id: i, timestamp: score.kamai.timeAchieved}}, 
-        {tag: score.tag, difficulty: score.difficulty},
-      ]
-    }),
+    scoresArray,
     (s) => s.score.timestamp
   );
 
-  // let multi = new MultiRatingHistory(
-  //   calculators,
-    // scores.map((score, i) => {
-    //   return [
-    //     {points: score.kamai.scoreData.score, score: {id: i, timestamp: score.kamai.timeAchieved}}, 
-    //     {tag: score.tag, difficulty: score.difficulty},
-    //   ]
-    // }),
-  //   (score) => {
-  //     return findRegion(versionChanges, score.score.timestamp, x => x.timestamp)!;
-  //   }
-  // );
-
-  let history = multi;
-
-  // let history = new RatingHistory(
-  //   ongeki, 
-  //   scores.map((score, i) => {
-  //     return [
-  //       {points: score.kamai.scoreData.score, id: i}, 
-  //       {tag: score.tag, difficulty: score.difficulty},
-  //     ]
-  //   })
-  // );
+  let bests = new RatingHistory(new PersonalBests(new HistoricalChartDb(songData)), scoresArray);
   
   let chartData = {
     timestamps: [] as number[],
@@ -123,9 +103,11 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
     chartData.version.push(history.whichCalc);
     chartData.maxRating.push(maxRatings[history.whichCalc]);
   }
+  bests.seek(history.currentIndex);
 
   return {
     history, 
+    bests,
     chartData
   };
 }

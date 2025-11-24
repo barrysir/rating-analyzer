@@ -219,14 +219,19 @@ test("regression-2025-11-13", () => {
                 "timestamp": 1699951535900
             }
         }
-    };
+    }];
+    
+    input = [{"id":"FestA of PandemoniuM MASTER","score":{"points":1007748,"rating":17.3}},{"id":"Regulus MASTER","score":{"points":1007603,"rating":17.2}},{"id":"POTENTIAL MASTER","score":{"points":1007635,"rating":17.1}},{"id":"宿星審判 MASTER","score":{"points":1007690,"rating":17.1}},{"id":"蜘蛛の糸 MASTER","score":{"points":1007620,"rating":16.9}},{"id":"the EmpErroR MASTER","score":{"points":1008340,"rating":16.9}},{"id":"GAME：CHANGER MASTER","score":{"points":1006235,"rating":16.81}},{"id":"Hainuwele MASTER","score":{"points":1008483,"rating":16.8}},{"id":"渦状銀河のシンフォニエッタ MASTER","score":{"points":1008273,"rating":16.8}},{"id":"Invisible Frenzy MASTER","score":{"points":1003329,"rating":16.62}},{"id":"Fragrance EXPERT","score":{"points":1009495,"rating":16.6}},{"id":"Scythe of Death MASTER","score":{"points":1002841,"rating":16.580000000000002}},{"id":"Zitronectar MASTER","score":{"points":1008597,"rating":16.5}},{"id":"BREaK! BREaK! BREaK! MASTER","score":{"points":1008339,"rating":16.5}},{"id":"花と、雪と、ドラムンベース。 MASTER","score":{"points":1002195,"rating":16.14}}]
 
-    expect(input).toMatchSnapshot();
+    let frame = new BestFrame(15);
 
-    // load calculatoe
-    let frame = ...;
+    for (let entry of input) {
+        frame.addScore(entry.score, entry.id);
+    }
 
-    frame.addScore(   {
+    let expectedRating = frame.totalRating;
+
+    let problemScore =   {
         "id": "Prominence MASTER",
         "score": {
             "points": 1007429,
@@ -236,13 +241,40 @@ test("regression-2025-11-13", () => {
                 "timestamp": 1713141993900
             }
         }
-    });
+    };
 
-    let undo = {"inserted":9,"removed":{"id":"Prominence MASTER","score":{"points":1007429,"rating":16.49,"score":{"id":2631,"timestamp":1713141993900}}}};
+    let undo = frame.addScore(problemScore.score, problemScore.id);
 
-    expect(ongeki.frame.frame).
+    let afterAdd = frame.totalRating;
 
-];
+    frame.undoScore(undo);
+    undo = frame.addScore(problemScore.score, problemScore.id);
+    frame.undoScore(undo);
 
+    expect(frame.totalRating).toBe(expectedRating);
 
+    // let b = input.map(x => ({ id: x.id, score: { points: x.score.points, rating: x.score.rating }}));
+    // console.log(JSON.stringify(b));
+    // return;
+
+    // expect(input).toMatchSnapshot();
+
+    // load calculatoe
+    // let frame = ...;
+
+    // frame.addScore(   {
+    //     "id": "Prominence MASTER",
+    //     "score": {
+    //         "points": 1007429,
+    //         "rating": 16.49,
+    //         "score": {
+    //             "id": 2631,
+    //             "timestamp": 1713141993900
+    //         }
+    //     }
+    // });
+
+    // let undo = {"inserted":9,"removed":{"id":"Prominence MASTER","score":{"points":1007429,"rating":16.49,"score":{"id":2631,"timestamp":1713141993900}}}};
+
+    // expect(ongeki.frame.frame).
 })
