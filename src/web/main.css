@@ -10,6 +10,11 @@ button {
 }
 
 :root {
+    /* 
+    TODO: Since I changed the layout adding a window border around the tabs, 
+    update this layout to make sense again 
+    (don't want to fix it now in case I change it again and have to redo it) 
+    */
     --tab-border: 1px;
     --tab-padding: 4px;
 
@@ -25,7 +30,7 @@ button {
 [data-scope="tabs"][data-part="list"] {
     display: flex;
     background: #ffffff;
-    border-bottom: var(--tab-border) solid #eee;
+    /* border-bottom: var(--tab-border) solid #eee; */
     padding-left: 8px;
 }
 

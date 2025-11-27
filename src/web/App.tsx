@@ -76,22 +76,28 @@ const App: Component = () => {
   return <div style="width: 100vw; height: 100vh;">
     <SettingsButton />
     <div style="width: 100%; height: 100%; display: grid; grid-template-columns: 4fr 6fr; align-items: center;">
-      <div style="height: 50vh">
+      <div style="height: 50%">
         <RatingChart data={history.chartData} options={{decimalPlaces: settings.decimalPlaces}} onClick={(index) => setScoreIndex(index)} />
       </div>
-      <div style="overflow: scroll; height: 100vh">
+      <div style="height: 100%; padding-top: 50px;">
         <Show when={history.history !== null}>
           <Tabs.Root defaultValue="frame">
-            <Tabs.List>
-              <Tabs.Trigger value="frame">Frame</Tabs.Trigger>
-              <Tabs.Trigger value="image">Reiwa</Tabs.Trigger>
-            </Tabs.List>
-            <Tabs.Content value="frame">
-              <OngekiRatingRenderer scoreIndex={history.scoreIndex} calc={history.history!.calc} />
-            </Tabs.Content>
-            <Tabs.Content value="image">
-              WIP
-            </Tabs.Content>
+            <div style="height: 90vh; display: grid; grid-template-rows: auto 1fr;">
+              <div>
+              <Tabs.List>
+                <Tabs.Trigger value="frame">Frame</Tabs.Trigger>
+                <Tabs.Trigger value="image">Reiwa</Tabs.Trigger>
+              </Tabs.List>
+              </div>
+              <div style="overflow: auto; border: 1px solid #ddd; border-radius: 4px 4px 0 0; padding: 0px 4px; width: 100%; height: 100%;">
+                <Tabs.Content value="frame">
+                  <OngekiRatingRenderer scoreIndex={history.scoreIndex} calc={history.history!.calc} />
+                </Tabs.Content>
+                <Tabs.Content value="image">
+                  WIP
+                </Tabs.Content>
+              </div>
+            </div>
           </Tabs.Root>
         </Show>
       </div>
