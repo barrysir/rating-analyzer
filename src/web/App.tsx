@@ -1,5 +1,5 @@
 import type { Component } from 'solid-js';
-import { createEffect, Show } from 'solid-js';
+import { createEffect, onMount, Show } from 'solid-js';
 import { RatingChart } from './RatingChart';
 import { loadScoreData } from './Temp';
 import { Icon } from '@iconify-icon/solid';
@@ -69,7 +69,7 @@ function SettingsButton() {
 const App: Component = () => {
   const scoreData = loadScoreData();
 
-  createEffect(() => {
+  onMount(() => {
     initializeHistory(scoreData, { decimalPlaces: settings.decimalPlaces });
   });
 
