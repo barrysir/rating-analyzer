@@ -1,23 +1,45 @@
 import { For } from 'solid-js';
-import { history } from './stores/historyStore';
-import { OngekiCalculator } from '../rating/OngekiCalculator';
-import { HistoricalChartDb } from '../rating/chartdb/HistoricalChartDb';
-import { BestFrame, BestFrameSnapshot } from '../rating/frames/BestFrame';
 import "./FrameRenderers.css";
-import { OngekiRecentFrame } from '../rating/frames/OngekiRecentFrame';
+import { settings } from './stores/settingsStore';
 
-type FrameEntry = {
+export type FrameEntry = {
   rating: number;
   title: string;
   level: number;
   points: number;
 }
 
-function DisplayFrame(props: {data: FrameEntry[]}) {
-    return <div style="font-size: 0.8em; border: 1px solid black; border-radius: 4px; overflow: hidden;">
+export function DisplayFrame(props: { data: FrameEntry[], title: string, color?: string, rows: number }) {
+  let totalRating = () => props.data.reduce((prev, t) => prev + t.rating, 0);
+  let averageRating = () => totalRating() / props.data.length;
+
+  const NULL_MARKER = "--";
+
+  const displayData = () => {
+    if (props.rows === undefined) {
+      return props.data;
+    }
+    
+    const result: (FrameEntry | null)[] = [];
+    for (let i = 0; i < props.rows; i++) {
+      result.push(props.data[i] ?? null);
+    }
+
+    if (props.data.length > props.rows) {
+      console.error(`More entries sent to DisplayFrame than expected: num entries ${props.data.length}, expected ${props.rows}`, props.data);
+    }
+    return result;
+  };
+
+  return <div style="font-size: 0.8em; border: 1px solid black; border-radius: 4px; overflow: hidden;">
+    <div style={{'text-align': 'center', 'border-bottom': '1px solid black'}}>
+      <h2 style={{ 'color': props.color ?? 'black', }}>{props.title}</h2>
+      <span style="font-size: 0.9em">average {averageRating().toFixed(settings.decimalPlaces)} / total {totalRating().toFixed(settings.decimalPlaces)}</span>
+    </div>
     <table style="width: 100%; border-collapse: collapse;">
       <thead>
         <tr>
+          <th></th>
           <th>Rating</th>
           <th>Title</th>
           <th>Level</th>
@@ -25,63 +47,18 @@ function DisplayFrame(props: {data: FrameEntry[]}) {
         </tr>
       </thead>
       <tbody>
-        <For each={props.data}>
+        <For each={displayData()}>
           {(item, index) => {
             return <tr>
-              <td>{item.rating.toFixed(2)}</td>
-              <td style="width: 100%;">{item.title}</td>
-              <td>{item.level}</td>
-              <td>{item.points}</td>
+              <td>#{index()+1}</td>
+              <td>{item ? item.rating.toFixed(2) : NULL_MARKER}</td>
+              <td style="width: 100%;">{item ? item.title : NULL_MARKER}</td>
+              <td>{item ? item.level : NULL_MARKER}</td>
+              <td>{item ? item.points : NULL_MARKER}</td>
             </tr>
           }}
         </For>
       </tbody>
     </table>
   </div>
-}
-
-export function BestFrameRenderer<ChartId extends string, Score extends {points: number, rating: number}>(props: {snapshot: BestFrame<ChartId, Score>}) {
-  let entries = () => {
-    let db: HistoricalChartDb = history.history!.calc.db;
-    return props.snapshot.frame.map((item) => {
-      let key = db.parseChartId(item.id);
-      let a = db.findChart(key);
-      if (a === null) {
-        return null;
-      }
-      let {song, chart} = a;
-
-      return {
-        rating: item.score.rating,
-        title: song.title,
-        level: chart.level,
-        points: item.score.points,
-      };
-    }).filter(x => x !== null);
-  };
-
-  return <DisplayFrame data={entries()} />
-}
-
-export function RecentFrameRenderer<Score extends {points: number, rating: number}>(props: {snapshot: OngekiRecentFrame<Score>}) {
-  let entries = () => {
-    let db: HistoricalChartDb = history.history!.calc.db;
-    return props.snapshot.getTop().map((item) => {
-      let key = db.parseChartId(item.id);
-      let a = db.findChart(key);
-      if (a === null) {
-        return null;
-      }
-      let {song, chart} = a;
-
-      return {
-        rating: item.score.rating,
-        title: song.title,
-        level: chart.level,
-        points: item.score.points,
-      };
-    }).filter(x => x !== null);
-  };
-
-  return <DisplayFrame data={entries()} />
 }
