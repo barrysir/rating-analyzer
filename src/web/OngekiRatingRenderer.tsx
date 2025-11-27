@@ -1,5 +1,5 @@
 import { OngekiCalculator } from '../rating/OngekiCalculator';
-import { BestFrameRenderer, RecentFrameRenderer } from './BestFrameRenderer';
+import { BestFrameRenderer, RecentFrameRenderer } from './FrameRenderers';
 
 export function OngekiRatingRenderer<Chart, Score>(props: { scoreIndex: number, calc: OngekiCalculator<Chart, Score> }) {
   return <div>

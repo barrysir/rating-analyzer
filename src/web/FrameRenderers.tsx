@@ -3,7 +3,7 @@ import { history } from './stores/historyStore';
 import { OngekiCalculator } from '../rating/OngekiCalculator';
 import { HistoricalChartDb } from '../rating/chartdb/HistoricalChartDb';
 import { BestFrame, BestFrameSnapshot } from '../rating/frames/BestFrame';
-import "./BestFrameRenderer.css";
+import "./FrameRenderers.css";
 import { OngekiRecentFrame } from '../rating/frames/OngekiRecentFrame';
 
 type FrameEntry = {
