@@ -5,7 +5,52 @@ button {
     justify-content: center;
 }
 
-/* Set default font. */
 * {
     font-family: Helvetica, 'Segoe UI', Arial, Helvetica, sans-serif;
 }
+
+:root {
+    --tab-border: 1px;
+    --tab-padding: 4px;
+
+    /*
+    The entire tab has a border underneath it.
+     - The active tab gets pulled down, covering the border
+          position: relative; and top: ();
+     - However this makes the label text shift down (unaligned with unactive tabs), 
+       so 1px of bottom padding gets added to compensate
+    */
+}
+
+[data-scope="tabs"][data-part="list"] {
+    display: flex;
+    background: #ffffff;
+    border-bottom: var(--tab-border) solid #eee;
+    padding-left: 8px;
+}
+
+[data-scope="tabs"][data-part="trigger"][data-selected=""] {
+    border-color: #ddd;
+    top: var(--tab-border);
+    padding-bottom: calc(var(--tab-padding) + var(--tab-border));
+}
+
+[data-scope="tabs"][data-part="trigger"] {
+    border: 1px solid transparent;
+    border-radius: 4px 4px 0 0;
+    border-bottom: none;
+
+    font-size: 0.8em;
+    font-weight: bold;
+    
+    padding: var(--tab-padding) 10px;
+    
+    cursor: pointer;
+
+    background: #ffffff;
+    position: relative;
+}
+
+/* [data-scope="tabs"][data-part="trigger"]:hover {
+    background: #f9f9f9;
+} */
