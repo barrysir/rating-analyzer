@@ -81,7 +81,7 @@ const App: Component = () => {
       </div>
       <div style="overflow: scroll; height: 100vh">
         <Show when={history.history !== null}>
-          <Tabs.Root>
+          <Tabs.Root defaultValue="frame">
             <Tabs.List>
               <Tabs.Trigger value="frame">Frame</Tabs.Trigger>
               <Tabs.Trigger value="image">Reiwa</Tabs.Trigger>
