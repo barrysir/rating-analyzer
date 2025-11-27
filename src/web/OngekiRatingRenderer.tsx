@@ -1,10 +1,5 @@
-import { For } from 'solid-js';
-import { history } from './stores/historyStore';
 import { OngekiCalculator } from '../rating/OngekiCalculator';
-import { HistoricalChartDb } from '../rating/chartdb/HistoricalChartDb';
-import { BestFrame, BestFrameSnapshot } from '../rating/frames/BestFrame';
-import { BestFrameRenderer } from './BestFrameRenderer';
-import { RecentFrameRenderer } from './RecentFrameRenderer';
+import { BestFrameRenderer, RecentFrameRenderer } from './BestFrameRenderer';
 
 export function OngekiRatingRenderer<Chart, Score>(props: { scoreIndex: number, calc: OngekiCalculator<Chart, Score> }) {
   return <div>

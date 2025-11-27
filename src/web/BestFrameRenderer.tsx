@@ -4,6 +4,7 @@ import { OngekiCalculator } from '../rating/OngekiCalculator';
 import { HistoricalChartDb } from '../rating/chartdb/HistoricalChartDb';
 import { BestFrame, BestFrameSnapshot } from '../rating/frames/BestFrame';
 import "./BestFrameRenderer.css";
+import { OngekiRecentFrame } from '../rating/frames/OngekiRecentFrame';
 
 type FrameEntry = {
   rating: number;
@@ -61,16 +62,26 @@ export function BestFrameRenderer<ChartId extends string, Score extends {points:
 
   return <DisplayFrame data={entries()} />
 }
-        let db: HistoricalChartDb = history.history!.calc.db;
-        let key = db.parseChartId(item.id);
-        let a = db.findChart(key);
-        if (a === null) {
-          return null;
-        }
-        let {song, chart, difficulty} = a;
 
-        return <span>{item.score.rating} {item.score.points} {song.artist} - {song.title} ({difficulty} {chart.level})</span>
-      }}
-    </For>  
-  </div>
+export function RecentFrameRenderer<Score extends {points: number, rating: number}>(props: {snapshot: OngekiRecentFrame<Score>}) {
+  let entries = () => {
+    let db: HistoricalChartDb = history.history!.calc.db;
+    return props.snapshot.getTop().map((item) => {
+      let key = db.parseChartId(item.id);
+      let a = db.findChart(key);
+      if (a === null) {
+        return null;
+      }
+      let {song, chart} = a;
+
+      return {
+        rating: item.score.rating,
+        title: song.title,
+        level: chart.level,
+        points: item.score.points,
+      };
+    }).filter(x => x !== null);
+  };
+
+  return <DisplayFrame data={entries()} />
 }
