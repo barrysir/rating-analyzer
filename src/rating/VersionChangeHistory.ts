@@ -1,8 +1,8 @@
 import { Calculator, RatingHistory } from "./RatingHistory";
 import { xWithBumps } from "./utils";
 
-export class VersionChangeHistory<Score, Chart> {
-    histories: RatingHistory<Calculator<Score, Chart, unknown, unknown>, Score, Chart, unknown, unknown>[];
+export class VersionChangeHistory<Calc extends Calculator<Score, Chart, unknown, unknown>, Score, Chart> {
+    histories: RatingHistory<Calc, Score, Chart, unknown, unknown>[];
     
     // index i -> timestamp of changing from version i => version i+1
     // versionChanges: {
@@ -18,7 +18,7 @@ export class VersionChangeHistory<Score, Chart> {
     
     constructor(
         changes: {
-            calculator: Calculator<Score, Chart, unknown, unknown>, 
+            calculator: Calc, 
             timestamp: number,
         }[],
         scores: [Score, Chart][], 
