@@ -35,7 +35,26 @@ export class KamaiSongData {
         }
     }
 
-    toTag(id: number, difficulty: OngekiDifficulty): string | undefined {
-        return this.#idToTag.get(id)?.get(difficulty);
+    toChartId(id: number, difficulty: OngekiDifficulty): string | undefined {
+        let tag = this.#idToTag.get(id)?.get(difficulty);
+        if (tag === undefined) {
+            return undefined;
+        }
+        return makeChartId(tag, difficulty);
     }
+}
+
+// TODO: Temporary place for these functions, find a good location later
+export function makeChartId(tag: string, difficulty: OngekiDifficulty) {
+    return `${tag} ${difficulty}`;
+}
+
+export function parseChartId(chartId: string) {
+    const index = chartId.lastIndexOf(" ");
+    if (index === -1) {
+        throw new Error(`Could not parse chartId ${chartId}`);
+    }
+    let tag = chartId.substring(0, index);
+    let difficulty = chartId.substring(index+1) as OngekiDifficulty;
+    return {tag, difficulty};
 }

@@ -7,8 +7,7 @@ import { history } from './stores/historyStore';
 
 function bestEntries<ChartId extends string, Score extends {points: number, rating: number}>(db: HistoricalChartDb, frame: BestFrame<ChartId, Score>) {
   return frame.frame.map((item) => {
-    let key = db.parseChartId(item.id);
-    let a = db.findChart(key);
+    let a = db.findChart(item.id);
     if (a === null) {
       return null;
     }
@@ -25,8 +24,7 @@ function bestEntries<ChartId extends string, Score extends {points: number, rati
 
 function recentEntries<Score extends {points: number, rating: number}>(db: HistoricalChartDb, frame: OngekiRecentFrame<Score>) {
     return frame.getTop().map((item) => {
-      let key = db.parseChartId(item.id);
-      let a = db.findChart(key);
+      let a = db.findChart(item.id);
       if (a === null) {
         return null;
       }

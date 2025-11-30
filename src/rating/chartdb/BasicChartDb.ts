@@ -24,8 +24,4 @@ export class BasicChartDb implements ChartDb<BasicChart> {
             isNew: chart.isNew,
         };
     }
-
-    parseChartId(c: string): BasicChart {
-        throw new Error("parseChartId not implemented for BasicChartDb");
-    }
 }

@@ -4,6 +4,7 @@ import { findRegion } from "../utils";
 import { OngekiDifficulty } from "../data-types";
 import type { ChartDb } from "./ChartDb";
 import type { SongData } from "../data/SongData";
+import { parseChartId } from "../../get-kamai/KamaiSongData";
 
 export type HistChart = 
     string 
@@ -94,12 +95,12 @@ export class HistoricalChartDb implements ChartDb<HistChart> {
     }
 
     getChart(chartId: string) {
-        return this.getChartInfo(this.parseChartId(chartId));
+        return this.getChartInfo(parseChartId(chartId));
     }
 
     findChart(search: HistChart) {
         if (typeof search === 'string') {
-            search = this.parseChartId(search);
+            search = parseChartId(search);
         }
 
         let song;
@@ -151,15 +152,5 @@ export class HistoricalChartDb implements ChartDb<HistChart> {
             isNew: (song.date_added >= this.currentVersion.start),
             chartId: `${song.tag} ${difficulty}`,
         };
-    }
-
-    parseChartId(chartId: string) {
-        const index = chartId.lastIndexOf(" ");
-        if (index === -1) {
-            throw new Error(`Could not parse chartId ${chartId}`);
-        }
-        let tag = chartId.substring(0, index);
-        let difficulty = chartId.substring(index+1) as OngekiDifficulty;
-        return {tag, difficulty};
     }
 }

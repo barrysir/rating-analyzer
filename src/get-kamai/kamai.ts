@@ -93,8 +93,8 @@ function loadKamaiSongData(): KamaiSongData {
   return new KamaiSongData(SONG_DB_DATA);
 }
 
-function kamaiSongIdToTag(kamai: KamaiSongData, songId: number, difficulty: OngekiDifficulty): string | undefined {
-  return kamai.toTag(songId, difficulty);
+function kamaiToChartId(kamai: KamaiSongData, songId: number, difficulty: OngekiDifficulty): string | undefined {
+  return kamai.toChartId(songId, difficulty);
 }
 
 function convertKamai(resp: ScoresResponse): UserScoreDatabase {
@@ -112,18 +112,17 @@ function convertKamai(resp: ScoresResponse): UserScoreDatabase {
     }
 
     let difficulty = kamaiToOngekiDifficulty[chart.difficulty];
-    let tag = kamaiSongIdToTag(kamai, chart.songID, difficulty);
-    if (tag === undefined) {
-      throw new Error(`Unknown kamai song ID ${chart.songID}`);
-    }
-
     if (difficulty === undefined) {
       throw new Error(`Unknown kamai difficulty ${chart.difficulty}`);
     }
 
+    let chartId = kamaiToChartId(kamai, chart.songID, difficulty);
+    if (chartId === undefined) {
+      throw new Error(`Unknown kamai song ID ${chart.songID}`);
+    }
+
     db.scores.push({
-      tag: tag,
-      difficulty: difficulty,
+      chartId: chartId,
       kamai: score,
     });
   }

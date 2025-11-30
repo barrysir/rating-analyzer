@@ -3,8 +3,7 @@ import { KamaiScore } from "./kamai";
 
 export type UserScoreDatabase = {
     scores: {
-        tag: string;
-        difficulty: OngekiDifficulty;
+        chartId: string;
         kamai: KamaiScore;
     }[],
 };
