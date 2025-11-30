@@ -5,11 +5,10 @@ import { HistoricalChartDb } from '../rating/chartdb/HistoricalChartDb';
 import SONG_DATA from '../../data/song-db.json';
 import MY_SCORE_DATA from '../../data/score-data.json';
 import { SongData } from '../rating/data/SongData';
-import { MultiRatingHistory } from '../rating/MultiRatingHistory';
-import { findRegion } from '../rating/utils';
 import { OngekiDifficulty } from '../rating/data-types';
 import { VersionChangeHistory } from '../rating/VersionChangeHistory';
 import { PersonalBests } from '../rating/PersonalBests';
+import { ImprovementTracker, Improvements } from './ImprovementTracker';
 
 function dateToUnix(date: Date): number {
   return Math.floor(date.getTime());
@@ -90,9 +89,33 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
   let maxRatings = versionChanges.map((x,i) => {
     return calculateMaxRating(x.db).overallRating;
   });
-  
+
+  let allImproves: VersionImproveRenderData[] = [];
+
+  let tracker = new ImprovementTracker(history.calc);
+  let currWhichCalc = history.whichCalc;
+  let verImproves: VersionImproveRenderData = {
+    pointId: 0,
+    improves: [],
+  };
+
   for (let i=0; i<history.length; i++) {
     history.seek(1);
+
+    if (history.whichCalc != currWhichCalc) {
+      allImproves.push(verImproves);
+      verImproves = {pointId: i, improves: []};
+      tracker = new ImprovementTracker(history.calc);
+      currWhichCalc = history.whichCalc;
+    } else {
+      let improve = tracker.refresh(history.calc);
+      verImproves.improves.push({
+        pointId: i,
+        scoreId: history.whichScore,
+        data: improve,
+      });
+    }
+
     chartData.timestamps.push(history.currentTimestamp);
     if (chartData.timestamps.length >= 2 && chartData.timestamps.at(-1) < chartData.timestamps.at(-2)) {
       console.log(history.versionChangeTimestamps);
@@ -101,16 +124,27 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
     chartData.overallRating.push(history.calc.overallRating);
     chartData.naiveRating.push(history.calc.overallNaiveRating);
     chartData.version.push(history.whichCalc);
-    chartData.maxRating.push(maxRatings[history.whichCalc]);
+    chartData.maxRating.push(maxRatings[history.whichCalc]!);
   }
-  bests.seek(history.currentIndex);
+  // bests.seek(history.currentIndex);
 
   return {
     history, 
     bests,
+    scores: scores,
+    improves: allImproves,
     chartData
   };
 }
+
+export type VersionImproveRenderData = {
+  pointId: number,
+  improves: {
+    pointId: number,
+    scoreId: number,
+    data: Improvements,
+  }[],
+};
 
 export function loadScoreData(): UserScoreDatabase {
   return MY_SCORE_DATA;

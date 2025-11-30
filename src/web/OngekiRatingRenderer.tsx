@@ -44,6 +44,13 @@ function recentEntries<Score extends {points: number, rating: number}>(db: Histo
 export function OngekiRatingRenderer<Chart, Score>(props: { scoreIndex: number, calc: OngekiCalculator<Chart, Score> }) {
   let db = () => history.history!.calc.db;
 
+  /*
+  3884 - September 25, 2024
+  Viyella's Scream (MASTER 14.9) - 1004000 / 1750-20-4-1/-1/2 17.10 rating 
+    * Some point indexes will be for version changes
+  17.15 rating / 590.22 total
+  song jacket on right? 
+  */
   return <div>
     <h2>{props.scoreIndex} - {props.calc.overallRating} ({props.calc.best.totalRating} - {props.calc.new.totalRating} - {props.calc.recent.totalRating})</h2>
     <div style="display: grid; grid-template-columns: 1fr 1fr;">

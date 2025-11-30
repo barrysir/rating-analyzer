@@ -7,6 +7,7 @@ import { Popover, Tabs } from '@ark-ui/solid';
 import { settings, setSettings } from './stores/settingsStore';
 import { history, initializeHistory, setScoreIndex } from './stores/historyStore';
 import { OngekiRatingRenderer } from './OngekiRatingRenderer';
+import { ImprovementTable } from './ImprovementTable';
 
 
 function SettingsWindow() {
@@ -40,7 +41,7 @@ function SettingsWindow() {
 }
 
 function SettingsButton() {
-  return <Popover.Root open={true}>
+  return <Popover.Root>
       <Popover.Trigger
         style="position: absolute; top: 16px; right: 16px; padding: 8px;"
         aria-label="Settings"
@@ -87,6 +88,7 @@ const App: Component = () => {
               <Tabs.List>
                 <Tabs.Trigger value="frame">Frame</Tabs.Trigger>
                 <Tabs.Trigger value="image">Reiwa</Tabs.Trigger>
+                <Tabs.Trigger value="improve">Improvements</Tabs.Trigger>
               </Tabs.List>
               </div>
               <div style="overflow: auto; border: 1px solid #ddd; border-radius: 4px 4px 0 0; padding: 0px 4px; width: 100%; height: 100%;">
@@ -94,6 +96,10 @@ const App: Component = () => {
                   <OngekiRatingRenderer scoreIndex={history.scoreIndex} calc={history.history!.calc} />
                 </Tabs.Content>
                 <Tabs.Content value="image">
+                  WIP
+                </Tabs.Content>
+                <Tabs.Content value="improve">
+                  <ImprovementTable improves={history.improves} />
                   WIP
                 </Tabs.Content>
               </div>

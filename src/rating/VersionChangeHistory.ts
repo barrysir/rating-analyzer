@@ -78,6 +78,11 @@ export class VersionChangeHistory<Calc extends Calculator<Score, Chart, unknown,
         return calcIndex;
     }
 
+    get whichScore() {
+        let {scoreIndex} = this._makeComponents(this.currentIndex);
+        return scoreIndex;
+    }
+
     // todo: name this function
     _makeComponents(index: number) {
         let [scoreIndex,calc,justBumped] = xWithBumps(index, this.versionChangeScoreIndexes);
