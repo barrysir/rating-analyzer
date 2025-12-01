@@ -1,8 +1,8 @@
 import { Calculator, RatingHistory } from "./RatingHistory";
 import { xWithBumps } from "./utils";
 
-export class VersionChangeHistory<Calc extends Calculator<Score, Chart, unknown, unknown>, Score, Chart> {
-    histories: RatingHistory<Calc, Score, Chart, unknown, unknown>[];
+export class VersionChangeHistory<Calc extends Calculator<Score, Chart, UndoType, unknown>, Score, Chart, UndoType> {
+    histories: RatingHistory<Calc, Score, Chart, UndoType, unknown>[];
     
     // index i -> timestamp of changing from version i => version i+1
     // versionChanges: {
@@ -44,8 +44,8 @@ export class VersionChangeHistory<Calc extends Calculator<Score, Chart, unknown,
                     scoreIndexes.push(scores.length-1);
                     break;
                 }
-                let score = scores[i]![0];                
-                let scoreTimestamp = getTimestamp(score);
+                let score = scores[i]![0]; 
+                let scoreTimestamp = getTimestamp(score);               
                 if (scoreTimestamp > stamp) {
                     scoreIndexes.push(i-1);
                     break;
@@ -78,6 +78,11 @@ export class VersionChangeHistory<Calc extends Calculator<Score, Chart, unknown,
         return calcIndex;
     }
 
+    get whichScore() {
+        let {scoreIndex} = this._makeComponents(this.currentIndex);
+        return scoreIndex;
+    }
+
     // todo: name this function
     _makeComponents(index: number) {
         let [scoreIndex,calc,justBumped] = xWithBumps(index, this.versionChangeScoreIndexes);
@@ -96,7 +101,7 @@ export class VersionChangeHistory<Calc extends Calculator<Score, Chart, unknown,
 
     goto(index: number) {
         let {scoreIndex, calcIndex} = this._makeComponents(index);
-        this.histories[calcIndex]!.goto(scoreIndex);
+        let result = this.histories[calcIndex]!.goto(scoreIndex);
         this.currentIndex = index;
     }
 
@@ -104,4 +109,20 @@ export class VersionChangeHistory<Calc extends Calculator<Score, Chart, unknown,
         this.goto(this.currentIndex + delta);
     }
 
+    // TODO: When I use this function I get 'unknown' as the return type -- I don't know why this doesn't type resolve correctly, try to figure it out
+    getCalcOutput(index: number): UndoType | null {
+        let {scoreIndex, calcIndex, justBumped} = this._makeComponents(index);
+        
+        let result = this.histories[calcIndex]!.undos[scoreIndex];
+        // The only time there should be no score is if a version change just happened,
+        // verify that this is true and throw an assertion error if not
+        if (result === undefined) {
+            if (!justBumped) {
+                throw new Error(`assertion error - could not find score at index ${index} which is not a version change: scores should only ever not be found at version changes`);
+            } else {
+                return null;
+            }
+        }
+        return result;
+    }
 }

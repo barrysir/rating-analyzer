@@ -10,6 +10,7 @@ import { findRegion } from '../rating/utils';
 import { OngekiDifficulty } from '../rating/data-types';
 import { VersionChangeHistory } from '../rating/VersionChangeHistory';
 import { PersonalBests } from '../rating/PersonalBests';
+import { KamaiScore } from '../get-kamai/kamai';
 
 function dateToUnix(date: Date): number {
   return Math.floor(date.getTime());
@@ -46,6 +47,14 @@ function calculateMaxRating(db: HistoricalChartDb) {
   return ongeki;
 }
 
+type ExtendedScore = {
+  chartId: string;
+  rating: number;
+  points: number;
+  timeAchieved: number;
+  kamai: KamaiScore;
+};
+
 export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlaces: number} = {decimalPlaces: 2}) {
   let songData = new SongData(SONG_DATA);
 
@@ -58,6 +67,16 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
   let scores = scoredb.scores;
   // TODO: move sorting into scoredb code; make sure scores are always sorted ascending by timestamp
   scores.sort((a, b) => a.kamai.timeAchieved - b.kamai.timeAchieved);
+
+  let extendedScores = scores.map((score) => {
+    let a: Omit<ExtendedScore, 'rating'> = {
+      chartId: score.chartId,
+      points: score.kamai.scoreData.score,
+      timeAchieved: score.kamai.timeAchieved,
+      kamai: score.kamai,
+    };
+    return a as ExtendedScore;
+  });
 
   let scoresArray = scores.map((score, i) => {
     return [
@@ -90,9 +109,8 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
   let maxRatings = versionChanges.map((x,i) => {
     return calculateMaxRating(x.db).overallRating;
   });
-  
+
   for (let i=0; i<history.length; i++) {
-    history.seek(1);
     chartData.timestamps.push(history.currentTimestamp);
     if (chartData.timestamps.length >= 2 && chartData.timestamps.at(-1) < chartData.timestamps.at(-2)) {
       console.log(history.versionChangeTimestamps);
@@ -102,11 +120,23 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
     chartData.naiveRating.push(history.calc.overallNaiveRating);
     chartData.version.push(history.whichCalc);
     chartData.maxRating.push(maxRatings[history.whichCalc]);
+
+    let info = history.getCalcOutput(i);
+    if (info !== null) {
+      if (info.rating !== undefined) {
+        extendedScores[history.whichScore]!.rating = info.rating;
+      }
+    }
+
+    if (i != history.length-1) {
+      history.seek(1);
+    }
   }
-  bests.seek(history.currentIndex);
+  // bests.seek(history.currentIndex);
 
   return {
     history, 
+    scores: extendedScores,
     bests,
     chartData
   };
