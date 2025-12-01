@@ -34,7 +34,12 @@ type OngekiScore<Score> =
     Prettify<{ points: number; rating: number; } & 
     (Score extends undefined ? {} : {score: Score})>;
 
-type UndoScore<Chart, Score> = {
+type UndoScore<Score> = {
+    rating: number;
+    undo: InnerUndoScore<Score>;
+};
+
+type InnerUndoScore<Score> = {
     best?: BestUndo<string, OngekiScore<Score>>; 
     new?: BestUndo<string, OngekiScore<Score>>; 
     naive: BestUndo<string, OngekiScore<Score>>;
@@ -95,8 +100,9 @@ export class OngekiCalculator<Chart, Score = undefined> {
         this.recent.loadSnapshot(snapshot.recent);
     }
 
-    addScore(score: {points: number} & (Score extends undefined ? {} : {score: Score}), chart: Chart): UndoScore<Chart, Score> | null {
+    addScore(score: {points: number} & (Score extends undefined ? {} : {score: Score}), chart: Chart): UndoScore<Score> | null {
         let chartData = this.db.getChartInfo(chart);
+        // if this is for a chart that doesn't exist (maybe it comes in a future version), then ignore the score
         if (chartData === null) {
             return null;
         }
@@ -111,7 +117,7 @@ export class OngekiCalculator<Chart, Score = undefined> {
             entry.score = score.score;
         }
 
-        let undo: UndoScore<Chart, Score> = {};
+        let undo: InnerUndoScore<Score> = {};
         if (isNew) {
             undo.new = this.new.addScore(entry, id);
         } else {
@@ -119,13 +125,14 @@ export class OngekiCalculator<Chart, Score = undefined> {
         }
         undo.naive = this.naive.addScore(entry, id);
         undo.recent = this.recent.addScore(entry, {chartId: id, isLunatic});
-        return undo;
+        return {rating, undo};
     }
 
-    undoScore(undo: UndoScore<Chart, Score> | null) {
-        if (undo === null) { 
+    undoScore(undo_: UndoScore<Score> | null) {
+        if (undo_ === null) { 
             return; 
         }
+        let undo = undo_.undo;
         if ('new' in undo) { this.new.undoScore(undo.new!); }
         if ('best' in undo) { this.best.undoScore(undo.best!); }
         this.naive.undoScore(undo.naive);
