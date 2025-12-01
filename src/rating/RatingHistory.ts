@@ -9,7 +9,7 @@ export interface Calculator<Score, Chart, UndoType, Snapshot> {
 export class RatingHistory<Calc extends Calculator<Score, Chart, UndoType, Snapshot>, Score, Chart, UndoType, Snapshot> {
     calc: Calc;
     scores: [Score, Chart][];       // scores[i] contains the action to move from i -> i+1
-    undos: UndoType[];              // undo[i] contains the action to undo from i+1 -> i
+    undos: UndoType[];              // undo[i] contains the action to undo from i -> i-1
     snapshots: Snapshot[];
     currentIndex: number;
     snapshotInterval: number;
@@ -22,10 +22,18 @@ export class RatingHistory<Calc extends Calculator<Score, Chart, UndoType, Snaps
         this.currentIndex = 0;
 
         this.snapshotInterval = options.snapshotInterval ?? 100;
+
+        if (scores.length == 0) {
+            throw new Error("Scores array is empty; must pass at least one score to RatingHistory");
+        }
+
+        let [score,chart] = this.scores[0]!;
+        let undo = this.calc.addScore(score, chart);
+        this.undos.push(undo);
     }
 
     get lastExploredIndex() {
-        return this.undos.length;
+        return this.undos.length - 1;
     }
 
     get length() {
@@ -60,7 +68,7 @@ export class RatingHistory<Calc extends Calculator<Score, Chart, UndoType, Snaps
         if (index < 0) {
             throw new Error(`Trying to seek rating history before score 0 (${index})`);
         }
-        if (index > this.scores.length) {
+        if (index >= this.scores.length) {
             throw new Error(`Trying to seek rating history after the last score (${index} > ${this.scores.length})`);
         }
 
@@ -72,7 +80,7 @@ export class RatingHistory<Calc extends Calculator<Score, Chart, UndoType, Snaps
                 if (this.currentIndex % this.snapshotInterval == 0) {
                     this.snapshots.push(this.calc.makeSnapshot());
                 }
-                let [score,chart] = this.scores[this.currentIndex]!;
+                let [score,chart] = this.scores[this.currentIndex+1]!;
                 let r = this.calc.addScore(score, chart);
                 this.undos.push(r);
                 this.currentIndex++;
@@ -99,11 +107,11 @@ export class RatingHistory<Calc extends Calculator<Score, Chart, UndoType, Snaps
         // seek by scores
         if (index < this.currentIndex) {
             for (let i=this.currentIndex; i>index; i--) {
-                this.calc.undoScore(this.undos[i-1]!);
+                this.calc.undoScore(this.undos[i]!);
             }
         } else if (index > this.currentIndex) {
             for (let i=this.currentIndex; i<index; i++) {
-                let [score,chart] = this.scores[i]!;
+                let [score,chart] = this.scores[i+1]!;
                 this.calc.addScore(score, chart);
             }
         }

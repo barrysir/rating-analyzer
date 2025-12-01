@@ -23,10 +23,9 @@ test("random seeking", () => {
     {
         let {ongeki} = makeFixture();
         for (let [score,chart] of barrageScores) {
-            ratings.push(ongeki.overallRating);
             ongeki.addScore({points: score}, makeChart(chart));
+            ratings.push(ongeki.overallRating);
         }
-        ratings.push(ongeki.overallRating);
     }
 
     let {ongeki, history} = makeHistory(barrageScores);
@@ -45,8 +44,10 @@ test("code sample - iterate over every score", () => {
     let {history} = makeHistory(barrageScores);
     let ratings = [];
     for (let i=0; i<history.length; i++) {
-        history.seek(1);
         let [score, chart] = history.scores[i]!;
         ratings.push(history.calc.overallRating);
+        if (i != history.length-1) {
+            history.seek(1);
+        }
     }
 });
