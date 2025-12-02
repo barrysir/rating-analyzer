@@ -99,6 +99,12 @@ export class VersionChangeHistory<Calc extends Calculator<Score, Chart, UndoType
         return this.histories[calcIndex]!.calc;
     }
 
+    // TODO: refactor all these _makeComponents functions, turning into a mess
+    calcAtIndex(index: number) {
+        let {calcIndex} = this._makeComponents(index);
+        return this.histories[calcIndex]!.calc;
+    }
+
     goto(index: number) {
         let {scoreIndex, calcIndex} = this._makeComponents(index);
         let result = this.histories[calcIndex]!.goto(scoreIndex);

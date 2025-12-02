@@ -1,0 +1,15 @@
+.improve-list {
+  display: grid;
+  /* one row per item; column layout defined here */
+  grid-template-columns: auto 1fr auto auto auto auto auto auto;
+  gap: 0px 12px;
+}
+
+.improve-row {
+  display: contents; /* spans participate directly in parent grid */
+}
+
+.improve-list > span,
+.improve-row > span {
+  /* padding: 4px 0; */
+}

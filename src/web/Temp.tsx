@@ -5,11 +5,10 @@ import { HistoricalChartDb } from '../rating/chartdb/HistoricalChartDb';
 import SONG_DATA from '../../data/song-db.json';
 import MY_SCORE_DATA from '../../data/score-data.json';
 import { SongData } from '../rating/data/SongData';
-import { MultiRatingHistory } from '../rating/MultiRatingHistory';
-import { findRegion } from '../rating/utils';
 import { OngekiDifficulty } from '../rating/data-types';
 import { VersionChangeHistory } from '../rating/VersionChangeHistory';
 import { PersonalBests } from '../rating/PersonalBests';
+import { FrameRating, ImprovementTracker } from './ImprovementTracker';
 import { KamaiScore } from '../get-kamai/kamai';
 
 function dateToUnix(date: Date): number {
@@ -110,7 +109,33 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
     return calculateMaxRating(x.db).overallRating;
   });
 
+  let allImproves: VersionImproveRenderData[] = [];
+
+  let tracker = new ImprovementTracker(history.calc);
+  let currWhichCalc = history.whichCalc;
+  let verImproves: VersionImproveRenderData = {
+    pointId: 0,
+    improves: [],
+  };
+  allImproves.push(verImproves);
+
   for (let i=0; i<history.length; i++) {
+    if (history.whichCalc != currWhichCalc) {
+      verImproves = {pointId: i, improves: []};
+      allImproves.push(verImproves);
+      tracker = new ImprovementTracker(history.calc);
+      currWhichCalc = history.whichCalc;
+    } else {
+      let improve = tracker.refresh(history.calc);
+      if (improve.isImprovement) {
+        verImproves.improves.push({
+          pointId: i,
+          scoreId: history.whichScore,
+          data: improve,
+        });
+      }
+    }
+
     chartData.timestamps.push(history.currentTimestamp);
     if (chartData.timestamps.length >= 2 && chartData.timestamps.at(-1) < chartData.timestamps.at(-2)) {
       console.log(history.versionChangeTimestamps);
@@ -138,9 +163,19 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
     history, 
     scores: extendedScores,
     bests,
+    improves: allImproves,
     chartData
   };
 }
+
+export type VersionImproveRenderData = {
+  pointId: number,
+  improves: {
+    pointId: number,
+    scoreId: number,
+    data: FrameRating,
+  }[],
+};
 
 export function loadScoreData(): UserScoreDatabase {
   return MY_SCORE_DATA;
