@@ -89,6 +89,10 @@ export class OngekiRecentFrame<Score extends { points: number; rating: number; }
         return this.frame.byRating.slice(0, this.numTop).reduce((sum, x) => sum + x.score.rating, 0);
     }
 
+    get overallRating(): number {
+        return this.totalRating / this.numTop;
+    }
+
     temporaryRating(totalRating: number): void {
         this.#temporaryRating = totalRating;
     }

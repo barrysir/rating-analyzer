@@ -74,6 +74,10 @@ export class BestFrame<ChartId extends string, Score extends {rating: number}> {
     return this.max;
   }
 
+  get overallRating(): number {
+    return this.totalRating / this.totalSize;
+  }
+
   addScore(t: Score, chartID: ChartId): UndoScore<ChartId, Score> {
     let before = this.makeSnapshot();
     let result = this._addScore(t, chartID);
