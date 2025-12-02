@@ -131,7 +131,7 @@ export class HistoricalChartDb implements ChartDb<HistChart> {
 
         let chart = song.charts[search.difficulty];
         if (chart === undefined) {
-            console.log(`Could not find ${search.difficulty} chart for song ${search}`);
+            console.log(`Could not find ${search.difficulty} chart for song ${JSON.stringify(search)}`);
             return null;
         }
         return {song, chart, difficulty: search.difficulty};

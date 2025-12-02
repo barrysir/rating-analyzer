@@ -41,7 +41,7 @@ function SettingsWindow() {
 }
 
 function SettingsButton() {
-  return <Popover.Root open={true}>
+  return <Popover.Root>
       <Popover.Trigger
         style="position: absolute; top: 16px; right: 16px; padding: 8px;"
         aria-label="Settings"
