@@ -1,11 +1,12 @@
 import { Accordion, Collapsible, MenuItem } from "@ark-ui/solid";
 import { VersionImproveRenderData } from "./Temp";
-import { For, Index, Show } from "solid-js";
-import { historyGetVersion, historyGetScore, historyGetSong, historyGetTimestamp } from "./stores/historyStore";
+import { For, Index, Show, createEffect, createSignal } from "solid-js";
+import { historyGetVersion, historyGetScore, historyGetSong, historyGetTimestamp, history } from "./stores/historyStore";
 import './ImprovementTable.css';
 import { Icon } from "@iconify-icon/solid";
 import { theme } from "./stores/themeStore";
 import { settings } from "./stores/settingsStore";
+import { findRegion, getRegion } from "../rating/utils";
 
 function FrameImprovementRender(props: { rating: number, change?: number, color: string }) {
     return <div style={{ 'color': props.color, 'display': 'flex', 'flex-direction': 'column', 'align-items': 'center' }}>
@@ -15,20 +16,10 @@ function FrameImprovementRender(props: { rating: number, change?: number, color:
         </Show>
     </div>
 }
-function VersionImprovement(props: { data: VersionImproveRenderData }) {
-    // (point index) Version {} (center aligned?)       (different colour to signify it's collapsible)
-    // (point index) {song title} - {points}        {rating} {best} {new} {recent} (tiny text below showing the increase to rating)
 
-    let improves = () => {
-        let improves = props.data.improves;
-        if (settings.showOnlyImprovements) {
-            improves = improves.filter(item => item.data.isImprovement);
-        }
-        return improves;
-    };
-
+function VersionImprovement(props: { improves: VersionImproveRenderData['improves'] }) {
     return <div class="improve-list">
-        <For each={improves()}>
+        <For each={props.improves}>
             {(item, index) => {
                 let score = historyGetScore(item.scoreId)!;
                 let song = historyGetSong(item.pointId, score.chartId);
@@ -37,8 +28,8 @@ function VersionImprovement(props: { data: VersionImproveRenderData }) {
                     return;
                 }
                 let frame = item.data;
-                return <div class="improve-row">
-                    <span>{item.pointId}</span>
+                return <div class="improve-row" data-point-id={item.pointId.toString()}>
+                    <span classList={{'text-blue-500': (history.scoreIndex == item.pointId)}}>{item.pointId}</span>
                     <span>{song?.title} - {theme.formatPoints(score.points)} ({theme.formatRating(score.rating)})</span>
                     <span></span>
                     <span></span>
@@ -57,12 +48,76 @@ function formatDate(date: Date): string {
     return date.toLocaleDateString(undefined, options);
 }
 
-export function ImprovementTable(props: { improves: VersionImproveRenderData[] }) {
-    return <Accordion.Root multiple collapsible class="improvement-accordion">
+export function ImprovementTable(props: { improves: VersionImproveRenderData[], scrollToPointId?: number }) {
+    let ref: HTMLDivElement;
+    let renderedImproves: Map<number, VersionImproveRenderData['improves']> = new Map();
+    const [openItems, setOpenItems] = createSignal<string[]>([]);
+
+    // Find which version contains the target pointId
+    const findVersionIndexForPoint = (pointId: number): number | undefined => {
+        return findRegion(props.improves, pointId, versionData => versionData.improves[0]!.pointId) ?? undefined;
+    };
+
+    createEffect(() => {
+        const targetPointId = props.scrollToPointId;
+        console.log("Scrolling improvement table to", targetPointId);
+        if (targetPointId !== undefined) {
+            // Find which accordion contains this pointId
+            const versionIndex = findVersionIndexForPoint(targetPointId);
+            if (versionIndex !== undefined && versionIndex >= 0) {
+                const versionIndexStr = versionIndex.toString();
+                // Open the accordion if it's not already open
+                setOpenItems(prev => {
+                    if (!prev.includes(versionIndexStr)) {
+                        return [...prev, versionIndexStr];
+                    }
+                    return prev;
+                });
+
+                // because there might not be a row for this point id (e.g. show only improvements is enabled)
+                // find the closest point id that's being shown
+                let improves = renderedImproves.get(versionIndex);
+                if (improves === undefined) {
+                    console.warn(renderedImproves, versionIndex);
+                    throw new Error("improves is undefined");
+                }
+                const closestPointId = getRegion(improves, targetPointId, i => i.pointId)?.pointId;
+                if (closestPointId === undefined) {
+                    console.warn(improves, targetPointId);
+                    throw new Error(`couldn't calculate closest point id? ${targetPointId}`);
+                }
+                console.log("Actually scrolling to", closestPointId);
+
+                // Wait a bit for the accordion to open before scrolling
+                setTimeout(() => {
+                    const element = ref.querySelector(`[data-point-id='${closestPointId}'] span`);
+                    if (element) {
+                        element.scrollIntoView({ block: 'center' });  // behavior: 'smooth',
+                    }
+                }, 50);
+            }
+        }
+    });
+
+    return <Accordion.Root
+        multiple
+        collapsible
+        class="improvement-accordion"
+        value={openItems()}
+        onValueChange={(details) => setOpenItems(details.value)}
+        ref={(el) => ref = el}
+    >
         <Index each={props.improves}>
             {(item, index) => {
-                let version = historyGetVersion(item().versionId);
-                let versionDate = formatDate(historyGetTimestamp(version.pointId));
+                let versionId = item().versionId;
+                let version = historyGetVersion(versionId);
+                let versionDate = formatDate(historyGetTimestamp(version.pointId));            
+                let improves = item().improves;
+                if (settings.showOnlyImprovements) {
+                    improves = improves.filter(item => item.data.isImprovement);
+                }
+                renderedImproves.set(versionId, improves);
+                
                 return <Accordion.Item value={index.toString()} class="accordion-item">
                     <Accordion.ItemTrigger class="accordion-trigger">
                         <span class="accordion-title">{versionDate} - {version.name}</span>
@@ -71,7 +126,7 @@ export function ImprovementTable(props: { improves: VersionImproveRenderData[] }
                         </Accordion.ItemIndicator>
                     </Accordion.ItemTrigger>
                     <Accordion.ItemContent class="accordion-content">
-                        <VersionImprovement data={item()} />
+                        <VersionImprovement improves={improves} />
                     </Accordion.ItemContent>
                 </Accordion.Item>;
             }}

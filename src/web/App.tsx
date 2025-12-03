@@ -108,7 +108,7 @@ const App: Component = () => {
                   WIP
                 </Tabs.Content>
                 <Tabs.Content value="improve">
-                  <ImprovementTable improves={history.improves} />
+                  <ImprovementTable improves={history.improves} scrollToPointId={history.scoreIndex} />
                 </Tabs.Content>
               </div>
             </div>
