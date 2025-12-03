@@ -36,6 +36,15 @@ function SettingsWindow() {
         <option value="beta">beta</option>
         <option value="new">new</option>
       </select>
+      <label for="show-only-improvements">
+        Show Only Improvements
+      </label>
+      <input
+        id="show-only-improvements"
+        type="checkbox"
+        checked={settings.showOnlyImprovements}
+        onChange={(e) => setSettings('showOnlyImprovements', e.currentTarget.checked)}
+      />
     </div>
   );
 }

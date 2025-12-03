@@ -168,13 +168,11 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
       currWhichCalc = history.whichCalc;
     } else {
       let improve = tracker.refresh(history.calc);
-      if (improve.isImprovement) {
-        verImproves.improves.push({
-          pointId: i,
-          scoreId: history.whichScore,
-          data: improve,
-        });
-      }
+      verImproves.improves.push({
+        pointId: i,
+        scoreId: history.whichScore,
+        data: improve,
+      });
     }
 
     chartData.timestamps.push(history.currentTimestamp);

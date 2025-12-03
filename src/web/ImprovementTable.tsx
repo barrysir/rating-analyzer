@@ -5,6 +5,7 @@ import { historyGetVersion, historyGetScore, historyGetSong, historyGetTimestamp
 import './ImprovementTable.css';
 import { Icon } from "@iconify-icon/solid";
 import { theme } from "./stores/themeStore";
+import { settings } from "./stores/settingsStore";
 
 function FrameImprovementRender(props: { rating: number, change?: number, color: string }) {
     return <div style={{ 'color': props.color, 'display': 'flex', 'flex-direction': 'column', 'align-items': 'center' }}>
@@ -18,13 +19,22 @@ function VersionImprovement(props: { data: VersionImproveRenderData }) {
     // (point index) Version {} (center aligned?)       (different colour to signify it's collapsible)
     // (point index) {song title} - {points}        {rating} {best} {new} {recent} (tiny text below showing the increase to rating)
 
+    let improves = () => {
+        let improves = props.data.improves;
+        if (settings.showOnlyImprovements) {
+            improves = improves.filter(item => item.data.isImprovement);
+        }
+        return improves;
+    };
+
     return <div class="improve-list">
-        <For each={props.data.improves}>
+        <For each={improves()}>
             {(item, index) => {
                 let score = historyGetScore(item.scoreId)!;
-                let song = historyGetSong(item.pointId, score.chartId); // Db(item.pointId).getChart(score.chartId).song;
+                let song = historyGetSong(item.pointId, score.chartId);
                 if (song === undefined) {
-                    console.warn("Couldn't find song info for", score.chartId, "at", item.pointId)
+                    console.warn("Couldn't find song info for", score.chartId, "at", item.pointId);
+                    return;
                 }
                 let frame = item.data;
                 return <div class="improve-row">
@@ -52,10 +62,7 @@ export function ImprovementTable(props: { improves: VersionImproveRenderData[] }
         <Index each={props.improves}>
             {(item, index) => {
                 let version = historyGetVersion(item().versionId);
-                if (version === undefined) {
-                    throw new Error("");
-                }
-                let versionDate = formatDate(historyGetTimestamp(version.pointId)!);
+                let versionDate = formatDate(historyGetTimestamp(version.pointId));
                 return <Accordion.Item value={index.toString()} class="accordion-item">
                     <Accordion.ItemTrigger class="accordion-trigger">
                         <span class="accordion-title">{versionDate} - {version.name}</span>
