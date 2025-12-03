@@ -49,7 +49,7 @@ function formatDate(date: Date): string {
 }
 
 export function ImprovementTable(props: { improves: VersionImproveRenderData[], scrollToPointId?: number }) {
-    let ref: HTMLDivElement;
+    let rootElement: HTMLDivElement;
     let renderedImproves: Map<number, VersionImproveRenderData['improves']> = new Map();
     const [openItems, setOpenItems] = createSignal<string[]>([]);
 
@@ -60,6 +60,12 @@ export function ImprovementTable(props: { improves: VersionImproveRenderData[], 
 
     createEffect(() => {
         const targetPointId = props.scrollToPointId;
+        
+        // only scroll if table is visible -- this also fixes bugs like how the table will try to scroll when first initializing
+        if (!rootElement.checkVisibility()) {
+            return;
+        }
+
         console.log("Scrolling improvement table to", targetPointId);
         if (targetPointId !== undefined) {
             // Find which accordion contains this pointId
@@ -90,7 +96,7 @@ export function ImprovementTable(props: { improves: VersionImproveRenderData[], 
 
                 // Wait a bit for the accordion to open before scrolling
                 setTimeout(() => {
-                    const element = ref.querySelector(`[data-point-id='${closestPointId}'] span`);
+                    const element = rootElement.querySelector(`[data-point-id='${closestPointId}'] span`);
                     if (element) {
                         element.scrollIntoView({ block: 'center' });  // behavior: 'smooth',
                     }
@@ -105,7 +111,7 @@ export function ImprovementTable(props: { improves: VersionImproveRenderData[], 
         class="improvement-accordion"
         value={openItems()}
         onValueChange={(details) => setOpenItems(details.value)}
-        ref={(el) => ref = el}
+        ref={(el) => rootElement = el}
     >
         <Index each={props.improves}>
             {(item, index) => {
