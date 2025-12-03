@@ -58,7 +58,11 @@ export function setScoreIndex(index: number) {
 }
 
 export function historyGetScore(scoreIndex: number) {
-  return history.scores[scoreIndex];
+  let result = history.scores[scoreIndex];
+  if (result === undefined) {
+    throw new Error(`Invalid score index given: ${scoreIndex} (max: ${history.scores.length-1})`);
+  }
+  return result;
 }
 
 export function historyGetDb(pointIndex: number) {
@@ -66,17 +70,26 @@ export function historyGetDb(pointIndex: number) {
 }
 
 export function historyGetSong(pointIndex: number, chartId: string) {
-  return historyGetDb(pointIndex).getChart(chartId)?.song;
+  let db = historyGetDb(pointIndex);
+  let chart = db.getChart(chartId);
+  if (chart === null) {
+    throw new Error(`Invalid chart id given: ${chartId} at point index ${pointIndex}`);
+  }
+  return chart.song;
 }
 
 export function historyGetVersion(versionIndex: number) {
-  return history.versions[versionIndex];
+  let result = history.versions[versionIndex];
+  if (result === undefined) {
+    throw new Error(`Invalid version index given: ${versionIndex} (max: ${history.versions.length-1})`);
+  }
+  return result;
 }
 
 export function historyGetTimestamp(pointId: number) {
   let timestamp = history.chartData.timestamps[pointId];
   if (timestamp === undefined) {
-    return undefined;
+    throw new Error(`Invalid pointId given: ${pointId} (max: ${history.chartData.timestamps.length})`);
   }
   return new Date(timestamp);
 }
