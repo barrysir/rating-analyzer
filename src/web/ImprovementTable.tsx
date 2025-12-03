@@ -1,7 +1,7 @@
 import { Accordion, Collapsible, MenuItem } from "@ark-ui/solid";
 import { VersionImproveRenderData } from "./Temp";
 import { For, Index, Show } from "solid-js";
-import { historyGetVersion, historyGetScore, historyGetSong } from "./stores/historyStore";
+import { historyGetVersion, historyGetScore, historyGetSong, historyGetTimestamp } from "./stores/historyStore";
 import './ImprovementTable.css';
 import { Icon } from "@iconify-icon/solid";
 
@@ -41,14 +41,23 @@ function VersionImprovement(props: { data: VersionImproveRenderData }) {
     </div>
 }
 
+function formatDate(date: Date): string {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return date.toLocaleDateString(undefined, options);
+}
+
 export function ImprovementTable(props: { improves: VersionImproveRenderData[] }) {
     return <Accordion.Root multiple collapsible class="improvement-accordion">
         <Index each={props.improves}>
             {(item, index) => {
                 let version = historyGetVersion(item().versionId);
+                if (version === undefined) {
+                    throw new Error("");
+                }
+                let versionDate = formatDate(historyGetTimestamp(version.pointId)!);
                 return <Accordion.Item value={index.toString()} class="accordion-item">
                     <Accordion.ItemTrigger class="accordion-trigger">
-                        <span class="accordion-title">{version?.pointId} - Version {version?.name}</span>
+                        <span class="accordion-title">{versionDate} - {version.name}</span>
                         <Accordion.ItemIndicator class="accordion-indicator">
                             <Icon icon="lucide:chevron-down" />
                         </Accordion.ItemIndicator>

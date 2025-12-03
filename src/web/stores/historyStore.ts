@@ -73,4 +73,12 @@ export function historyGetVersion(versionIndex: number) {
   return history.versions[versionIndex];
 }
 
+export function historyGetTimestamp(pointId: number) {
+  let timestamp = history.chartData.timestamps[pointId];
+  if (timestamp === undefined) {
+    return undefined;
+  }
+  return new Date(timestamp);
+}
+
 export { history };
