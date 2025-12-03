@@ -4,12 +4,13 @@ import { For, Index, Show } from "solid-js";
 import { historyGetVersion, historyGetScore, historyGetSong, historyGetTimestamp } from "./stores/historyStore";
 import './ImprovementTable.css';
 import { Icon } from "@iconify-icon/solid";
+import { theme } from "./stores/themeStore";
 
 function FrameImprovementRender(props: { rating: number, change?: number, color: string }) {
     return <div style={{ 'color': props.color, 'display': 'flex', 'flex-direction': 'column', 'align-items': 'center' }}>
-        <span>{props.rating.toFixed(3)}</span>
+        <span>{theme.formatRatingText(props.rating)}</span>
         <Show when={props.change !== undefined}>
-            <span style="font-size: 0.7em">{props.change.toFixed(3)}</span>
+            <span style="font-size: 0.7em">{theme.formatChangeRating(props.change!)}</span>
         </Show>
     </div>
 }
@@ -28,9 +29,9 @@ function VersionImprovement(props: { data: VersionImproveRenderData }) {
                 let frame = item.data;
                 return <div class="improve-row">
                     <span>{item.pointId}</span>
-                    <span>{song?.title}</span>
-                    <span>{score.points}</span>
-                    <span>{score.rating?.toFixed(2)}</span>
+                    <span>{song?.title} - {theme.formatPoints(score.points)} ({theme.formatRating(score.rating)})</span>
+                    <span></span>
+                    <span></span>
                     <FrameImprovementRender rating={frame.total} change={frame.changes.total} color="black" />
                     <FrameImprovementRender rating={frame.best} change={frame.changes.best} color="blue" />
                     <FrameImprovementRender rating={frame.new} change={frame.changes.new} color="green" />

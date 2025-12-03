@@ -53,6 +53,14 @@ export function findRegion<T>(arr: T[], val: number, key: (a: T) => number): num
     return (pivot != 0) ? pivot-1 : null;
 }
 
+export function getRegion<T>(arr: T[], val: number, key: (a: T) => number): T | null {
+    let index = findRegion(arr, val, key);
+    if (index === null) {
+        return null;
+    }
+    return arr[index]!;
+}
+
 export function minIndex(array: number[]) {
     return array.reduce((iMax, x, i) => x < array[iMax]! ? i : iMax, 0);
 }

@@ -1,6 +1,7 @@
 import { For } from 'solid-js';
 import "./FrameRenderers.css";
 import { settings } from './stores/settingsStore';
+import { theme } from './stores/themeStore';
 
 export type FrameEntry = {
   rating: number;
@@ -51,10 +52,10 @@ export function DisplayFrame(props: { data: FrameEntry[], title: string, color?:
           {(item, index) => {
             return <tr>
               <td>#{index()+1}</td>
-              <td>{item ? item.rating.toFixed(2) : NULL_MARKER}</td>
+              <td>{item ? theme.formatRating(item.rating) : NULL_MARKER}</td>
               <td style="width: 100%;">{item ? item.title : NULL_MARKER}</td>
               <td>{item ? item.level : NULL_MARKER}</td>
-              <td>{item ? item.points : NULL_MARKER}</td>
+              <td>{item ? theme.formatPoints(item.points) : NULL_MARKER}</td>
             </tr>
           }}
         </For>
