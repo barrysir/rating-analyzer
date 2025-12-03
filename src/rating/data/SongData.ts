@@ -37,6 +37,8 @@ export type SongDataSchema<Parsed extends boolean> = {
     newVersions: string[],
 };
 
+export type Song = SongDataSchema<true>['songs'][number];
+
 function parseVersions(map, versions: SongDataVersions[], end: Date) {
     function getDate(curr: SongDataVersions): Date {
         if ('date' in curr) {

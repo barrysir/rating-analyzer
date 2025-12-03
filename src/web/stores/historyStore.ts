@@ -33,7 +33,7 @@ const [history, setHistory] = createStore<HistoryStore>({
   },
 });
 
-function initializeHistory(scoredb: UserScoreDatabase, options: Parameters<typeof createHistory>[1]) {
+export function initializeHistory(scoredb: UserScoreDatabase, options: Parameters<typeof createHistory>[1]) {
   let {history, bests, improves, scores, chartData} = createHistory(scoredb, options);
   batch(() => {
     setHistory('history', createMutable(history));
@@ -45,7 +45,7 @@ function initializeHistory(scoredb: UserScoreDatabase, options: Parameters<typeo
   });
 }
 
-function setScoreIndex(index: number) {
+export function setScoreIndex(index: number) {
   batch(() => {
     history.history?.goto(index);
     // history.bests?.goto(index);
@@ -53,12 +53,16 @@ function setScoreIndex(index: number) {
   });
 }
 
-function historyGetScore(scoreIndex: number) {
+export function historyGetScore(scoreIndex: number) {
   return history.scores[scoreIndex];
 }
 
-function historyGetDb(pointIndex: number) {
+export function historyGetDb(pointIndex: number) {
  return history.history!.calcAtIndex(pointIndex).db;
 }
 
-export { history, initializeHistory, setScoreIndex, historyGetScore, historyGetDb };
+export function historyGetSong(pointIndex: number, chartId: string) {
+  return historyGetDb(pointIndex).getChart(chartId)?.song;
+}
+
+export { history };

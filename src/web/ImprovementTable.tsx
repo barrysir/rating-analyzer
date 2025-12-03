@@ -1,7 +1,7 @@
 import { Collapsible, MenuItem } from "@ark-ui/solid";
 import { VersionImproveRenderData } from "./Temp";
 import { For, Show } from "solid-js";
-import { historyGetDb, historyGetScore } from "./stores/historyStore";
+import { historyGetDb, historyGetScore, historyGetSong } from "./stores/historyStore";
 import './ImprovementTable.css';
 
 function FrameImprovementRender(props: {rating: number, change?: number, color: string}) {
@@ -28,10 +28,14 @@ function VersionImprovement(props: {data: VersionImproveRenderData}) {
                 <For each={props.data.improves}>
                     {(item, index) => {
                         let score = historyGetScore(item.scoreId)!;
+                        let song = historyGetSong(item.pointId, score.chartId); // Db(item.pointId).getChart(score.chartId).song;
+                        if (song === undefined) {
+                            console.warn("Couldn't find song info for", score.chartId, "at", item.pointId)
+                        }
                         let frame = item.data;
                         return <div class="improve-row">
                             <span>{item.pointId}</span>
-                            <span>{score.chartId}</span>
+                            <span>{song?.title}</span>
                             <span>{score.points}</span>
                             <span>{score.rating?.toFixed(2)}</span>
                             <FrameImprovementRender rating={frame.total} change={frame.changes.total} color="black" />
