@@ -52,3 +52,14 @@ h1, h2, h3, h4, h5, h6 {
 #root, #__next {
   isolation: isolate;
 }
+
+@layer theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+
+/* this is caused by Preflight,
+   which resets the default styles,
+   so this is not needed */
+/* @import "tailwindcss/preflight.css" layer(base); */
+
+@import "tailwindcss/utilities.css" layer(utilities);
