@@ -54,14 +54,40 @@ type ExtendedScore = {
   kamai: KamaiScore;
 };
 
+const VERSIONS = [
+  {
+    name: 'bright',
+    version: 'bright',
+    timestamp: 0,
+  },
+  {
+    name: 'bright MEMORY Act.2',
+    version: 'bright MEMORY Act.2',
+    timestamp: dateToUnix(new Date("2023-10-31")),
+  },
+  {
+    name: 'bright MEMORY Act.3',
+    version: 'bright MEMORY Act.3',
+    timestamp: dateToUnix(new Date("2025-04-27")),
+  },
+];
+
+type VersionInformation = {
+  name: string,
+  version: string,
+  timestamp: number,
+  pointId: number,
+}
+
 export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlaces: number} = {decimalPlaces: 2}) {
   let songData = new SongData(SONG_DATA);
 
-  let versionChanges = [
-    {db: new HistoricalChartDb(songData, { version: 'bright' }), timestamp: 0},
-    {db: new HistoricalChartDb(songData, { version: 'bright MEMORY Act.2' }), timestamp: dateToUnix(new Date("2023-10-31"))},
-    {db: new HistoricalChartDb(songData, { version: 'bright MEMORY Act.3' }), timestamp: dateToUnix(new Date("2025-04-27"))},
-  ];
+  let versions = structuredClone(VERSIONS) as VersionInformation[];
+
+  let versionChanges = versions.map(v => ({
+    db: new HistoricalChartDb(songData, { version: v.version }), 
+    timestamp: v.timestamp,
+  }));
 
   let scores = scoredb.scores;
   // TODO: move sorting into scoredb code; make sure scores are always sorted ascending by timestamp
@@ -95,6 +121,17 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
     (s) => s.score.timestamp
   );
 
+  let versionPointIndexes = history.versionPointIndexes;
+  if (versionPointIndexes.length != versions.length - 1) {
+    console.warn(versionPointIndexes);
+    console.warn(versions);
+    throw new Error("history.versionPointIndexes mismatched from versions (versionPointIndexes.length + 1 = versions.length)");
+  }
+  versions[0]!.pointId = 0;
+  versionPointIndexes.map((value, index) => {
+    versions[index+1]!.pointId = value;
+  });
+
   let bests = new RatingHistory(new PersonalBests(new HistoricalChartDb(songData)), scoresArray);
   
   let chartData = {
@@ -114,14 +151,14 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
   let tracker = new ImprovementTracker(history.calc);
   let currWhichCalc = history.whichCalc;
   let verImproves: VersionImproveRenderData = {
-    pointId: 0,
+    versionId: history.whichCalc,
     improves: [],
   };
   allImproves.push(verImproves);
 
   for (let i=0; i<history.length; i++) {
     if (history.whichCalc != currWhichCalc) {
-      verImproves = {pointId: i, improves: []};
+      verImproves = {versionId: history.whichCalc, improves: []};
       allImproves.push(verImproves);
       tracker = new ImprovementTracker(history.calc);
       currWhichCalc = history.whichCalc;
@@ -163,13 +200,14 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
     history, 
     scores: extendedScores,
     bests,
+    versions,
     improves: allImproves,
     chartData
   };
 }
 
 export type VersionImproveRenderData = {
-  pointId: number,
+  versionId: number,
   improves: {
     pointId: number,
     scoreId: number,

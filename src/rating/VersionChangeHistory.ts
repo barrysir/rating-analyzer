@@ -83,6 +83,10 @@ export class VersionChangeHistory<Calc extends Calculator<Score, Chart, UndoType
         return scoreIndex;
     }
 
+    get versionPointIndexes() {
+        return this.versionChangeScoreIndexes.map((value, index) => value+index+1);
+    }
+
     // todo: name this function
     _makeComponents(index: number) {
         let [scoreIndex,calc,justBumped] = xWithBumps(index, this.versionChangeScoreIndexes);

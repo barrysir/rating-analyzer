@@ -1,7 +1,7 @@
 import { Accordion, Collapsible, MenuItem } from "@ark-ui/solid";
 import { VersionImproveRenderData } from "./Temp";
 import { For, Index, Show } from "solid-js";
-import { historyGetDb, historyGetScore, historyGetSong } from "./stores/historyStore";
+import { historyGetVersion, historyGetScore, historyGetSong } from "./stores/historyStore";
 import './ImprovementTable.css';
 import { Icon } from "@iconify-icon/solid";
 
@@ -44,18 +44,20 @@ function VersionImprovement(props: { data: VersionImproveRenderData }) {
 export function ImprovementTable(props: { improves: VersionImproveRenderData[] }) {
     return <Accordion.Root multiple collapsible class="improvement-accordion">
         <Index each={props.improves}>
-            {(item, index) => <Accordion.Item value={index.toString()} class="accordion-item">
-                <Accordion.ItemTrigger class="accordion-trigger">
-                    <span class="accordion-title">Version {item().pointId}</span>
-                    <Accordion.ItemIndicator class="accordion-indicator">
-                        <Icon icon="lucide:chevron-down" />
-                    </Accordion.ItemIndicator>
-                </Accordion.ItemTrigger>
-                <Accordion.ItemContent class="accordion-content">
-                    <VersionImprovement data={item()} />
-                </Accordion.ItemContent>
-            </Accordion.Item>
-            }
+            {(item, index) => {
+                let version = historyGetVersion(item().versionId);
+                return <Accordion.Item value={index.toString()} class="accordion-item">
+                    <Accordion.ItemTrigger class="accordion-trigger">
+                        <span class="accordion-title">{version?.pointId} - Version {version?.name}</span>
+                        <Accordion.ItemIndicator class="accordion-indicator">
+                            <Icon icon="lucide:chevron-down" />
+                        </Accordion.ItemIndicator>
+                    </Accordion.ItemTrigger>
+                    <Accordion.ItemContent class="accordion-content">
+                        <VersionImprovement data={item()} />
+                    </Accordion.ItemContent>
+                </Accordion.Item>;
+            }}
         </Index>
     </Accordion.Root>
 }

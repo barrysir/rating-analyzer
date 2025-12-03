@@ -8,12 +8,14 @@ type ChartDataType = ReturnType<typeof createHistory>['chartData'];
 type PersonalBestType = ReturnType<typeof createHistory>['bests'];
 type ScoresType = ReturnType<typeof createHistory>['scores'];
 type ImprovesType = ReturnType<typeof createHistory>['improves'];
+type VersionsType = ReturnType<typeof createHistory>['versions'];
 
 interface HistoryStore {
   history: HistoryType | null;
   bests: PersonalBestType | null;
   scores: ScoresType;
   improves: ImprovesType;
+  versions: VersionsType;
   scoreIndex: number;
   chartData: ChartDataType;
 }
@@ -23,6 +25,7 @@ const [history, setHistory] = createStore<HistoryStore>({
   bests: null,
   scores: [],
   improves: [],
+  versions: [],
   scoreIndex: 0,
   chartData: {    
     timestamps: [] as number[],
@@ -34,12 +37,13 @@ const [history, setHistory] = createStore<HistoryStore>({
 });
 
 export function initializeHistory(scoredb: UserScoreDatabase, options: Parameters<typeof createHistory>[1]) {
-  let {history, bests, improves, scores, chartData} = createHistory(scoredb, options);
+  let {history, bests, improves, scores, versions, chartData} = createHistory(scoredb, options);
   batch(() => {
     setHistory('history', createMutable(history));
     // setHistory('bests', createMutable(bests));
     setHistory('scores', scores);
     setHistory('improves', improves);
+    setHistory('versions', versions);
     setHistory('chartData', chartData);
     setHistory('scoreIndex', history.currentIndex);
   });
@@ -63,6 +67,10 @@ export function historyGetDb(pointIndex: number) {
 
 export function historyGetSong(pointIndex: number, chartId: string) {
   return historyGetDb(pointIndex).getChart(chartId)?.song;
+}
+
+export function historyGetVersion(versionIndex: number) {
+  return history.versions[versionIndex];
 }
 
 export { history };
