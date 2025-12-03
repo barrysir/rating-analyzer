@@ -1,6 +1,7 @@
 import { Component, createMemo, createEffect, mergeProps } from 'solid-js';
 import ApexCharts from 'apexcharts';
 import { onMount, onCleanup } from 'solid-js';
+import { historyGetVersion } from './stores/historyStore';
 
 export function RatingChart(incomingProps: { 
   data: { timestamps: number[]; overallRating: number[], naiveRating: number[], version: number[], maxRating: number[] };
@@ -47,16 +48,8 @@ export function RatingChart(incomingProps: {
     for (let i = 1; i < props.data.timestamps.length; i++) {
       const isLast = (i == props.data.timestamps.length-1);
 
-      const version = props.data.version[i];
-      let fillColor: string | undefined;
-      
-      if (version === 0) {
-        fillColor = '#3b82f6';
-      } else if (version === 1) {
-        fillColor = '#fbbf24';
-      } else if (version === 2) {
-        fillColor = '#ef4444';
-      }
+      const version = props.data.version[i]!;
+      let fillColor = historyGetVersion(version).plotBackgroundColor;
       
       if (isLast || fillColor !== lastFillColor) {
         xaxis.push({

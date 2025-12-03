@@ -59,16 +59,19 @@ const VERSIONS = [
     name: 'bright',
     version: 'bright',
     timestamp: 0,
+    plotBackgroundColor: '#3b82f6',
   },
   {
     name: 'bright MEMORY Act.2',
     version: 'bright MEMORY Act.2',
     timestamp: dateToUnix(new Date("2023-10-31")),
+    plotBackgroundColor: '#fbbf24',
   },
   {
     name: 'bright MEMORY Act.3',
     version: 'bright MEMORY Act.3',
     timestamp: dateToUnix(new Date("2025-04-27")),
+    plotBackgroundColor: '#ef4444',
   },
 ];
 
@@ -77,6 +80,7 @@ type VersionInformation = {
   version: string,
   timestamp: number,
   pointId: number,
+  plotBackgroundColor: string,
 }
 
 export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlaces: number} = {decimalPlaces: 2}) {
