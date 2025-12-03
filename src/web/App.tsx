@@ -8,6 +8,7 @@ import { settings, setSettings } from './stores/settingsStore';
 import { history, initializeHistory, setScoreIndex } from './stores/historyStore';
 import { OngekiRatingRenderer } from './OngekiRatingRenderer';
 import { ImprovementTable } from './ImprovementTable';
+import Slider from './Slider';
 
 
 function SettingsWindow() {
@@ -86,8 +87,11 @@ const App: Component = () => {
   return <div style="width: 100vw; height: 100vh;">
     <SettingsButton />
     <div style="width: 100%; height: 100%; display: grid; grid-template-columns: 4fr 6fr; align-items: center;">
-      <div style="height: 50%">
+      <div style="height: 50%; display: flex; flex-direction: column; align-items: center;">
         <RatingChart data={history.chartData} options={{decimalPlaces: settings.decimalPlaces}} onClick={(index) => setScoreIndex(index)} />
+        <div style="width: 90%">
+          <Slider />
+        </div>
       </div>
       <div style="height: 100%; padding-top: 50px;">
         <Show when={history.history !== null}>
