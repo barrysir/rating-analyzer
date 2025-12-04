@@ -61,6 +61,12 @@ export function OngekiFrameTab<Chart, Score>(props: { pointId: number, calc: Ong
     <div style="display: flex; justify-content: space-between">
       <div>
         <h2>{props.pointId} - {theme.formatDateTime(new Date(historyGetTimestamp(props.pointId)))}</h2>
+        <span>
+          {theme.formatFrameRating(props.calc.overallRating, 'total')}
+          &nbsp;/ {theme.formatFrameRating(props.calc.best.overallRating, 'best')} 
+          &nbsp;/ {theme.formatFrameRating(props.calc.new.overallRating, 'new')} 
+          &nbsp;/ {theme.formatFrameRating(props.calc.recent.overallRating, 'recent')}
+        </span>
       </div>
       <div style="display: flex; flex-direction: column; font-size: 0.8em; align-items: end">
         {songTitle()}

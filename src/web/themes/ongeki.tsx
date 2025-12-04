@@ -32,11 +32,23 @@ const ratingColors = [
     [17.40, 'black'],
 ];
 
+const frameColors = {
+    'total': 'black',
+    'best': 'blue',
+    'new': 'green',
+    'recent': 'red',
+} as const;
+
 // I don't know if this needs to be a store
 // I'll leave it as a plain object for now
 const OngekiTheme = {
     formatRatingText(rating: number) {
         return rating.toFixed(settings.decimalPlaces);
+    },
+
+    formatFrameRating(rating: number, frame: keyof typeof frameColors) {
+        let color = frameColors[frame];
+        return <span style={{'color': color}}>{this.formatRatingText(rating)}</span>;
     },
 
     formatRating(rating: number) {
@@ -62,12 +74,7 @@ const OngekiTheme = {
         return format(date, "PP, pp");
     },
 
-    frameColors: {
-        'total': 'black',
-        'best': 'blue',
-        'new': 'green',
-        'recent': 'red',
-    },
+    frameColors,
 };
 
 export {OngekiTheme};
