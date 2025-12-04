@@ -1,5 +1,5 @@
 import { createSignal, createEffect } from "solid-js";
-import { history, setScoreIndex, historyNumPoints } from "./stores/historyStore";
+import { history, setPointId, historyNumPoints } from "./stores/historyStore";
 
 function clamp(x: number, min: number, max: number) {
     return Math.min(max, Math.max(min, x));
@@ -7,10 +7,10 @@ function clamp(x: number, min: number, max: number) {
 
 export default function Slider() {
   const [stepInput, setStepInput] = createSignal<number>(1);
-  const [sliderValue, setSliderValue] = createSignal<number>(history.scoreIndex);
+  const [sliderValue, setSliderValue] = createSignal<number>(history.pointId);
 
   createEffect(() => {
-    setSliderValue(history.scoreIndex);
+    setSliderValue(history.pointId);
   });
 
   function bound(scoreIndex: number) {
@@ -18,7 +18,7 @@ export default function Slider() {
   }
 
   const handleChange = (multiplier: number) => {
-    setScoreIndex(bound(history.scoreIndex + stepInput() * multiplier));
+    setPointId(bound(history.pointId + stepInput() * multiplier));
   };
 
   const value = (multiplier: number) => stepInput() * multiplier;
@@ -38,7 +38,7 @@ export default function Slider() {
   }
 
   function handleSliderRelease() {
-    setScoreIndex(sliderValue());
+    setPointId(sliderValue());
     console.log("handleSliderRelease");
   }
 
@@ -49,7 +49,7 @@ export default function Slider() {
     }
     v = bound(v);
     setSliderValue(v);
-    setScoreIndex(v);
+    setPointId(v);
   }
 
   return (

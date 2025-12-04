@@ -16,7 +16,7 @@ interface HistoryStore {
   scores: ScoresType;
   improves: ImprovesType;
   versions: VersionsType;
-  scoreIndex: number;
+  pointId: number;
   chartData: ChartDataType;
 }
 
@@ -26,7 +26,7 @@ const [history, setHistory] = createStore<HistoryStore>({
   scores: [],
   improves: [],
   versions: [],
-  scoreIndex: 0,
+  pointId: 0,
   chartData: {    
     timestamps: [] as number[],
     overallRating: [] as number[],
@@ -45,15 +45,15 @@ export function initializeHistory(scoredb: UserScoreDatabase, options: Parameter
     setHistory('improves', improves);
     setHistory('versions', versions);
     setHistory('chartData', chartData);
-    setHistory('scoreIndex', history.currentIndex);
+    setHistory('pointId', history.currentIndex);
   });
 }
 
-export function setScoreIndex(index: number) {
+export function setPointId(pointId: number) {
   batch(() => {
-    history.history?.goto(index);
+    history.history?.goto(pointId);
     // history.bests?.goto(index);
-    setHistory('scoreIndex', index);
+    setHistory('pointId', pointId);
   });
 }
 
@@ -65,33 +65,33 @@ export function historyGetScore(scoreIndex: number) {
   return result;
 }
 
-export function historyPointToScoreId(pointIndex: number) : {type: 'version', versionId: number} | {type: 'score', scoreId: number} {
-  let {scoreIndex, calcIndex, justBumped} = history.history!._makeComponents(pointIndex);
+export function historyPointToScoreId(pointId: number) : {type: 'version', versionId: number} | {type: 'score', scoreId: number} {
+  let {scoreIndex, calcIndex, justBumped} = history.history!._makeComponents(pointId);
   if (justBumped) {
     return {type: 'version', versionId: calcIndex};
   }
   return {type: 'score', scoreId: scoreIndex};
 }
 
-export function historyGetDb(pointIndex: number) {
- return history.history!.calcAtIndex(pointIndex).db;
+export function historyGetDb(pointId: number) {
+ return history.history!.calcAtIndex(pointId).db;
 }
 
-export function historyGetSong(pointIndex: number, chartId: string) {
-  let db = historyGetDb(pointIndex);
+export function historyGetSong(pointId: number, chartId: string) {
+  let db = historyGetDb(pointId);
   let chart = db.getChart(chartId);
   if (chart === null) {
-    // throw new Error(`Invalid chart id given: ${chartId} at point index ${pointIndex}`);
+    // throw new Error(`Invalid chart id given: ${chartId} at point index ${pointId}`);
   }
   return chart?.song;
 }
 
-export function historyGetChart(pointIndex: number, chartId: string) {
+export function historyGetChart(pointId: number, chartId: string) {
   // TODO: refactor this together with historyGetSong
-  let db = historyGetDb(pointIndex);
+  let db = historyGetDb(pointId);
   let chart = db.getChart(chartId);
   if (chart === null) {
-    // throw new Error(`Invalid chart id given: ${chartId} at point index ${pointIndex}`);
+    // throw new Error(`Invalid chart id given: ${chartId} at point index ${pointId}`);
     return null;
   }
   return {chart: chart, song: chart.song};

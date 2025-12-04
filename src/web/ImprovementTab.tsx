@@ -29,7 +29,7 @@ function VersionImprovement(props: { improves: VersionImproveRenderData['improve
                 }
                 let frame = item.data;
                 return <div class="improve-row" data-point-id={item.pointId.toString()}>
-                    <span classList={{'text-blue-500': (history.scoreIndex == item.pointId)}}>{item.pointId}</span>
+                    <span classList={{'text-blue-500': (history.pointId == item.pointId)}}>{item.pointId}</span>
                     <span>{song?.title} - {theme.formatPoints(score.points)} ({theme.formatRating(score.rating)})</span>
                     <span></span>
                     <span></span>

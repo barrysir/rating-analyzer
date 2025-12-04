@@ -125,14 +125,14 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
     (s) => s.score.timestamp
   );
 
-  let versionPointIndexes = history.versionPointIndexes;
-  if (versionPointIndexes.length != versions.length - 1) {
-    console.warn(versionPointIndexes);
+  let versionPointIds = history.versionPointIds;
+  if (versionPointIds.length != versions.length - 1) {
+    console.warn(versionPointIds);
     console.warn(versions);
-    throw new Error("history.versionPointIndexes mismatched from versions (versionPointIndexes.length + 1 = versions.length)");
+    throw new Error("history.versionPointIds mismatched from versions (versionPointIds.length + 1 = versions.length)");
   }
   versions[0]!.pointId = 0;
-  versionPointIndexes.map((value, index) => {
+  versionPointIds.map((value, index) => {
     versions[index+1]!.pointId = value;
   });
 

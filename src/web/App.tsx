@@ -5,7 +5,7 @@ import { loadScoreData } from './Temp';
 import { Icon } from '@iconify-icon/solid';
 import { Popover, Tabs } from '@ark-ui/solid';
 import { settings, setSettings } from './stores/settingsStore';
-import { history, initializeHistory, setScoreIndex } from './stores/historyStore';
+import { history, initializeHistory, setPointId } from './stores/historyStore';
 import { OngekiFrameTab } from './FrameTab';
 import { ImprovementTab } from './ImprovementTab';
 import Slider from './Slider';
@@ -88,7 +88,7 @@ const App: Component = () => {
     <SettingsButton />
     <div style="width: 100%; height: 100%; display: grid; grid-template-columns: 4fr 6fr; align-items: center;">
       <div style="height: 50%; display: flex; flex-direction: column; align-items: center;">
-        <RatingChart data={history.chartData} options={{decimalPlaces: settings.decimalPlaces}} onClick={(index) => setScoreIndex(index)} />
+        <RatingChart data={history.chartData} options={{decimalPlaces: settings.decimalPlaces}} onClick={(index) => setPointId(index)} />
         <div style="width: 90%">
           <Slider />
         </div>
@@ -106,13 +106,13 @@ const App: Component = () => {
               </div>
               <div style="overflow: auto; border: 1px solid #ddd; border-radius: 4px 4px 0 0; padding: 0px 4px; width: 100%; height: 100%;">
                 <Tabs.Content value="frame">
-                  <OngekiFrameTab pointId={history.scoreIndex} calc={history.history!.calc} />
+                  <OngekiFrameTab pointId={history.pointId} calc={history.history!.calc} />
                 </Tabs.Content>
                 <Tabs.Content value="image">
                   WIP
                 </Tabs.Content>
                 <Tabs.Content value="improve">
-                  <ImprovementTab improves={history.improves} scrollToPointId={history.scoreIndex} />
+                  <ImprovementTab improves={history.improves} scrollToPointId={history.pointId} />
                 </Tabs.Content>
               </div>
             </div>

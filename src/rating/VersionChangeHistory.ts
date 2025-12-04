@@ -83,7 +83,7 @@ export class VersionChangeHistory<Calc extends Calculator<Score, Chart, UndoType
         return scoreIndex;
     }
 
-    get versionPointIndexes() {
+    get versionPointIds() {
         return this.versionChangeScoreIndexes.map((value, index) => value+index+1);
     }
 
