@@ -94,4 +94,8 @@ export function historyGetTimestamp(pointId: number) {
   return new Date(timestamp);
 }
 
+export function historyNumPoints() {
+  return history.chartData.timestamps.length;
+}
+
 export { history };
