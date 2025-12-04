@@ -2,7 +2,7 @@ import { Accordion, Collapsible, MenuItem } from "@ark-ui/solid";
 import { VersionImproveRenderData } from "./Temp";
 import { For, Index, Show, createEffect, createSignal } from "solid-js";
 import { historyGetVersion, historyGetScore, historyGetSong, historyGetTimestamp, history } from "./stores/historyStore";
-import './ImprovementTable.css';
+import './ImprovementTab.css';
 import { Icon } from "@iconify-icon/solid";
 import { theme } from "./stores/themeStore";
 import { settings } from "./stores/settingsStore";
@@ -48,7 +48,7 @@ function formatDate(date: Date): string {
     return date.toLocaleDateString(undefined, options);
 }
 
-export function ImprovementTable(props: { improves: VersionImproveRenderData[], scrollToPointId?: number }) {
+export function ImprovementTab(props: { improves: VersionImproveRenderData[], scrollToPointId?: number }) {
     let rootElement: HTMLDivElement;
     let renderedImproves: Map<number, VersionImproveRenderData['improves']> = new Map();
     const [openItems, setOpenItems] = createSignal<string[]>([]);

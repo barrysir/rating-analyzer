@@ -6,8 +6,8 @@ import { Icon } from '@iconify-icon/solid';
 import { Popover, Tabs } from '@ark-ui/solid';
 import { settings, setSettings } from './stores/settingsStore';
 import { history, initializeHistory, setScoreIndex } from './stores/historyStore';
-import { OngekiRatingRenderer } from './OngekiRatingRenderer';
-import { ImprovementTable } from './ImprovementTable';
+import { OngekiFrameTab } from './FrameTab';
+import { ImprovementTab } from './ImprovementTab';
 import Slider from './Slider';
 
 
@@ -106,13 +106,13 @@ const App: Component = () => {
               </div>
               <div style="overflow: auto; border: 1px solid #ddd; border-radius: 4px 4px 0 0; padding: 0px 4px; width: 100%; height: 100%;">
                 <Tabs.Content value="frame">
-                  <OngekiRatingRenderer scoreIndex={history.scoreIndex} calc={history.history!.calc} />
+                  <OngekiFrameTab scoreIndex={history.scoreIndex} calc={history.history!.calc} />
                 </Tabs.Content>
                 <Tabs.Content value="image">
                   WIP
                 </Tabs.Content>
                 <Tabs.Content value="improve">
-                  <ImprovementTable improves={history.improves} scrollToPointId={history.scoreIndex} />
+                  <ImprovementTab improves={history.improves} scrollToPointId={history.scoreIndex} />
                 </Tabs.Content>
               </div>
             </div>

@@ -39,7 +39,7 @@ function recentEntries<Score extends {points: number, rating: number}>(db: Histo
     }).filter(x => x !== null);
 }
 
-export function OngekiRatingRenderer<Chart, Score>(props: { scoreIndex: number, calc: OngekiCalculator<Chart, Score> }) {
+export function OngekiFrameTab<Chart, Score>(props: { scoreIndex: number, calc: OngekiCalculator<Chart, Score> }) {
   let db = () => history.history!.calc.db;
 
   return <div>
