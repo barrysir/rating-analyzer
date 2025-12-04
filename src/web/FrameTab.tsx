@@ -3,7 +3,8 @@ import { BestFrame } from '../rating/frames/BestFrame';
 import { OngekiRecentFrame } from '../rating/frames/OngekiRecentFrame';
 import { OngekiCalculator } from '../rating/OngekiCalculator';
 import { DisplayFrame } from './FrameRenderers';
-import { history } from './stores/historyStore';
+import { history, historyGetChart, historyGetScore, historyGetSong, historyGetTimestamp, historyGetVersion, historyPointToScoreId } from './stores/historyStore';
+import { theme } from './stores/themeStore';
 
 function bestEntries<ChartId extends string, Score extends {points: number, rating: number}>(db: HistoricalChartDb, frame: BestFrame<ChartId, Score>) {
   return frame.frame.map((item) => {
@@ -39,11 +40,32 @@ function recentEntries<Score extends {points: number, rating: number}>(db: Histo
     }).filter(x => x !== null);
 }
 
-export function OngekiFrameTab<Chart, Score>(props: { scoreIndex: number, calc: OngekiCalculator<Chart, Score> }) {
-  let db = () => history.history!.calc.db;
+export function OngekiFrameTab<Chart, Score>(props: { pointId: number, calc: OngekiCalculator<Chart, Score> }) {
+  let db = () => props.calc.db;
+  let songTitle = () => {
+    let pointInfo = historyPointToScoreId(props.pointId);
+    if (pointInfo.type == 'version') {
+      let version = historyGetVersion(pointInfo.versionId);
+      return `Version change to ${version.name}`;
+    } else {
+      let score = historyGetScore(pointInfo.scoreId)!;
+      let { chart, song } = historyGetChart(props.pointId, score.chartId) ?? {};
+      return <>
+        <span>{song?.title} ({chart?.difficulty} {chart?.internalLevel})</span>
+        <span>{theme.formatRating(score.rating)} / {theme.formatPoints(score.points)}</span>
+      </>
+    }
+  }
 
   return <div>
-    <h2>{props.scoreIndex} - {props.calc.overallRating} ({props.calc.best.totalRating} - {props.calc.new.totalRating} - {props.calc.recent.totalRating})</h2>
+    <div style="display: flex; justify-content: space-between">
+      <div>
+        <h2>{props.pointId} - {theme.formatDateTime(new Date(historyGetTimestamp(props.pointId)))}</h2>
+      </div>
+      <div style="display: flex; flex-direction: column; font-size: 0.8em; align-items: end">
+        {songTitle()}
+      </div>
+    </div>
     <div style="display: grid; grid-template-columns: 1fr 1fr;">
       <div style="display: flex; flex-direction: column">
         <DisplayFrame data={bestEntries(db(), props.calc.best)} title="Best" color="blue" rows={30} />

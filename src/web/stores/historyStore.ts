@@ -65,6 +65,14 @@ export function historyGetScore(scoreIndex: number) {
   return result;
 }
 
+export function historyPointToScoreId(pointIndex: number) : {type: 'version', versionId: number} | {type: 'score', scoreId: number} {
+  let {scoreIndex, calcIndex, justBumped} = history.history!._makeComponents(pointIndex);
+  if (justBumped) {
+    return {type: 'version', versionId: calcIndex};
+  }
+  return {type: 'score', scoreId: scoreIndex};
+}
+
 export function historyGetDb(pointIndex: number) {
  return history.history!.calcAtIndex(pointIndex).db;
 }
@@ -73,9 +81,20 @@ export function historyGetSong(pointIndex: number, chartId: string) {
   let db = historyGetDb(pointIndex);
   let chart = db.getChart(chartId);
   if (chart === null) {
-    throw new Error(`Invalid chart id given: ${chartId} at point index ${pointIndex}`);
+    // throw new Error(`Invalid chart id given: ${chartId} at point index ${pointIndex}`);
   }
-  return chart.song;
+  return chart?.song;
+}
+
+export function historyGetChart(pointIndex: number, chartId: string) {
+  // TODO: refactor this together with historyGetSong
+  let db = historyGetDb(pointIndex);
+  let chart = db.getChart(chartId);
+  if (chart === null) {
+    // throw new Error(`Invalid chart id given: ${chartId} at point index ${pointIndex}`);
+    return null;
+  }
+  return {chart: chart, song: chart.song};
 }
 
 export function historyGetVersion(versionIndex: number) {

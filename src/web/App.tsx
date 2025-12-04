@@ -106,7 +106,7 @@ const App: Component = () => {
               </div>
               <div style="overflow: auto; border: 1px solid #ddd; border-radius: 4px 4px 0 0; padding: 0px 4px; width: 100%; height: 100%;">
                 <Tabs.Content value="frame">
-                  <OngekiFrameTab scoreIndex={history.scoreIndex} calc={history.history!.calc} />
+                  <OngekiFrameTab pointId={history.scoreIndex} calc={history.history!.calc} />
                 </Tabs.Content>
                 <Tabs.Content value="image">
                   WIP

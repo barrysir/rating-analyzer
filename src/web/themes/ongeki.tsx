@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import { getRegion } from "../../rating/utils";
 import { settings } from "../stores/settingsStore";
 
@@ -51,6 +52,14 @@ const OngekiTheme = {
     formatPoints(points: number) {
         let color = getRegion(scoreColors, points, p => p[0] as number)![1] as string;
         return <span classList={{[color]: true}}>{points}</span>;
+    },
+
+    formatDate(date: Date) {
+        return format(date, "PP");
+    },
+
+    formatDateTime(date: Date) {
+        return format(date, "PP, pp");
     },
 };
 

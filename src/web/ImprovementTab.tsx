@@ -43,11 +43,6 @@ function VersionImprovement(props: { improves: VersionImproveRenderData['improve
     </div>
 }
 
-function formatDate(date: Date): string {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return date.toLocaleDateString(undefined, options);
-}
-
 export function ImprovementTab(props: { improves: VersionImproveRenderData[], scrollToPointId?: number }) {
     let rootElement: HTMLDivElement;
     let renderedImproves: Map<number, VersionImproveRenderData['improves']> = new Map();
@@ -117,7 +112,7 @@ export function ImprovementTab(props: { improves: VersionImproveRenderData[], sc
             {(item, index) => {
                 let versionId = item().versionId;
                 let version = historyGetVersion(versionId);
-                let versionDate = formatDate(historyGetTimestamp(version.pointId));            
+                let versionDate = theme.formatDate(historyGetTimestamp(version.pointId));            
                 let improves = () => {
                     let improves = item().improves;
                     if (settings.showOnlyImprovements) {
