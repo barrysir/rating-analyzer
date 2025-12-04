@@ -66,6 +66,14 @@ export function RatingChart(incomingProps: {
     return { xaxis };
   });
 
+  let mouseDownTime: number;
+
+  onMount(() => {
+    chartRef?.addEventListener('mousedown', () => {
+      mouseDownTime = new Date().getTime();
+    })
+  })
+
   const chartOptions = createMemo(() => ({
     chart: {
       type: 'line',
@@ -75,12 +83,18 @@ export function RatingChart(incomingProps: {
       },
       events: {
         click: function(event, chartContext, config) {
-          console.log(config.dataPointIndex);
+          const mouseUpTime = new Date().getTime();
+          if (mouseUpTime - mouseDownTime >= 200) { 
+            console.log("Detected drag instead of click, ignoring chart click event");
+            return;
+          } 
+
           // The index is null if clicking on the zoom buttons
           if (config.dataPointIndex === null) {
             return;
           }
           if (props.onClick) {
+            console.log("Chart - seeking to point id", config.dataPointIndex);
             props.onClick(config.dataPointIndex);
           }
         },
