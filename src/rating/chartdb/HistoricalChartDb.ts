@@ -151,6 +151,7 @@ export class HistoricalChartDb implements ChartDb<HistChart> {
             isLunatic: (difficulty == OngekiDifficulty.LUNATIC),
             isNew: (song.date_added >= this.currentVersion.start),
             chartId: `${song.tag} ${difficulty}`,
+            difficulty: difficulty,
             song: song,
         };
     }
