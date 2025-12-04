@@ -118,11 +118,14 @@ export function ImprovementTable(props: { improves: VersionImproveRenderData[], 
                 let versionId = item().versionId;
                 let version = historyGetVersion(versionId);
                 let versionDate = formatDate(historyGetTimestamp(version.pointId));            
-                let improves = item().improves;
-                if (settings.showOnlyImprovements) {
-                    improves = improves.filter(item => item.data.isImprovement);
-                }
-                renderedImproves.set(versionId, improves);
+                let improves = () => {
+                    let improves = item().improves;
+                    if (settings.showOnlyImprovements) {
+                        improves = improves.filter(item => item.data.isImprovement);
+                    }
+                    return improves;
+                };
+                renderedImproves.set(versionId, improves());
                 
                 return <Accordion.Item value={index.toString()} class="accordion-item">
                     <Accordion.ItemTrigger class="accordion-trigger">
@@ -132,7 +135,7 @@ export function ImprovementTable(props: { improves: VersionImproveRenderData[], 
                         </Accordion.ItemIndicator>
                     </Accordion.ItemTrigger>
                     <Accordion.ItemContent class="accordion-content">
-                        <VersionImprovement improves={improves} />
+                        <VersionImprovement improves={improves()} />
                     </Accordion.ItemContent>
                 </Accordion.Item>;
             }}
