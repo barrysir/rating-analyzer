@@ -33,10 +33,10 @@ function VersionImprovement(props: { improves: VersionImproveRenderData['improve
                     <span>{song?.title} - {theme.formatPoints(score.points)} ({theme.formatRating(score.rating)})</span>
                     <span></span>
                     <span></span>
-                    <FrameImprovementRender rating={frame.total} change={frame.changes.total} color="black" />
-                    <FrameImprovementRender rating={frame.best} change={frame.changes.best} color="blue" />
-                    <FrameImprovementRender rating={frame.new} change={frame.changes.new} color="green" />
-                    <FrameImprovementRender rating={frame.recent} change={frame.changes.recent} color="red" />
+                    <FrameImprovementRender rating={frame.total} change={frame.changes.total} color={theme.frameColors['total']} />
+                    <FrameImprovementRender rating={frame.best} change={frame.changes.best} color={theme.frameColors['best']} />
+                    <FrameImprovementRender rating={frame.new} change={frame.changes.new} color={theme.frameColors['new']} />
+                    <FrameImprovementRender rating={frame.recent} change={frame.changes.recent} color={theme.frameColors['recent']} />
                 </div>
             }}
         </For>

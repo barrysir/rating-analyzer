@@ -61,6 +61,13 @@ const OngekiTheme = {
     formatDateTime(date: Date) {
         return format(date, "PP, pp");
     },
+
+    frameColors: {
+        'total': 'black',
+        'best': 'blue',
+        'new': 'green',
+        'recent': 'red',
+    },
 };
 
 export {OngekiTheme};

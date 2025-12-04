@@ -68,11 +68,11 @@ export function OngekiFrameTab<Chart, Score>(props: { pointId: number, calc: Ong
     </div>
     <div style="display: grid; grid-template-columns: 1fr 1fr;">
       <div style="display: flex; flex-direction: column">
-        <DisplayFrame data={bestEntries(db(), props.calc.best)} title="Best" color="blue" rows={30} />
+        <DisplayFrame data={bestEntries(db(), props.calc.best)} title="Best" color={theme.frameColors['best']} rows={30} />
       </div>
       <div style="display: flex; flex-direction: column">
-        <DisplayFrame data={bestEntries(db(), props.calc.new)} title="New" color="green" rows={15} />
-        <DisplayFrame data={recentEntries(db(), props.calc.recent)} title="Recent" color="red" rows={10} />
+        <DisplayFrame data={bestEntries(db(), props.calc.new)} title="New" color={theme.frameColors['new']} rows={15} />
+        <DisplayFrame data={recentEntries(db(), props.calc.recent)} title="Recent" color={theme.frameColors['recent']} rows={10} />
       </div>
     </div>
   </div>
