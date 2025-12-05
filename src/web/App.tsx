@@ -9,6 +9,7 @@ import { history, initializeHistory, setPointId } from './stores/historyStore';
 import { OngekiFrameTab } from './FrameTab';
 import { ImprovementTab } from './ImprovementTab';
 import Slider from './Slider';
+import { TooltipDelegated } from './TooltipDelegatedTest';
 
 
 function SettingsWindow() {
@@ -94,6 +95,8 @@ const App: Component = () => {
         </div>
       </div>
       <div style="height: 100%; padding-top: 50px;">
+         <TooltipDelegated>
+  
         <Show when={history.history !== null}>
           <Tabs.Root defaultValue="frame">
             <div style="height: 90vh; display: grid; grid-template-rows: auto 1fr;">
@@ -117,7 +120,7 @@ const App: Component = () => {
               </div>
             </div>
           </Tabs.Root>
-        </Show>
+        </Show></TooltipDelegated>
       </div>
     </div>
   </div>

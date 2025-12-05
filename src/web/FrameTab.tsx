@@ -19,6 +19,7 @@ function bestEntries<ChartId extends string, Score extends {points: number, rati
       title: song.title,
       level: chart.level,
       points: item.score.points,
+      scoreId: item.score.score.id,
     };
   }).filter(x => x !== null);
 }
@@ -36,6 +37,7 @@ function recentEntries<Score extends {points: number, rating: number}>(db: Histo
         title: song.title,
         level: chart.level,
         points: item.score.points,
+        scoreId: item.score.score.id,
       };
     }).filter(x => x !== null);
 }
@@ -52,7 +54,7 @@ export function OngekiFrameTab<Chart, Score>(props: { pointId: number, calc: Ong
       let { chart, song } = historyGetChart(props.pointId, score.chartId) ?? {};
       return <>
         <span>{song?.title} ({chart?.difficulty} {chart?.internalLevel})</span>
-        <span>{theme.formatRating(score.rating)} / {theme.formatPoints(score.points)}</span>
+        <span>{theme.formatRating(score.rating, pointInfo.scoreId)} / {theme.formatPoints(score.points)}</span>
       </>
     }
   }

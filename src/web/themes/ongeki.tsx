@@ -48,12 +48,13 @@ const OngekiTheme = {
 
     formatFrameRating(rating: number, frame: keyof typeof frameColors) {
         let color = frameColors[frame];
+        // TODO: add scordId to tooltip
         return <span style={{'color': color}}>{this.formatRatingText(rating)}</span>;
     },
 
-    formatRating(rating: number) {
+    formatRating(rating: number, scoreId?: number) {
         let color = getRegion(ratingColors, rating, p => p[0] as number)![1] as string;
-        return <span classList={{[color]: true}}>{this.formatRatingText(rating)}</span>;
+        return <span data-rating-tooltip={(scoreId)?.toString()} classList={{[color]: true}}>{this.formatRatingText(rating)}</span>;
     },
 
     formatChangeRating(change: number) {

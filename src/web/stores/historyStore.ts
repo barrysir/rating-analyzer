@@ -60,7 +60,7 @@ export function setPointId(pointId: number) {
 export function historyGetScore(scoreIndex: number) {
   let result = history.scores[scoreIndex];
   if (result === undefined) {
-    throw new Error(`Invalid score index given: ${scoreIndex} (max: ${history.scores.length-1})`);
+    // throw new Error(`Invalid score index given: ${scoreIndex} (max: ${history.scores.length-1})`);
   }
   return result;
 }
