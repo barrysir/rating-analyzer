@@ -3,13 +3,13 @@ import { historyGetScore } from "./stores/historyStore";
 
 let [ratingScoreId, setRatingScoreId] = createSignal(0);
 
-function RatingTooltip(props: {scoreId: number}) {
+export function RatingTooltip(props: {scoreId: number}) {
     let scoreInfo = () => {
         console.log(props.scoreId);
         let scoreinfo = historyGetScore(parseInt(props.scoreId));
         return scoreinfo;
     }
-    return (props.scoreId == null) ? props.scoreId : <div style="display:flex">
+    return (props.scoreId == null) ? props.scoreId : <div style="display:flex; flex-direction: column">
         <span>{scoreInfo().rating}</span>
         <span>{scoreInfo().points}</span>
         <span>{scoreInfo().chartId}</span>
