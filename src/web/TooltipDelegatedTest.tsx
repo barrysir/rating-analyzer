@@ -1,47 +1,41 @@
-import tippy, { followCursor, createSingleton, delegate } from "tippy.js";
-import { onMount, onCleanup, children } from "solid-js";
+import { followCursor, delegate } from "tippy.js";
+import { onMount, onCleanup, children, createRoot } from "solid-js";
 import "tippy.js/dist/tippy.css";
-import { historyGetScore } from "./stores/historyStore";
-import { RatingTooltip, RatingTooltipTest, setRatingScoreId } from "./RatingTooltip";
+import { RatingTooltip } from "./RatingTooltip";
 import 'tippy.js/themes/light.css';
-
-/*
-function RatingTooltip(props: {scoreId: number}) {
-    let scoreInfo = () => {
-        console.log(props.scoreId);
-        let scoreinfo = historyGetScore(parseInt(props.scoreId));
-        return scoreinfo;
-    }
-    return (props.scoreId == null) ? props.scoreId : <div style="display:flex">
-        <span>{scoreInfo().rating}</span>
-        <span>{scoreInfo().points}</span>
-        <span>{scoreInfo().chartId}</span>
-    </div>
-}
-*/
+import { render } from "solid-js/web";
 
 export function TooltipDelegated(props) {
+  const tooltipMaker = createRoot((dispose) => {
+    return {
+      create: (scoreId: number) => {
+        const tooltipEl = document.createElement("div");
+        render(() => <RatingTooltip scoreId={scoreId} />, tooltipEl)
+        return tooltipEl;
+      },
+      dispose,
+    };
+  });
+
   let container: HTMLDivElement;
-  let tooltipRef;
 
   onMount(() => {
     // Create delegated tippy instances
-    console.log("Setting mount", tooltipRef, container);
     const delegated = delegate(container, {
       target: "[data-rating-tooltip]",
       theme: 'light',
       onShow(instance) {
         let t = instance.reference.getAttribute("data-rating-tooltip");
         if (t === null) {
-            console.warn("Tried to show rating tooltip but element doesn't have the proper data attribute set", instance.reference);
-            return;
+          console.warn("Tried to show rating tooltip but element doesn't have the proper data attribute set", instance.reference);
+          return;
         }
         let scoreId = parseInt(t);
         if (isNaN(scoreId)) {
-            console.warn("Tried to show rating tooltip but element data attribute couldn't be parsed as number", instance.reference);
-            return;
+          console.warn("Tried to show rating tooltip but element data attribute couldn't be parsed as number", instance.reference);
+          return;
         }
-        let element = <RatingTooltip scoreId={/*@once*/ scoreId} />
+        let element = tooltipMaker.create(scoreId); // <RatingTooltip scoreId={/*@once*/ scoreId} />
         instance.setContent(element);
       },
       followCursor: true,
@@ -53,6 +47,7 @@ export function TooltipDelegated(props) {
 
     onCleanup(() => {
       delegated.destroy();
+      tooltipMaker.dispose();
     });
   });
 
