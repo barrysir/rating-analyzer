@@ -21,14 +21,38 @@ function technicalBonus(points: number) {
     return lerp(points, technicalBonusLerp);
 }
 
-function scoreRating(points: number, level: number) {
+function scoreRating(points: number, level: number): {rating: number, info: RatingAlgo} {
     if (points >= 800000) {
-        return Math.max(0, level + ratingTrunc(technicalBonus(points)));
+        let techBonus = ratingTrunc(technicalBonus(points));
+        let rating = Math.max(0, level + techBonus);
+        return {
+            rating: rating,
+            info: {
+                level: level,
+                techBonus: [techBonus, rating],
+            }
+        };
     }
-    return Math.max(0, ratingTrunc((level - 6) * (points - 500000) / 300000));
+    let multiplier = Math.max(0, (points - 500000) / 300000);
+    let value1 = Math.max(0, (level - 6));
+    let value2 = value1 * multiplier;
+    return {
+        rating: ratingTrunc(value2),
+        info: {
+            level: level,
+            techBonus: [-6, value1],
+            multiplier: [multiplier, value2],
+        }
+    };
 }
 
 // --------------------------------------
+
+export type RatingAlgo = {
+    level: number,
+    techBonus: [number, number],
+    multiplier?: [number, number],
+};
 
 type OngekiScore<Score> = 
     Prettify<{ points: number; rating: number; } & 
@@ -36,6 +60,7 @@ type OngekiScore<Score> =
 
 type UndoScore<Score> = {
     rating: number;
+    algo: RatingAlgo;
     undo: InnerUndoScore<Score>;
 };
 
@@ -108,7 +133,7 @@ export class OngekiCalculator<Chart, Score = undefined> {
         }
         let { internalLevel: level, chartId: id, isNew, isLunatic } = chartData;
 
-        let rating = scoreRating(score.points, level);
+        let {rating, info} = scoreRating(score.points, level);
         let entry: OngekiScore<Score> = {
             points: score.points,
             rating,
@@ -125,7 +150,7 @@ export class OngekiCalculator<Chart, Score = undefined> {
         }
         undo.naive = this.naive.addScore(entry, id);
         undo.recent = this.recent.addScore(entry, {chartId: id, isLunatic});
-        return {rating, undo};
+        return {rating, algo: info, undo};
     }
 
     undoScore(undo_: UndoScore<Score> | null) {

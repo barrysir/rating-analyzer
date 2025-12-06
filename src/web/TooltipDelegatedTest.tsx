@@ -3,6 +3,7 @@ import { onMount, onCleanup, children } from "solid-js";
 import "tippy.js/dist/tippy.css";
 import { historyGetScore } from "./stores/historyStore";
 import { RatingTooltip, RatingTooltipTest, setRatingScoreId } from "./RatingTooltip";
+import 'tippy.js/themes/light.css';
 
 /*
 function RatingTooltip(props: {scoreId: number}) {
@@ -27,19 +28,20 @@ export function TooltipDelegated(props) {
     // Create delegated tippy instances
     console.log("Setting mount", tooltipRef, container);
     const delegated = delegate(container, {
-      target: "[data-rating-tooltip]",   // any element with this attribute gets tooltip
-      content: '',
-    //   content: (ref) => {
-    //     return tooltipRef;
-    //   },
+      target: "[data-rating-tooltip]",
+      theme: 'light',
       onShow(instance) {
         let t = instance.reference.getAttribute("data-rating-tooltip");
-        console.log("Setting", t);
-        if (t != null) {
-            setRatingScoreId(parseInt(t));
+        if (t === null) {
+            console.warn("Tried to show rating tooltip but element doesn't have the proper data attribute set", instance.reference);
+            return;
         }
-        console.log(tooltipRef);
-        let element = <RatingTooltip scoreId={parseInt(t)} />
+        let scoreId = parseInt(t);
+        if (isNaN(scoreId)) {
+            console.warn("Tried to show rating tooltip but element data attribute couldn't be parsed as number", instance.reference);
+            return;
+        }
+        let element = <RatingTooltip scoreId={/*@once*/ scoreId} />
         instance.setContent(element);
       },
       followCursor: true,
@@ -49,24 +51,8 @@ export function TooltipDelegated(props) {
       plugins: [followCursor],
     });
 
-    // setTimeout(() => {
-    //     console.log("Setting content", tooltipRef);
-    //     delegated.setContent(tooltipRef);
-    // }, 1000);
-
-    console.log(delegated);
-
-    // Make them share 1 tooltip
-    // const singleton = createSingleton([delegated], {
-    //   moveTransition: "transform 0.15s ease",
-    // //   delay: [0, 0],
-    // //   animation: "shift-away",
-    //   placement: "top",
-    // });
-
     onCleanup(() => {
       delegated.destroy();
-    //   singleton.destroy();
     });
   });
 
@@ -74,9 +60,6 @@ export function TooltipDelegated(props) {
 
   return (
     <div ref={container}>
-      <RatingTooltipTest ref={(el) => {
-        tooltipRef= el;
-    console.log("in ref", el)}} />
       {c()}
     </div>
   );

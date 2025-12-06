@@ -1,0 +1,8 @@
+table.rating-tooltip {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+.rating-tooltip th,.rating-tooltip td {
+    border: 1px solid black;
+}

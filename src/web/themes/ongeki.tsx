@@ -48,7 +48,6 @@ const OngekiTheme = {
 
     formatFrameRating(rating: number, frame: keyof typeof frameColors) {
         let color = frameColors[frame];
-        // TODO: add scordId to tooltip
         return <span style={{'color': color}}>{this.formatRatingText(rating)}</span>;
     },
 

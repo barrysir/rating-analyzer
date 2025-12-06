@@ -1,6 +1,6 @@
 import { UserScoreDatabase } from '../get-kamai/UserScores';
 import { RatingHistory } from '../rating/RatingHistory';
-import { OngekiCalculator } from '../rating/OngekiCalculator';
+import { OngekiCalculator, RatingAlgo } from '../rating/OngekiCalculator';
 import { HistoricalChartDb } from '../rating/chartdb/HistoricalChartDb';
 import SONG_DATA from '../../data/song-db.json';
 import MY_SCORE_DATA from '../../data/score-data.json';
@@ -49,6 +49,7 @@ function calculateMaxRating(db: HistoricalChartDb) {
 type ExtendedScore = {
   chartId: string;
   rating: number;
+  algo: RatingAlgo;
   points: number;
   timeAchieved: number;
   kamai: KamaiScore;
@@ -189,6 +190,9 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
     if (info !== null) {
       if (info.rating !== undefined) {
         extendedScores[history.whichScore]!.rating = info.rating;
+      }
+      if (info.algo !== undefined) {
+        extendedScores[history.whichScore]!.algo = info.algo;
       }
     }
 
