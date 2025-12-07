@@ -1,6 +1,6 @@
 import type { ChartDb } from "./chartdb/ChartDb";
 import { BellLamp, ClearLamp, GradeLamp } from "./data-types";
-import { BestFrame, UndoScore as BestUndo } from "./frames/BestFrame";
+import { BestFrame, BestFrameSnapshot, UndoScore as BestUndo } from "./frames/BestFrame";
 import { findRegion, lerp, pointsToGradeLamp, type Prettify } from "./utils";
 
 
@@ -87,6 +87,14 @@ type UndoScore<Score> = {
 
 type LampDisplay = {bell: BellLamp, clear: ClearLamp, grade: GradeLamp};
 
+type OngekiRefreshCalculatorSnapshot<ChartId, Score> = {
+    best: BestFrameSnapshot<ChartId, OngekiScore<Score>>,
+    new: BestFrameSnapshot<ChartId, OngekiScore<Score>>,
+    naive: BestFrameSnapshot<ChartId, OngekiScore<Score>>,
+    plat: BestFrameSnapshot<ChartId, PlatinumScore<Score>>,
+    lamps: Map<string, LampDisplay>,
+};
+
 export class OngekiRefreshCalculator<Chart, Score = undefined> {
     db: ChartDb<Chart>;
     best: BestFrame<string, OngekiScore<Score>>;
@@ -103,6 +111,28 @@ export class OngekiRefreshCalculator<Chart, Score = undefined> {
         this.naive = new BestFrame(60);
         this.plat = new BestFrame(50);
         this.lamps = new Map();
+    }
+
+    static create<Extra>() {
+        return function <Chart>(db: ChartDb<Chart>) { return new OngekiRefreshCalculator<Chart, Extra>(db); };
+    }
+    
+    makeSnapshot(): OngekiRefreshCalculatorSnapshot<string, Score> {
+        return {
+            best: this.best.makeSnapshot(),
+            new: this.new.makeSnapshot(),
+            naive: this.naive.makeSnapshot(),
+            plat: this.plat.makeSnapshot(),
+            lamps: structuredClone(this.lamps),
+        }
+    }
+
+    loadSnapshot(snapshot: OngekiRefreshCalculatorSnapshot<string, Score>) {
+        this.best.loadSnapshot(snapshot.best);
+        this.new.loadSnapshot(snapshot.new);
+        this.naive.loadSnapshot(snapshot.naive);
+        this.plat.loadSnapshot(snapshot.plat);
+        this.lamps = structuredClone(snapshot.lamps);
     }
 
     // TODO: make this accept a Partial<LampDisplay> so API is easier to use
