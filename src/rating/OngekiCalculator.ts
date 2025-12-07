@@ -56,7 +56,7 @@ export type RatingAlgo = {
 
 type OngekiScore<Score> = 
     Prettify<{ points: number; rating: number; } & 
-    (Score extends undefined ? {} : {score: Score})>;
+    (Score extends undefined ? {} : {extra: Score})>;
 
 type UndoScore<Score> = {
     rating: number;
@@ -125,7 +125,7 @@ export class OngekiCalculator<Chart, Score = undefined> {
         this.recent.loadSnapshot(snapshot.recent);
     }
 
-    addScore(score: {points: number} & (Score extends undefined ? {} : {score: Score}), chart: Chart): UndoScore<Score> | null {
+    addScore(score: {points: number} & (Score extends undefined ? {} : {extra: Score}), chart: Chart): UndoScore<Score> | null {
         let chartData = this.db.getChartInfo(chart);
         // if this is for a chart that doesn't exist (maybe it comes in a future version), then ignore the score
         if (chartData === null) {

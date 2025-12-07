@@ -110,9 +110,9 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
 
   let scoresArray = scores.map((score, i) => {
     return [
-      {points: score.kamai.scoreData.score, score: {id: i, timestamp: score.kamai.timeAchieved}}, 
+      {points: score.kamai.scoreData.score, extra: {id: i, timestamp: score.kamai.timeAchieved}}, 
       score.chartId,
-    ] as [{points: number, score: {id: number, timestamp: number}}, string]
+    ] as [{points: number, extra: {id: number, timestamp: number}}, string]
   });
 
   let history = new VersionChangeHistory(
@@ -123,7 +123,7 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
       }
     )),
     scoresArray,
-    (s) => s.score.timestamp
+    (s) => s.extra.timestamp
   );
 
   let versionPointIds = history.versionPointIds;

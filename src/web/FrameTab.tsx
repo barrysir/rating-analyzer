@@ -19,7 +19,7 @@ function bestEntries<ChartId extends string, Score extends {points: number, rati
       title: song.title,
       level: chart.level,
       points: item.score.points,
-      scoreId: item.score.score.id,
+      scoreId: item.score.extra.id,
     };
   }).filter(x => x !== null);
 }
@@ -37,7 +37,7 @@ function recentEntries<Score extends {points: number, rating: number}>(db: Histo
         title: song.title,
         level: chart.level,
         points: item.score.points,
-        scoreId: item.score.score.id,
+        scoreId: item.score.extra.id,
       };
     }).filter(x => x !== null);
 }

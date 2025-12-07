@@ -64,11 +64,11 @@ function pRating(platinum: number, maxPlatinum: number, level: number) {
 
 // --------------------------------------
 
-type OngekiScore<Score> = { points: number; rating: number; } & (Score extends undefined ? {} : {score: Score});
-type PlatinumScore<Score> = { platinum: number; rating: number; } & (Score extends undefined ? {} : {score: Score});
+type OngekiScore<Score> = { points: number; rating: number; } & (Score extends undefined ? {} : {extra: Score});
+type PlatinumScore<Score> = { platinum: number; rating: number; } & (Score extends undefined ? {} : {extra: Score});
 
 type ScoreInput<Score> = {points: number, platinum: number}
-& (Score extends undefined ? {} : {score: Score})
+& (Score extends undefined ? {} : {extra: Score})
 & 
 (
     {bells: number, judgements: {crit?: number, break: number, hit: number, miss: number}}
@@ -190,7 +190,7 @@ export class OngekiRefreshCalculator<Chart, Score = undefined> {
 
         let {lamps, changed} = this.updateLamps(scoreLamps, chartId);
 
-        let optionalScore = ('score' in score) ? { score: score.score } : {};
+        let optionalScore = ('extra' in score) ? { extra: score.extra } : {};
 
         let normalRating = scoreRating(score.points, lamps, level);
         let normalScore: OngekiScore<Score> = {points: score.points, rating: normalRating, ...optionalScore};
