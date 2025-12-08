@@ -1,34 +1,28 @@
 import { createSignal, Show } from "solid-js";
-import { historyGetScore } from "./stores/historyStore";
 import { theme } from "./stores/themeStore";
 import "./RatingTooltip.css";
+import { RatingAlgo } from "../rating/OngekiCalculator";
 
-export function RatingTooltip(props: {scoreId: number}) {
+export function RatingTooltip(props: {algo: RatingAlgo}) {
     return <table class="rating-tooltip">
-        {(() => {
-        let scoreInfo = historyGetScore(props.scoreId)!;
-        let algo = scoreInfo.algo;
-        return (
-            <tbody style="font-size: 0.8em;">
+        <tbody style="font-size: 0.8em;">
+            <tr>
+                <td>Constant</td>
+                <td></td>
+                <td>{props.algo.level}</td>
+            </tr>
+            <tr>
+                <td>Score Bonus</td>
+                <td>{theme.formatChangeRating(props.algo.techBonus[0])}</td>
+                <td>{theme.formatRatingText(props.algo.techBonus[1])}</td>
+            </tr>
+            <Show when={props.algo.multiplier}>
                 <tr>
-                    <td>Constant</td>
-                    <td></td>
-                    <td>{algo.level}</td>
+                    <td>Low Score Multiplier</td>
+                    <td>x{props.algo.multiplier![0].toFixed(2)}</td>
+                    <td>{theme.formatRatingText(props.algo.multiplier![1])}</td>
                 </tr>
-                <tr>
-                    <td>Score Bonus</td>
-                    <td>{theme.formatChangeRating(algo.techBonus[0])}</td>
-                    <td>{theme.formatRatingText(algo.techBonus[1])}</td>
-                </tr>
-                <Show when={algo.multiplier}>
-                    <tr>
-                        <td>Low Score Multiplier</td>
-                        <td>x{algo.multiplier![0].toFixed(2)}</td>
-                        <td>{theme.formatRatingText(algo.multiplier![1])}</td>
-                    </tr>
-                </Show>
-            </tbody>
-        );
-        })()}
+            </Show>
+        </tbody>
     </table>
 }

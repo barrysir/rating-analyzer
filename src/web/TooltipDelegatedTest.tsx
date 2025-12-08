@@ -9,8 +9,10 @@ export function TooltipDelegated(props) {
   const tooltipMaker = createRoot((dispose) => {
     return {
       create: (scoreId: number) => {
+        let scoreInfo = historyGetScore(props.scoreId)!;
+        let algo = scoreInfo.algo;
         const tooltipEl = document.createElement("div");
-        render(() => <RatingTooltip scoreId={scoreId} />, tooltipEl)
+        render(() => <RatingTooltip algo={algo} />, tooltipEl)
         return tooltipEl;
       },
       dispose,
