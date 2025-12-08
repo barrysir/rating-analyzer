@@ -1,8 +1,19 @@
 import { Calculator, RatingHistory } from "./RatingHistory";
 import { xWithBumps } from "./utils";
 
-export class VersionChangeHistory<Calc extends Calculator<Score, Chart, UndoType, unknown>, Score, Chart, UndoType> {
-    histories: RatingHistory<Calc, Score, Chart, UndoType, unknown>[];
+type InferTrick<Calc, index extends 'score' | 'chart' | 'undo' | 'snapshot'> = 
+    Calc extends Calculator<infer Score, infer Chart, infer UndoType, infer Snapshot>
+    ? {score: Score, chart: Chart, undo: UndoType, snapshot: Snapshot}[index]
+    : never
+;
+
+export class VersionChangeHistory<
+    Calc extends Calculator<Score, Chart, UndoType, any>, 
+    Score = InferTrick<Calc, 'score'>,
+    Chart = InferTrick<Calc, 'chart'>,
+    UndoType = InferTrick<Calc, 'undo'>,
+> {
+    histories: RatingHistory<Calc, Score, Chart, UndoType, any>[];
     
     // index i -> timestamp of changing from version i => version i+1
     // versionChanges: {

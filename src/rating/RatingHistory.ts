@@ -6,7 +6,19 @@ export interface Calculator<Score, Chart, UndoType, Snapshot> {
     loadSnapshot(snapshot: Snapshot): unknown;
 }
 
-export class RatingHistory<Calc extends Calculator<Score, Chart, UndoType, Snapshot>, Score, Chart, UndoType, Snapshot> {
+type InferTrick<Calc, index extends 'score' | 'chart' | 'undo' | 'snapshot'> = 
+    Calc extends Calculator<infer Score, infer Chart, infer UndoType, infer Snapshot>
+    ? {score: Score, chart: Chart, undo: UndoType, snapshot: Snapshot}[index]
+    : never
+;
+
+export class RatingHistory<
+    Calc extends Calculator<Score, Chart, UndoType, Snapshot>, 
+    Score = InferTrick<Calc, 'score'>, 
+    Chart = InferTrick<Calc, 'chart'>, 
+    UndoType = InferTrick<Calc, 'undo'>, 
+    Snapshot = InferTrick<Calc, 'snapshot'>,
+> {
     calc: Calc;
     scores: [Score, Chart][];       // scores[i] contains the action to move from i -> i+1
     undos: UndoType[];              // undo[i] contains the action to undo from i -> i-1
