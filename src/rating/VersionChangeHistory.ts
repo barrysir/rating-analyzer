@@ -130,20 +130,20 @@ export class VersionChangeHistory<
         this.goto(this.currentIndex + delta);
     }
 
-    // TODO: When I use this function I get 'unknown' as the return type -- I don't know why this doesn't type resolve correctly, try to figure it out
-    getCalcOutput(index: number): UndoType | null {
+    getCalcOutput(index: number) {
         let {scoreIndex, calcIndex, justBumped} = this._makeComponents(index);
         
-        let result = this.histories[calcIndex]!.undos[scoreIndex];
-        // The only time there should be no score is if a version change just happened,
-        // verify that this is true and throw an assertion error if not
-        if (result === undefined) {
+        let undos = this.histories[calcIndex]!.undos;
+        if (scoreIndex >= undos.length) {
+            // The only time there should be no score is if a version change just happened,
+            // verify that this is true and throw an assertion error if not
             if (!justBumped) {
                 throw new Error(`assertion error - could not find score at index ${index} which is not a version change: scores should only ever not be found at version changes`);
             } else {
                 return null;
             }
         }
+        let result = undos[scoreIndex]!;        
         return result;
     }
 }
