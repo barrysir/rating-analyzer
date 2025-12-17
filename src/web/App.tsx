@@ -10,6 +10,7 @@ import { OngekiFrameTab } from './FrameTab';
 import { ImprovementTab } from './ImprovementTab';
 import Slider from './Slider';
 import { TooltipDelegated } from './TooltipDelegatedTest';
+import { HistoryProvider, initializeState } from './stores/stateStore';
 
 
 function SettingsWindow() {
@@ -82,16 +83,19 @@ const App: Component = () => {
   const scoreData = loadScoreData();
 
   onMount(() => {
-    initializeHistory(scoreData, { decimalPlaces: settings.decimalPlaces });
+    initializeState(scoreData, { decimalPlaces: settings.decimalPlaces });
   });
 
-  return <div style="width: 100vw; height: 100vh;">
+  return <HistoryProvider>{({ history, helpers, theme }) => (
+  <div style="width: 100vw; height: 100vh;">
     <SettingsButton />
     <div style="width: 100%; height: 100%; display: grid; grid-template-columns: 4fr 6fr; align-items: center;">
       <div style="height: 50%; display: flex; flex-direction: column; align-items: center;">
         <RatingChart data={history.chartData} options={{decimalPlaces: settings.decimalPlaces}} onClick={(index) => setPointId(index)} />
         <div style="width: 90%">
-          <Slider />
+          <Show when={history.history !== null}>
+            <Slider />
+          </Show>
         </div>
       </div>
       <div style="height: 100%; padding-top: 50px;">
@@ -124,6 +128,7 @@ const App: Component = () => {
       </div>
     </div>
   </div>
+  )}</HistoryProvider>
 };
 
 export default App;

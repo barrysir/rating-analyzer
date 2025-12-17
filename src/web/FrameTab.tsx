@@ -3,8 +3,7 @@ import { BestFrame } from '../rating/frames/BestFrame';
 import { OngekiRecentFrame } from '../rating/frames/OngekiRecentFrame';
 import { OngekiCalculator } from '../rating/OngekiCalculator';
 import { DisplayFrame } from './FrameRenderers';
-import { history, historyGetChart, historyGetScore, historyGetSong, historyGetTimestamp, historyGetVersion, historyPointToScoreId } from './stores/historyStore';
-import { theme } from './stores/themeStore';
+import { HistoryProvider, Mode } from './stores/stateStore';
 
 function bestEntries<ChartId extends string, Score extends {points: number, rating: number}>(db: HistoricalChartDb, frame: BestFrame<ChartId, Score>) {
   return frame.frame.map((item) => {
@@ -13,7 +12,7 @@ function bestEntries<ChartId extends string, Score extends {points: number, rati
       return null;
     }
     let {song, chart} = a;
-
+    
     return {
       rating: item.score.rating,
       title: song.title,
@@ -44,14 +43,14 @@ function recentEntries<Score extends {points: number, rating: number}>(db: Histo
 
 export function OngekiFrameTab<Chart, Score>(props: { pointId: number, calc: OngekiCalculator<Chart, Score> }) {
   let db = () => props.calc.db;
-  let songTitle = () => {
-    let pointInfo = historyPointToScoreId(props.pointId);
+  let songTitle = (helpers, theme) => {
+    let pointInfo = helpers.pointToScoreId(props.pointId);
     if (pointInfo.type == 'version') {
-      let version = historyGetVersion(pointInfo.versionId);
+      let version = helpers.getVersion(pointInfo.versionId);
       return `Version change to ${version.name}`;
     } else {
-      let score = historyGetScore(pointInfo.scoreId)!;
-      let { chart, song } = historyGetChart(props.pointId, score.chartId) ?? {};
+      let score = helpers.getScore(pointInfo.scoreId)!;
+      let { chart, song } = helpers.getChart(props.pointId, score.chartId) ?? {};
       return <>
         <span>{song?.title} ({chart?.difficulty} {chart?.internalLevel})</span>
         <span>{theme.formatRating(score.rating, pointInfo.scoreId)} / {theme.formatPoints(score.points)}</span>
@@ -59,10 +58,10 @@ export function OngekiFrameTab<Chart, Score>(props: { pointId: number, calc: Ong
     }
   }
 
-  return <div>
+  return <HistoryProvider<Mode.ONGEKI>>{({ helpers, theme }) => (<div>
     <div style="display: flex; justify-content: space-between">
       <div>
-        <h2>{props.pointId} - {theme.formatDateTime(new Date(historyGetTimestamp(props.pointId)))}</h2>
+        <h2>{props.pointId} - {theme.formatDateTime(new Date(helpers.getTimestamp(props.pointId)))}</h2>
         <span>
           {theme.formatFrameRating(props.calc.overallRating, 'total')}
           &nbsp;/ {theme.formatFrameRating(props.calc.best.overallRating, 'best')} 
@@ -71,7 +70,7 @@ export function OngekiFrameTab<Chart, Score>(props: { pointId: number, calc: Ong
         </span>
       </div>
       <div style="display: flex; flex-direction: column; font-size: 0.8em; align-items: end">
-        {songTitle()}
+        {songTitle(helpers, theme)}
       </div>
     </div>
     <div style="display: grid; grid-template-columns: 1fr 1fr;">
@@ -84,4 +83,5 @@ export function OngekiFrameTab<Chart, Score>(props: { pointId: number, calc: Ong
       </div>
     </div>
   </div>
+  )}</HistoryProvider>
 }

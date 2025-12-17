@@ -1,7 +1,7 @@
 import { For } from 'solid-js';
 import "./FrameRenderers.css";
 import { settings } from './stores/settingsStore';
-import { theme } from './stores/themeStore';
+import { HistoryProvider } from './stores/stateStore';
 
 export type FrameEntry = {
   rating: number;
@@ -32,7 +32,8 @@ export function DisplayFrame(props: { data: FrameEntry[], title: string, color?:
     return result;
   };
 
-  return <div style="font-size: 0.8em; border: 1px solid black; border-radius: 4px; overflow: hidden;">
+  return <HistoryProvider>{({ history, helpers, theme }) => (
+  <div style="font-size: 0.8em; border: 1px solid black; border-radius: 4px; overflow: hidden;">
     <div style={{'text-align': 'center', 'border-bottom': '1px solid black'}}>
       <h2 style={{ 'color': props.color ?? 'black', }}>{props.title}</h2>
       <span style="font-size: 0.9em">average {averageRating().toFixed(settings.decimalPlaces)} / total {totalRating().toFixed(settings.decimalPlaces)}</span>
@@ -62,4 +63,5 @@ export function DisplayFrame(props: { data: FrameEntry[], title: string, color?:
       </tbody>
     </table>
   </div>
+  )}</HistoryProvider>
 }

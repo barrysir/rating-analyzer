@@ -60,13 +60,13 @@ export class HistoricalChartDb implements ChartDb<HistChart> {
         for (let rawSong of data.songs) {
             // Don't add songs which are too new
             if (rawSong.date_added > date) {
-                console.log("Skipping", rawSong);
+                // console.log("Skipping", rawSong);
                 continue;
             }
             let isRemoved = rawSong.date_removed !== undefined && rawSong.date_removed <= date;
             // Only add removed songs in omnimix mode
             if (!omnimix && isRemoved) {
-                console.log("Skipping", rawSong);
+                // console.log("Skipping", rawSong);
                 continue;
             }
             let song = structuredClone(rawSong);
@@ -107,7 +107,7 @@ export class HistoricalChartDb implements ChartDb<HistChart> {
         if ('tag' in search) {
             song = this.songs[search.tag];
             if (song === undefined) {
-                console.log(`Couldn't find song with tag ${search.tag}`);
+                // console.log(`Couldn't find song with tag ${search.tag}`);
                 return null;
             }
         } else {

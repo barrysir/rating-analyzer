@@ -1,46 +1,49 @@
 import { Accordion, Collapsible, MenuItem } from "@ark-ui/solid";
-import { VersionImproveRenderData } from "./Temp";
+import { VersionImproveRenderData } from './stores/historyStore';
 import { For, Index, Show, createEffect, createSignal } from "solid-js";
-import { historyGetVersion, historyGetScore, historyGetSong, historyGetTimestamp, history } from "./stores/historyStore";
 import './ImprovementTab.css';
 import { Icon } from "@iconify-icon/solid";
-import { theme } from "./stores/themeStore";
 import { settings } from "./stores/settingsStore";
 import { findRegion, getRegion } from "../rating/utils";
+import { HistoryProvider, Mode, unpackHistory } from "./stores/stateStore";
 
 function FrameImprovementRender(props: { rating: number, change?: number, color: string }) {
-    return <div style={{ 'color': props.color, 'display': 'flex', 'flex-direction': 'column', 'align-items': 'center' }}>
-        <span>{theme.formatRatingText(props.rating)}</span>
-        <Show when={props.change !== undefined}>
-            <span style="font-size: 0.7em">{theme.formatChangeRating(props.change!)}</span>
-        </Show>
-    </div>
+    return <HistoryProvider<Mode.ONGEKI>>{({theme}) => (
+        <div style={{ 'color': props.color, 'display': 'flex', 'flex-direction': 'column', 'align-items': 'center' }}>
+            <span>{theme.formatRatingText(props.rating)}</span>
+            <Show when={props.change !== undefined}>
+                <span style="font-size: 0.7em">{theme.formatChangeRating(props.change!)}</span>
+            </Show>
+        </div>
+    )}</HistoryProvider>;
 }
 
 function VersionImprovement(props: { improves: VersionImproveRenderData['improves'] }) {
-    return <div class="improve-list">
-        <For each={props.improves}>
-            {(item, index) => {
-                let score = historyGetScore(item.scoreId)!;
-                let song = historyGetSong(item.pointId, score.chartId);
-                if (song === undefined) {
-                    console.warn("Couldn't find song info for", score.chartId, "at", item.pointId);
-                    return;
-                }
-                let frame = item.data;
-                return <div class="improve-row" data-point-id={item.pointId.toString()}>
-                    <span classList={{'text-blue-500': (history.pointId == item.pointId)}}>{item.pointId}</span>
-                    <span>{song?.title} - {theme.formatPoints(score.points)} ({theme.formatRating(score.rating, item.scoreId)})</span>
-                    <span></span>
-                    <span></span>
-                    <FrameImprovementRender rating={frame.total} change={frame.changes.total} color={theme.frameColors['total']} />
-                    <FrameImprovementRender rating={frame.best} change={frame.changes.best} color={theme.frameColors['best']} />
-                    <FrameImprovementRender rating={frame.new} change={frame.changes.new} color={theme.frameColors['new']} />
-                    <FrameImprovementRender rating={frame.recent} change={frame.changes.recent} color={theme.frameColors['recent']} />
-                </div>
-            }}
-        </For>
-    </div>
+    return <HistoryProvider<Mode.ONGEKI>>{({ history, helpers, theme }) => (
+        <div class="improve-list">
+            <For each={props.improves}>
+                {(item, index) => {
+                    let score = helpers.getScore(item.scoreId)!;
+                    let song = helpers.getSong(item.pointId, score.chartId);
+                    if (song === undefined) {
+                        console.warn("Couldn't find song info for", score.chartId, "at", item.pointId);
+                        return;
+                    }
+                    let frame = item.data;
+                    return <div class="improve-row" data-point-id={item.pointId.toString()}>
+                        <span classList={{'text-blue-500': (history.pointId == item.pointId)}}>{item.pointId}</span>
+                        <span>{song?.title} - {theme.formatPoints(score.points)} ({theme.formatRating(score.rating, item.scoreId)})</span>
+                        <span></span>
+                        <span></span>
+                        <FrameImprovementRender rating={frame.total} change={frame.changes.total} color={theme.frameColors['total']} />
+                        <FrameImprovementRender rating={frame.best} change={frame.changes.best} color={theme.frameColors['best']} />
+                        <FrameImprovementRender rating={frame.new} change={frame.changes.new} color={theme.frameColors['new']} />
+                        <FrameImprovementRender rating={frame.recent} change={frame.changes.recent} color={theme.frameColors['recent']} />
+                    </div>
+                }}
+            </For>
+        </div>
+    )}</HistoryProvider>
 }
 
 export function ImprovementTab(props: { improves: VersionImproveRenderData[], scrollToPointId?: number }) {
@@ -100,40 +103,42 @@ export function ImprovementTab(props: { improves: VersionImproveRenderData[], sc
         }
     });
 
-    return <Accordion.Root
-        multiple
-        collapsible
-        class="improvement-accordion"
-        value={openItems()}
-        onValueChange={(details) => setOpenItems(details.value)}
-        ref={(el) => rootElement = el}
-    >
-        <Index each={props.improves}>
-            {(item, index) => {
-                let versionId = item().versionId;
-                let version = historyGetVersion(versionId);
-                let versionDate = theme.formatDate(historyGetTimestamp(version.pointId));            
-                let improves = () => {
-                    let improves = item().improves;
-                    if (settings.showOnlyImprovements) {
-                        improves = improves.filter(item => item.data.isImprovement);
-                    }
-                    return improves;
-                };
-                renderedImproves.set(versionId, improves());
-                
-                return <Accordion.Item value={index.toString()} class="accordion-item">
-                    <Accordion.ItemTrigger class="accordion-trigger">
-                        <span class="accordion-title">{versionDate} - {version.name}</span>
-                        <Accordion.ItemIndicator class="accordion-indicator">
-                            <Icon icon="lucide:chevron-down" />
-                        </Accordion.ItemIndicator>
-                    </Accordion.ItemTrigger>
-                    <Accordion.ItemContent class="accordion-content">
-                        <VersionImprovement improves={improves()} />
-                    </Accordion.ItemContent>
-                </Accordion.Item>;
-            }}
-        </Index>
-    </Accordion.Root>
+    return <HistoryProvider<Mode.ONGEKI>>{({ history, helpers, theme }) => (
+        <Accordion.Root
+            multiple
+            collapsible
+            class="improvement-accordion"
+            value={openItems()}
+            onValueChange={(details) => setOpenItems(details.value)}
+            ref={(el) => rootElement = el}
+        >
+            <Index each={props.improves}>
+                {(item, index) => {
+                    let versionId = item().versionId;
+                    let version = helpers.getVersion(versionId);
+                    let versionDate = theme.formatDate(helpers.getTimestamp(version.pointId));            
+                    let improves = () => {
+                        let improves = item().improves;
+                        if (settings.showOnlyImprovements) {
+                            improves = improves.filter(item => item.data.isImprovement);
+                        }
+                        return improves;
+                    };
+                    renderedImproves.set(versionId, improves());
+                    
+                    return <Accordion.Item value={index.toString()} class="accordion-item">
+                        <Accordion.ItemTrigger class="accordion-trigger">
+                            <span class="accordion-title">{versionDate} - {version.name}</span>
+                            <Accordion.ItemIndicator class="accordion-indicator">
+                                <Icon icon="lucide:chevron-down" />
+                            </Accordion.ItemIndicator>
+                        </Accordion.ItemTrigger>
+                        <Accordion.ItemContent class="accordion-content">
+                            <VersionImprovement improves={improves()} />
+                        </Accordion.ItemContent>
+                    </Accordion.Item>;
+                }}
+            </Index>
+        </Accordion.Root>
+    )}</HistoryProvider>
 }

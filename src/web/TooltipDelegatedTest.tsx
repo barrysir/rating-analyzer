@@ -1,15 +1,18 @@
 import { followCursor, delegate } from "tippy.js";
-import { onMount, onCleanup, children, createRoot } from "solid-js";
+import { onMount, onCleanup, children, createRoot, JSXElement } from "solid-js";
 import "tippy.js/dist/tippy.css";
 import { RatingTooltip } from "./RatingTooltip";
 import 'tippy.js/themes/light.css';
 import { render } from "solid-js/web";
+import { unpackHistory } from "./stores/stateStore";
 
-export function TooltipDelegated(props) {
+export function TooltipDelegated(props: {children: JSXElement}) {
+  const {helpers} = unpackHistory();
+
   const tooltipMaker = createRoot((dispose) => {
     return {
       create: (scoreId: number) => {
-        let scoreInfo = historyGetScore(props.scoreId)!;
+        let scoreInfo = helpers.getScore(scoreId)!;
         let algo = scoreInfo.algo;
         const tooltipEl = document.createElement("div");
         render(() => <RatingTooltip algo={algo} />, tooltipEl)
@@ -19,7 +22,7 @@ export function TooltipDelegated(props) {
     };
   });
 
-  let container: HTMLDivElement;
+  let container!: HTMLDivElement;
 
   onMount(() => {
     // Create delegated tippy instances

@@ -184,7 +184,7 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
     chartData.overallRating.push(history.calc.overallRating);
     chartData.naiveRating.push(history.calc.overallNaiveRating);
     chartData.version.push(history.whichCalc);
-    chartData.maxRating.push(maxRatings[history.whichCalc]);
+    chartData.maxRating.push(maxRatings[history.whichCalc]!);
 
     let info = history.getCalcOutput(i);
     if (info !== null) {

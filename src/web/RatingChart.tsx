@@ -1,7 +1,7 @@
 import { Component, createMemo, createEffect, mergeProps } from 'solid-js';
 import ApexCharts from 'apexcharts';
 import { onMount, onCleanup } from 'solid-js';
-import { historyGetVersion } from './stores/historyStore';
+import { unpackHistory } from './stores/stateStore';
 
 export function RatingChart(incomingProps: { 
   data: { timestamps: number[]; overallRating: number[], naiveRating: number[], version: number[], maxRating: number[] };
@@ -42,6 +42,8 @@ export function RatingChart(incomingProps: {
 
   const annotations = createMemo(() => {
     const xaxis: any[] = [];
+
+    const { helpers } = unpackHistory();
     
     let lastIndex = 0;
     let lastFillColor = undefined;
@@ -49,7 +51,7 @@ export function RatingChart(incomingProps: {
       const isLast = (i == props.data.timestamps.length-1);
 
       const version = props.data.version[i]!;
-      let fillColor = historyGetVersion(version).plotBackgroundColor;
+      let fillColor = helpers.getVersion(version).plotBackgroundColor;
       
       if (isLast || fillColor !== lastFillColor) {
         xaxis.push({
