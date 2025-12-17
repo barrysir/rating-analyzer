@@ -138,8 +138,8 @@ export class OngekiCalculator<Chart, Score = undefined> {
             points: score.points,
             rating,
         };
-        if ('score' in score) {
-            entry.score = score.score;
+        if ('extra' in score) {
+            entry.extra = score.extra;
         }
 
         let undo: InnerUndoScore<Score> = {};
