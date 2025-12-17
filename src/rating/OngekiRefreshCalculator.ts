@@ -58,8 +58,8 @@ function scoreRating(points: number, lamps: LampDisplay, level: number) {
 
 function pRating(platinum: number, maxPlatinum: number, level: number) {
     let percentage = Math.floor(platinum * 100 / maxPlatinum);
-    let stars = Math.max(5, Math.min(0, percentage - 93));
-    return stars * stars * level;
+    let stars = Math.min(5, Math.max(0, percentage - 93));
+    return stars * level * level / 1000;
 }
 
 // --------------------------------------
