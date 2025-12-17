@@ -2,13 +2,50 @@ import { createMutable, createStore } from 'solid-js/store';
 import { UserScoreDatabase } from '../../get-kamai/UserScores';
 import { createHistory } from '../Temp';
 import { batch } from 'solid-js';
+import { RatingAlgo } from '../../rating/OngekiCalculator';
+import { KamaiScore } from '../../get-kamai/kamai';
+import { FrameRating } from '../ImprovementTracker';
+
+type ExtendedScore = {
+  chartId: string;
+  rating: number;
+  algo: RatingAlgo;
+  points: number;
+  timeAchieved: number;
+  kamai: KamaiScore;
+};
+
+export type VersionInformation = {
+    name: string;
+    version: string;
+    timestamp: number;
+    pointId: number;
+    plotBackgroundColor: string;
+  };
 
 type HistoryType = ReturnType<typeof createHistory>['history'];
-type ChartDataType = ReturnType<typeof createHistory>['chartData'];
+
+type ChartDataType = {
+    timestamps: number[];
+    overallRating: number[];
+    naiveRating: number[];
+    version: number[];
+    maxRating: number[];
+};
+
+export type VersionImproveRenderData = {
+  versionId: number;
+  improves: {
+    pointId: number;
+    scoreId: number;
+    data: FrameRating;
+  }[];
+};
+
 type PersonalBestType = ReturnType<typeof createHistory>['bests'];
-type ScoresType = ReturnType<typeof createHistory>['scores'];
-type ImprovesType = ReturnType<typeof createHistory>['improves'];
-type VersionsType = ReturnType<typeof createHistory>['versions'];
+type ScoresType = ExtendedScore[];
+type ImprovesType = VersionImproveRenderData[];
+type VersionsType = VersionInformation[];
 
 export interface HistoryStore {
   history: HistoryType | null;

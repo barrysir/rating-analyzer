@@ -1,6 +1,6 @@
 import { UserScoreDatabase } from '../get-kamai/UserScores';
 import { RatingHistory } from '../rating/RatingHistory';
-import { OngekiCalculator, RatingAlgo } from '../rating/OngekiCalculator';
+import { OngekiCalculator } from '../rating/OngekiCalculator';
 import { HistoricalChartDb } from '../rating/chartdb/HistoricalChartDb';
 import SONG_DATA from '../../data/song-db.json';
 import MY_SCORE_DATA from '../../data/score-data.json';
@@ -8,8 +8,8 @@ import { SongData } from '../rating/data/SongData';
 import { OngekiDifficulty } from '../rating/data-types';
 import { VersionChangeHistory } from '../rating/VersionChangeHistory';
 import { PersonalBests } from '../rating/PersonalBests';
-import { FrameRating, ImprovementTracker } from './ImprovementTracker';
-import { KamaiScore } from '../get-kamai/kamai';
+import { ImprovementTracker } from './ImprovementTracker';
+import { ExtendedScore, VersionImproveRenderData, VersionInformation } from './stores/historyStore';
 
 function dateToUnix(date: Date): number {
   return Math.floor(date.getTime());
@@ -46,15 +46,6 @@ function calculateMaxRating(db: HistoricalChartDb) {
   return ongeki;
 }
 
-type ExtendedScore = {
-  chartId: string;
-  rating: number;
-  algo: RatingAlgo;
-  points: number;
-  timeAchieved: number;
-  kamai: KamaiScore;
-};
-
 const VERSIONS = [
   {
     name: 'bright',
@@ -75,14 +66,6 @@ const VERSIONS = [
     plotBackgroundColor: '#ef4444',
   },
 ];
-
-type VersionInformation = {
-  name: string,
-  version: string,
-  timestamp: number,
-  pointId: number,
-  plotBackgroundColor: string,
-}
 
 export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlaces: number} = {decimalPlaces: 2}) {
   let songData = new SongData(SONG_DATA);
@@ -211,15 +194,6 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
     chartData
   };
 }
-
-export type VersionImproveRenderData = {
-  versionId: number,
-  improves: {
-    pointId: number,
-    scoreId: number,
-    data: FrameRating,
-  }[],
-};
 
 export function loadScoreData(): UserScoreDatabase {
   return MY_SCORE_DATA;
