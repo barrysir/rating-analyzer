@@ -21,15 +21,15 @@ function technicalBonus(points: number) {
     return lerp(points, technicalBonusLerp);
 }
 
-function scoreRating(points: number, level: number): {rating: number, info: RatingAlgo} {
+function scoreRating(points: number, level: number): {rating: number, algo: RatingAlgo} {
     if (points >= 800000) {
         let techBonus = ratingTrunc(technicalBonus(points));
         let rating = Math.max(0, level + techBonus);
         return {
             rating: rating,
-            info: {
+            algo: {
                 level: level,
-                techBonus: [techBonus, rating],
+                techBonus: {points, change: techBonus, total: rating},
             }
         };
     }
@@ -38,10 +38,10 @@ function scoreRating(points: number, level: number): {rating: number, info: Rati
     let value2 = value1 * multiplier;
     return {
         rating: ratingTrunc(value2),
-        info: {
+        algo: {
             level: level,
-            techBonus: [-6, value1],
-            multiplier: [multiplier, value2],
+            techBonus: {points, change: -6, total: value1},
+            multiplier: {multiplier, total: value2},
         }
     };
 }
@@ -50,9 +50,9 @@ function scoreRating(points: number, level: number): {rating: number, info: Rati
 
 export type RatingAlgo = {
     level: number,
-    techBonus: [number, number],
-    multiplier?: [number, number],
-};
+    techBonus: {points: number, change: number, total: number},
+    multiplier?: {multiplier: number, total: number},
+}
 
 type WithExtra<Extra, T> = T & (Extra extends undefined ? {} : {extra: Extra});
 
@@ -120,7 +120,7 @@ export class OngekiCalculator<Chart, Extra = undefined> {
         }
         let { internalLevel: level, chartId: id, isNew, isLunatic } = chartData;
 
-        let {rating, info} = scoreRating(score.points, level);
+        let {rating, algo: info} = scoreRating(score.points, level);
         
         const entry = { points: score.points, rating } as OngekiScore<Extra>;
         if ('extra' in score) {

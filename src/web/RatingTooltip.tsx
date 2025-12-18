@@ -14,14 +14,14 @@ export function RatingTooltip(props: {algo: RatingAlgo}) {
             </tr>
             <tr>
                 <td>Score Bonus</td>
-                <td>{theme.formatChangeRating(props.algo.techBonus[0])}</td>
-                <td>{theme.formatRatingText(props.algo.techBonus[1])}</td>
+                <td>{theme.formatChangeRating(props.algo.techBonus.change)}</td>
+                <td>{theme.formatRatingText(props.algo.techBonus.total)}</td>
             </tr>
             <Show when={props.algo.multiplier}>
                 <tr>
                     <td>Low Score Multiplier</td>
-                    <td>x{props.algo.multiplier![0].toFixed(2)}</td>
-                    <td>{theme.formatRatingText(props.algo.multiplier![1])}</td>
+                    <td>x{props.algo.multiplier!.multiplier.toFixed(2)}</td>
+                    <td>{theme.formatRatingText(props.algo.multiplier!.total)}</td>
                 </tr>
             </Show>
         </tbody>
