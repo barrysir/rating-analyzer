@@ -52,9 +52,9 @@ export type VersionImproveRenderData<M extends Mode> = {
 type PersonalBestType = ReturnType<typeof createHistory>['bests'];
 
 export type HistoryStore<M extends Mode> = {
-  history: HistoryType | null;
-  bests: PersonalBestType | null;
-  scores: ExtendedScore[];
+  history: HistoryType;
+  bests: PersonalBestType;
+  scores: ExtendedScore<M>[];
   improves: VersionImproveRenderData<M>[];
   versions: VersionInformation[];
   pointId: number;
