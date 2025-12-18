@@ -11,6 +11,7 @@ import { ImprovementTab } from './ImprovementTab';
 import Slider from './Slider';
 import { TooltipDelegated } from './TooltipDelegatedTest';
 import { HistoryProvider, initializeState, Mode } from './stores/stateStore';
+import WarningWindow from './WarningWindow';
 
 
 function SettingsWindow() {
@@ -89,6 +90,7 @@ const App: Component = () => {
 
   return <HistoryProvider>{({ mode, history, helpers, theme }) => (
   <div style="width: 100vw; height: 100vh;">
+    <WarningWindow />
     <SettingsButton />
     <div style="width: 100%; height: 100%; display: grid; grid-template-columns: 4fr 6fr; align-items: center;">
       <div style="height: 50%; display: flex; flex-direction: column; align-items: center;">
