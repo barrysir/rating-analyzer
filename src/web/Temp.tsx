@@ -5,7 +5,7 @@ import { HistoricalChartDb } from '../rating/chartdb/HistoricalChartDb';
 import SONG_DATA from '../../data/song-db.json';
 import MY_SCORE_DATA from '../../data/score-data.json';
 import { SongData } from '../rating/data/SongData';
-import { OngekiDifficulty } from '../rating/data-types';
+import { BellLamp, ClearLamp, OngekiDifficulty } from '../rating/data-types';
 import { VersionChangeHistory } from '../rating/VersionChangeHistory';
 import { PersonalBests } from '../rating/PersonalBests';
 import { ImprovementTracker } from './ImprovementTracker';
@@ -20,7 +20,7 @@ function dateToUnix(date: Date): number {
   return Math.floor(date.getTime());
 }
 
-function calculateMaxRating(db: HistoricalChartDb) {
+function calculateMaxOngekiRating(db: HistoricalChartDb) {
   // Returns a calculator
   let ongeki = new OngekiCalculator(db);
 
@@ -47,6 +47,17 @@ function calculateMaxRating(db: HistoricalChartDb) {
   }
   for (let i=0; i<10; i++) {
     ongeki.addScore({points: 1010000}, maximumLevelChart.key);
+  }
+  return ongeki;
+}
+
+function calculateMaxRefreshRating(db: HistoricalChartDb) {
+  let ongeki = new OngekiRefreshCalculator(db);
+  for (let song of Object.values(db.songs)) {
+    for (let [diff,chart] of Object.entries(song.charts)) {
+      let chartid = db.findChartId({tag: song.tag, difficulty: diff as OngekiDifficulty})!;
+      ongeki.addScore({points: 1010000, platinum: chart.maxPlatinumScore, lamps: { bell: BellLamp.FB, clear: ClearLamp.ACB }}, chartid);
+    }
   }
   return ongeki;
 }
@@ -88,7 +99,7 @@ class StuffForOngeki {
   }
 
   calculateMaxRating(db: HistoricalChartDb) {
-    return calculateMaxRating(db);
+    return calculateMaxOngekiRating(db);
   }
 
   makeImprovementTracker<Calc extends OngekiCalculator<any>>(calc: Calc) {
@@ -155,7 +166,7 @@ class StuffForRefresh {
   }
 
   calculateMaxRating(db: HistoricalChartDb) {
-    return calculateMaxRating(db);
+    return calculateMaxRefreshRating(db);
   }
 
   makeImprovementTracker<Calc extends OngekiRefreshCalculator<any>>(calc: Calc) {
