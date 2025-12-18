@@ -1,4 +1,4 @@
-import { For } from 'solid-js';
+import { For, Match, Switch } from 'solid-js';
 import "./FrameRenderers.css";
 import { settings } from './stores/settingsStore';
 import { HistoryProvider } from './stores/stateStore';
@@ -10,7 +10,15 @@ export type FrameEntry = {
   points: number;
 }
 
-export function DisplayFrame(props: { data: FrameEntry[], title: string, color?: string, rows: number }) {
+export type PlatinumEntry = {
+  rating: number;
+  title: string;
+  level: number;
+  platinum: number;
+  maxPlatinum: number;
+}
+
+export function DisplayFrame(props: { data: FrameEntry[] | PlatinumEntry[], title: string, color?: string, rows: number, platinum?: boolean }) {
   let totalRating = () => props.data.reduce((prev, t) => prev + t.rating, 0);
   let averageRating = () => totalRating() / props.data.length;
 
@@ -21,7 +29,7 @@ export function DisplayFrame(props: { data: FrameEntry[], title: string, color?:
       return props.data;
     }
     
-    const result: (FrameEntry | null)[] = [];
+    const result: ((typeof props.data)[number] | null)[] = [];
     for (let i = 0; i < props.rows; i++) {
       result.push(props.data[i] ?? null);
     }
@@ -45,7 +53,7 @@ export function DisplayFrame(props: { data: FrameEntry[], title: string, color?:
           <th>Rating</th>
           <th>Title</th>
           <th>Level</th>
-          <th>Points</th>
+          <th>{props.platinum ? "Platinum" : "Points"}</th>
         </tr>
       </thead>
       <tbody>
@@ -56,7 +64,14 @@ export function DisplayFrame(props: { data: FrameEntry[], title: string, color?:
               <td>{item ? theme.formatRating(item.rating, item.scoreId) : NULL_MARKER}</td>
               <td style="width: 100%;">{item ? item.title : NULL_MARKER}</td>
               <td>{item ? item.level : NULL_MARKER}</td>
-              <td>{item ? theme.formatPoints(item.points) : NULL_MARKER}</td>
+              <Switch>
+                <Match when={props.platinum}>
+                  <td>{item ? theme.formatPlatinum(item.platinum, item.maxPlatinum) : NULL_MARKER}</td>
+                </Match>
+                <Match when={!props.platinum}>  
+                  <td>{item ? theme.formatPoints(item.points) : NULL_MARKER}</td>
+                </Match>
+              </Switch>
             </tr>
           }}
         </For>

@@ -2,6 +2,8 @@ import { format } from "date-fns";
 import { getRegion } from "../../rating/utils";
 import { settings } from "../stores/settingsStore";
 import { BellLamp, ClearLamp, GradeLamp } from "../../rating/data-types";
+import { platinumStars } from "../../rating/OngekiRefreshCalculator";
+import "./ongeki.css";
 
 const scoreColors = [
     [0, "text-blue-500"],
@@ -66,6 +68,22 @@ const OngekiTheme = {
     formatPoints(points: number) {
         let color = getRegion(scoreColors, points, p => p[0] as number)![1] as string;
         return <span classList={{[color]: true}}>{points}</span>;
+    },
+
+    formatPlatinum(plat: number, maxPlat: number) {
+        let percentage = (plat / maxPlat * 100).toFixed(2);
+        let stars = platinumStars(plat, maxPlat);
+        let isRainbow = false;
+        if (stars == 6) {
+            isRainbow = true;
+            stars = 5;
+        }
+        let starDisplay = "★".repeat(stars) + "☆".repeat(5-stars);
+        return <div style="display: flex; flex-direction: column;">
+            <span>{percentage}%</span>
+            <span classList={{"rainbow-stars": isRainbow}}>{starDisplay}</span>
+            <span>{`${plat} / ${maxPlat}`} (-{maxPlat - plat})</span>
+        </div>;
     },
 
     formatDate(date: Date) {

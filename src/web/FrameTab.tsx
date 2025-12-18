@@ -3,10 +3,10 @@ import { BestFrame } from '../rating/frames/BestFrame';
 import { OngekiRecentFrame } from '../rating/frames/OngekiRecentFrame';
 import { OngekiCalculator } from '../rating/OngekiCalculator';
 import { OngekiRefreshCalculator } from '../rating/OngekiRefreshCalculator';
-import { DisplayFrame } from './FrameRenderers';
+import { DisplayFrame, FrameEntry, PlatinumEntry } from './FrameRenderers';
 import { HistoryProvider, Mode } from './stores/stateStore';
 
-function bestEntries<ChartId extends string, Score extends {points: number, rating: number}>(db: HistoricalChartDb, frame: BestFrame<ChartId, Score>) {
+function bestEntries<ChartId extends string, Score extends {points: number, rating: number}>(db: HistoricalChartDb, frame: BestFrame<ChartId, Score>): FrameEntry[] {
   return frame.frame.map((item) => {
     let a = db.findChart(item.id);
     if (a === null) {
@@ -42,7 +42,24 @@ function recentEntries<Score extends {points: number, rating: number}>(db: Histo
     }).filter(x => x !== null);
 }
 
+function platinumEntries<ChartId extends string, Score extends {platinum: number, rating: number}>(db: HistoricalChartDb, frame: BestFrame<ChartId, Score>): PlatinumEntry[] {
+  return frame.frame.map((item) => {
+    let a = db.findChart(item.id);
+    if (a === null) {
+      return null;
+    }
+    let {song, chart} = a;
 
+    return {
+      rating: item.score.rating,
+      title: song.title,
+      level: chart.level,
+      platinum: item.score.platinum,
+      scoreId: item.score.extra.id,
+      maxPlatinum: chart.maxPlatinumScore,
+    };
+  }).filter(x => x !== null);
+}
 
 export function OngekiFrameTab<Chart, Score>(props: { pointId: number, calc: OngekiCalculator<Chart, Score> }) {
   let db = () => props.calc.db;
@@ -106,7 +123,7 @@ export function RefreshFrameTab<Chart, Score>(props: { pointId: number, calc: On
     }
   }
 
-  return <HistoryProvider<Mode.ONGEKI>>{({ helpers, theme }) => (<div>
+  return <HistoryProvider<Mode.REFRESH>>{({ helpers, theme }) => (<div>
     <div style="display: flex; justify-content: space-between">
       <div>
         <h2>{props.pointId} - {theme.formatDateTime(new Date(helpers.getTimestamp(props.pointId)))}</h2>
@@ -127,7 +144,7 @@ export function RefreshFrameTab<Chart, Score>(props: { pointId: number, calc: On
       </div>
       <div style="display: flex; flex-direction: column">
         <DisplayFrame data={bestEntries(db(), props.calc.new)} title="New" color={theme.frameColors['new']} rows={10} />
-        <DisplayFrame data={bestEntries(db(), props.calc.plat)} title="Platinum" color={theme.frameColors['plat']} rows={50} />
+        <DisplayFrame platinum={true} data={platinumEntries(db(), props.calc.plat)} title="Platinum" color={theme.frameColors['plat']} rows={50} />
       </div>
     </div>
   </div>

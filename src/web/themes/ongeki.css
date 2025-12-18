@@ -1,0 +1,14 @@
+.rainbow-stars {
+    background: linear-gradient(30deg, 
+        rgb(240, 120, 138) 5%, 
+        rgb(244, 143, 177), 
+        rgb(145, 116, 194), 
+        rgb(121, 188, 242), 
+        rgb(112, 161, 115), 
+        rgb(247, 255, 153), 
+        rgb(250, 202, 125), 
+        rgb(255, 157, 128), 
+        rgb(240, 120, 138) 85%) 
+    padding-box text; 
+    color: transparent;
+}
