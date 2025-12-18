@@ -142,6 +142,8 @@ class StuffForRefresh {
       rating: calcOutput.rating,
       techAlgo: calcOutput.algo,
       platAlgo: calcOutput.platAlgo,
+      platRating: calcOutput.platRating,
+      platScore: score.kamai.scoreData.platinumScore,
     };
   }
 }

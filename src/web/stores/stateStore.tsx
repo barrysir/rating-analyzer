@@ -89,7 +89,7 @@ type Theme<M extends Mode> =
 
 type HistoryType<M extends Mode> = HistoryStore<M>;
 
-type State<M extends Mode> = {
+export type State<M extends Mode> = {
     mode: M,
     history: HistoryType<M>,
     setPointId: typeof setPointId,

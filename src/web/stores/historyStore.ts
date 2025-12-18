@@ -21,6 +21,8 @@ export type ExtendedScore<M extends Mode> = {
     algo: OngekiScoreAlgo
   } :
   M extends Mode.REFRESH ? {
+    platRating: number,
+    platScore: number,
     techAlgo: RefreshTechScoreAlgo,
     platAlgo: RefreshPlatScoreAlgo,
   } :

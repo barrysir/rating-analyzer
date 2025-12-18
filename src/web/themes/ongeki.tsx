@@ -2,7 +2,7 @@ import { format } from "date-fns";
 import { getRegion } from "../../rating/utils";
 import { settings } from "../stores/settingsStore";
 import { BellLamp, ClearLamp, GradeLamp } from "../../rating/data-types";
-import { platinumStars } from "../../rating/OngekiRefreshCalculator";
+import { getPlatinumInformation } from "../../rating/OngekiRefreshCalculator";
 import "./ongeki.css";
 
 const scoreColors = [
@@ -64,6 +64,8 @@ const OngekiTheme = {
         return <span data-platinum-tooltip={(scoreId)?.toString()}>{this.formatRatingText(rating)}</span>;
     },
 
+
+
     formatChangeRating(change: number) {
         let sign = (change > 0) ? '+' : '';
         return `${sign}${change.toFixed(3)}`;
@@ -74,20 +76,27 @@ const OngekiTheme = {
         return <span classList={{[color]: true}}>{points}</span>;
     },
 
+    formatPlatinumPercentage(percentage: number) {
+        return `${percentage.toFixed(2)}%`;
+    },
+
     formatPlatinum(plat: number, maxPlat: number) {
-        let percentage = (plat / maxPlat * 100).toFixed(2);
-        let stars = platinumStars(plat, maxPlat);
+        let {percentage, stars} = getPlatinumInformation(plat, maxPlat);
+        return <div style="display: flex; flex-direction: column;">
+            <span>{this.formatPlatinumPercentage(percentage)}</span>
+            {this.formatPlatinumStars(stars)}
+            <span>{`${plat} / ${maxPlat}`} (-{maxPlat - plat})</span>
+        </div>;
+    },
+    
+    formatPlatinumStars(stars: number) {
         let isRainbow = false;
         if (stars == 6) {
             isRainbow = true;
             stars = 5;
         }
         let starDisplay = "★".repeat(stars) + "☆".repeat(5-stars);
-        return <div style="display: flex; flex-direction: column;">
-            <span>{percentage}%</span>
-            <span classList={{"rainbow-stars": isRainbow}}>{starDisplay}</span>
-            <span>{`${plat} / ${maxPlat}`} (-{maxPlat - plat})</span>
-        </div>;
+        return <span classList={{"rainbow-stars": isRainbow}}>{starDisplay}</span>;
     },
 
     formatDate(date: Date) {

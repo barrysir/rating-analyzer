@@ -2,9 +2,9 @@ import { HistoricalChartDb } from '../rating/chartdb/HistoricalChartDb';
 import { BestFrame } from '../rating/frames/BestFrame';
 import { OngekiRecentFrame } from '../rating/frames/OngekiRecentFrame';
 import { OngekiCalculator } from '../rating/OngekiCalculator';
-import { OngekiRefreshCalculator } from '../rating/OngekiRefreshCalculator';
+import { getPlatinumInformation, OngekiRefreshCalculator } from '../rating/OngekiRefreshCalculator';
 import { DisplayFrame, FrameEntry, PlatinumEntry } from './FrameRenderers';
-import { HistoryProvider, Mode } from './stores/stateStore';
+import { HistoryProvider, Mode, State } from './stores/stateStore';
 
 function bestEntries<ChartId extends string, Score extends {points: number, rating: number}>(db: HistoricalChartDb, frame: BestFrame<ChartId, Score>): FrameEntry[] {
   return frame.frame.map((item) => {
@@ -108,7 +108,7 @@ export function OngekiFrameTab<Chart, Score>(props: { pointId: number, calc: Ong
 
 export function RefreshFrameTab<Chart, Score>(props: { pointId: number, calc: OngekiRefreshCalculator<Chart, Score> }) {
   let db = () => props.calc.db;
-  let songTitle = (helpers, theme) => {
+  let songTitle = (helpers: State<Mode.REFRESH>['helpers'], theme: State<Mode.REFRESH>['theme']) => {
     let pointInfo = helpers.pointToScoreId(props.pointId);
     if (pointInfo.type == 'version') {
       let version = helpers.getVersion(pointInfo.versionId);
@@ -116,9 +116,11 @@ export function RefreshFrameTab<Chart, Score>(props: { pointId: number, calc: On
     } else {
       let score = helpers.getScore(pointInfo.scoreId)!;
       let { chart, song } = helpers.getChart(props.pointId, score.chartId) ?? {};
+      let {percentage, stars} = getPlatinumInformation(score.platScore, chart?.maxPlatinum);
       return <>
         <span>{song?.title} ({chart?.difficulty} {chart?.internalLevel})</span>
         <span>{theme.formatRating(score.rating, pointInfo.scoreId)} / {theme.formatPoints(score.points)}</span>
+        <span>{theme.formatPlatinumRating(score.platRating, pointInfo.scoreId)} / {theme.formatPlatinumStars(stars)} / {theme.formatPlatinumPercentage(percentage)}</span>
       </>
     }
   }

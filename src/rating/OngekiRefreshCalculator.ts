@@ -105,17 +105,16 @@ function scoreRating(points: number, lamps: LampDisplay, level: number): {rating
     }
 }
 
-export function platinumStars(platinum: number, maxPlatinum: number) {
+export function getPlatinumInformation(platinum: number, maxPlatinum: number) {
     // if another place uses this function, maybe change it to return {stars: (0 to 5), isRainbow: boolean} 
     // since stars: 6 acts more like an edge case in the two places its used
-    let percentage = Math.floor(platinum * 100 / maxPlatinum);
-    let stars = Math.min(6, Math.max(0, percentage - 93));
-    return stars;
+    let percentage = platinum * 100 / maxPlatinum;
+    let stars = Math.min(6, Math.max(0, Math.floor(percentage - 93)));
+    return {percentage, stars};
 }
 
 function pRating(platinum: number, maxPlatinum: number, level: number): {rating: number, algo: RefreshPlatScoreAlgo} {
-    let percentage = Math.floor(platinum * 100 / maxPlatinum);
-    let stars = Math.min(6, Math.max(0, percentage - 93));
+    let { percentage, stars } = getPlatinumInformation(platinum, maxPlatinum);
     let algo: Partial<RefreshPlatScoreAlgo> = {};
 
     let total = level * level / 1000;
