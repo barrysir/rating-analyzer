@@ -113,6 +113,10 @@ export function getPlatinumInformation(platinum: number, maxPlatinum: number) {
     return {percentage, stars};
 }
 
+export function getPlatinumStarBorder(maxPlatinum: number, stars: number) {
+    return Math.ceil(maxPlatinum * 0.01 * (stars + 93));
+}
+
 function pRating(platinum: number, maxPlatinum: number, level: number): {rating: number, algo: RefreshPlatScoreAlgo} {
     let { percentage, stars } = getPlatinumInformation(platinum, maxPlatinum);
     let algo: Partial<RefreshPlatScoreAlgo> = {};

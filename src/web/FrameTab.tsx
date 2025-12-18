@@ -116,11 +116,13 @@ export function RefreshFrameTab<Chart, Score>(props: { pointId: number, calc: On
     } else {
       let score = helpers.getScore(pointInfo.scoreId)!;
       let { chart, song } = helpers.getChart(props.pointId, score.chartId) ?? {};
-      let {percentage, stars} = getPlatinumInformation(score.platScore, chart?.maxPlatinum);
+      let plat = score.platScore;
+      let maxPlat = chart?.maxPlatinum;
+      let {percentage, stars} = getPlatinumInformation(plat, maxPlat);
       return <>
         <span>{song?.title} ({chart?.difficulty} {chart?.internalLevel})</span>
         <span>{theme.formatRating(score.rating, pointInfo.scoreId)} / {theme.formatPoints(score.points)}</span>
-        <span>{theme.formatPlatinumRating(score.platRating, pointInfo.scoreId)} / {theme.formatPlatinumStars(stars)} / {theme.formatPlatinumPercentage(percentage)}</span>
+        <span>{theme.formatPlatinumRating(score.platRating, pointInfo.scoreId)} / {theme.formatPlatinumStarsWithBorders(stars, plat, maxPlat)} / {theme.formatPlatinumPercentage(percentage)}</span>
       </>
     }
   }

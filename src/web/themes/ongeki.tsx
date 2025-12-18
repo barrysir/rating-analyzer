@@ -2,7 +2,7 @@ import { format } from "date-fns";
 import { getRegion } from "../../rating/utils";
 import { settings } from "../stores/settingsStore";
 import { BellLamp, ClearLamp, GradeLamp } from "../../rating/data-types";
-import { getPlatinumInformation } from "../../rating/OngekiRefreshCalculator";
+import { getPlatinumInformation, getPlatinumStarBorder } from "../../rating/OngekiRefreshCalculator";
 import "./ongeki.css";
 
 const scoreColors = [
@@ -84,7 +84,7 @@ const OngekiTheme = {
         let {percentage, stars} = getPlatinumInformation(plat, maxPlat);
         return <div style="display: flex; flex-direction: column;">
             <span>{this.formatPlatinumPercentage(percentage)}</span>
-            {this.formatPlatinumStars(stars)}
+            {this.formatPlatinumStarsWithBorders(stars, plat, maxPlat)}
             <span>{`${plat} / ${maxPlat}`} (-{maxPlat - plat})</span>
         </div>;
     },
@@ -97,6 +97,24 @@ const OngekiTheme = {
         }
         let starDisplay = "★".repeat(stars) + "☆".repeat(5-stars);
         return <span classList={{"rainbow-stars": isRainbow}}>{starDisplay}</span>;
+    },
+
+    formatPlatinumStarsWithBorders(stars: number, plat: number, maxPlat: number) {
+        let isRainbow = false;
+        if (stars == 6) {
+            isRainbow = true;
+            stars = 5;
+        }
+        let starDisplay = "★".repeat(stars) + "☆".repeat(5-stars);
+        let toPreviousStar = (stars >= 1) ? plat - getPlatinumStarBorder(maxPlat, stars) : null;
+        let toNextStar = getPlatinumStarBorder(maxPlat, stars+1) - plat;
+        let starBorder;
+        if (toPreviousStar === null) {
+            starBorder = `(-${toNextStar})`;
+        } else {
+            starBorder = `(+${toPreviousStar}, -${toNextStar})`;
+        }
+        return <span><span classList={{"rainbow-stars": isRainbow}}>{starDisplay}</span> {starBorder}</span>;
     },
 
     formatDate(date: Date) {
