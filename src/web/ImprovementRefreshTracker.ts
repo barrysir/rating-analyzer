@@ -1,6 +1,6 @@
 import { OngekiRefreshCalculator } from '../rating/OngekiRefreshCalculator';
 
-export class ImprovementRefreshTracker<Calc extends OngekiRefreshCalculator<any, any>> {
+export class ImprovementRefreshTracker<Calc extends OngekiRefreshCalculator<any>> {
   calc: Calc;
   best: { total: number; best: number; new: number; plat: number };
   last: { total: number; best: number; new: number; plat: number };

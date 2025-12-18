@@ -1,7 +1,8 @@
+import { ChartId } from "../chartdb/ChartDb";
 import { AgeFrame, type AgeFrameSnapshot } from "./AgeFrame";
 
 export type UndoScore<Score> = null
-    | {inserted: number; removed?: {index: number, age: number, score: {id: string, score: Score}}};
+    | {inserted: number; removed?: {index: number, age: number, score: {id: ChartId, score: Score}}};
 
 
 export class OngekiRecentFrame<Score extends { points: number; rating: number; }> {
@@ -26,7 +27,7 @@ export class OngekiRecentFrame<Score extends { points: number; rating: number; }
         this.frame.loadSnapshot(snapshot);
     }
 
-    getTop(options: {mode: 'age' | 'top' | 'all'} = {mode: 'top'}): {id: string, score: Score}[] {
+    getTop(options: {mode: 'age' | 'top' | 'all'} = {mode: 'top'}): {id: ChartId, score: Score}[] {
         switch (options.mode) {
             case "age":
                 // todo
@@ -38,7 +39,7 @@ export class OngekiRecentFrame<Score extends { points: number; rating: number; }
         }
     }
 
-    addScore(score: Score, chart: {chartId: string, isLunatic: boolean}): UndoScore<Score> {
+    addScore(score: Score, chart: {chartId: ChartId, isLunatic: boolean}): UndoScore<Score> {
         // Don't include LUNATIC songs in recent
         if (chart.isLunatic) {
             return null;

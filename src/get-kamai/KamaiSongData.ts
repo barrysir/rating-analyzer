@@ -1,3 +1,4 @@
+import { ChartId } from "../rating/chartdb/ChartDb";
 import { OngekiDifficulty } from "../rating/data-types";
 
 export type KamaiIdSchema = {
@@ -35,7 +36,7 @@ export class KamaiSongData {
         }
     }
 
-    toChartId(id: number, difficulty: OngekiDifficulty): string | undefined {
+    toChartId(id: number, difficulty: OngekiDifficulty): ChartId | undefined {
         let tag = this.#idToTag.get(id)?.get(difficulty);
         if (tag === undefined) {
             return undefined;
@@ -45,11 +46,11 @@ export class KamaiSongData {
 }
 
 // TODO: Temporary place for these functions, find a good location later
-export function makeChartId(tag: string, difficulty: OngekiDifficulty) {
-    return `${tag} ${difficulty}`;
+export function makeChartId(tag: string, difficulty: OngekiDifficulty): ChartId {
+    return `${tag} ${difficulty}` as ChartId;
 }
 
-export function parseChartId(chartId: string) {
+export function parseChartId(chartId: ChartId) {
     const index = chartId.lastIndexOf(" ");
     if (index === -1) {
         throw new Error(`Could not parse chartId ${chartId}`);

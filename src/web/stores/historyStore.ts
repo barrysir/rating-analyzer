@@ -8,10 +8,11 @@ import { FrameRating as OngekiFrameRating } from '../ImprovementTracker';
 import { FrameRating as RefreshFrameRating } from '../ImprovementRefreshTracker';
 import { Mode } from './stateStore';
 import { RefreshPlatScoreAlgo, RefreshTechScoreAlgo } from '../../rating/OngekiRefreshCalculator';
+import { ChartId } from '../../rating/chartdb/ChartDb';
 
 
 export type ExtendedScore<M extends Mode> = {
-  chartId: string;
+  chartId: ChartId;
   rating: number;
   points: number;
   timeAchieved: number;

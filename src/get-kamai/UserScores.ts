@@ -1,9 +1,9 @@
-import { OngekiDifficulty } from "../rating/data-types";
+import { ChartId } from "../rating/chartdb/ChartDb";
 import { KamaiScore } from "./kamai";
 
 export type UserScoreDatabase = {
     scores: {
-        chartId: string;
+        chartId: ChartId;
         kamai: KamaiScore;
     }[],
 };

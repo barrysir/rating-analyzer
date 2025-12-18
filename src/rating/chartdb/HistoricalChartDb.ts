@@ -2,16 +2,16 @@
 
 import { findRegion } from "../utils";
 import { OngekiDifficulty } from "../data-types";
-import type { ChartDb } from "./ChartDb";
+import type { ChartDb, ChartId } from "./ChartDb";
 import type { SongData } from "../data/SongData";
 import { parseChartId } from "../../get-kamai/KamaiSongData";
 
 export type HistChart = 
-    string 
+    ChartId
     | { tag: string, difficulty: OngekiDifficulty }
     | { title: string, difficulty: OngekiDifficulty };
 
-export class HistoricalChartDb implements ChartDb<HistChart> {
+export class HistoricalChartDb implements ChartDb {
     songs: {
         [tag: string]: SongData['songs'][0]
     };
@@ -94,8 +94,18 @@ export class HistoricalChartDb implements ChartDb<HistChart> {
         }
     }
 
-    getChart(chartId: string) {
+    getChart(chartId: ChartId) {
         return this.getChartInfo(parseChartId(chartId));
+    }
+
+    findChartId(search: HistChart) {
+        let data = this.findChart(search);
+        if (data === null) {
+            return null;
+        }
+
+        let {song, chart, difficulty} = data;
+        return `${song.tag} ${difficulty}` as ChartId;
     }
 
     findChart(search: HistChart) {
@@ -150,7 +160,7 @@ export class HistoricalChartDb implements ChartDb<HistChart> {
             maxBells: chart.bells,
             isLunatic: (difficulty == OngekiDifficulty.LUNATIC),
             isNew: (song.date_added >= this.currentVersion.start),
-            chartId: `${song.tag} ${difficulty}`,
+            chartId: `${song.tag} ${difficulty}` as ChartId,
             difficulty: difficulty,
             song: song,
         };

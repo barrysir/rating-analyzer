@@ -9,7 +9,7 @@ export type BasicChart = {
     isNew: boolean;
 };
 
-export class BasicChartDb implements ChartDb<BasicChart> {
+export class BasicChartDb implements ChartDb {
     getChart(chartId: string): ChartInfo | null {
         throw new Error("getChart not implemented for BasicChartDb");
     }

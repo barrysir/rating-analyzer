@@ -1,7 +1,7 @@
 import { ChartDb } from "../rating/chartdb/ChartDb";
 import { PersonalBests } from "../rating/PersonalBests";
 
-export function PersonalBestRenderer<Chart, Score extends {points: number}>(props: {bests: PersonalBests<Chart, Score>}) {
+export function PersonalBestRenderer<Score extends {points: number}>(props: {bests: PersonalBests<Score>}) {
     let asdf = () => {
         let a = [];
         let e = props.bests.bests.entries();

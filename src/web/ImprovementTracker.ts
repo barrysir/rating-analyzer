@@ -22,20 +22,20 @@ and then return what it improved, the old value, the new value, and the change i
 // if new increases
 
 // but i also want to track by how much best/new/recent increased
-export class ImprovementTracker<Chart, Score> {
-  calc: OngekiCalculator<Chart, Score>;
+export class ImprovementTracker<Score> {
+  calc: OngekiCalculator<Score>;
   best: { total: number; best: number; new: number; recent: number };
   last: { total: number; best: number; new: number; recent: number };
   maxRecent: number;
 
-  constructor(calc: OngekiCalculator<Chart, Score>) {
+  constructor(calc: OngekiCalculator<Score>) {
     this.calc = calc;
     this.best = this.snapshot(calc);
     this.last = this.snapshot(calc);
     this.maxRecent = this.best.recent;
   }
 
-  snapshot(calc: OngekiCalculator<Chart, Score>) {
+  snapshot(calc: OngekiCalculator<Score>) {
     return {
       total: calc.overallRating,
       best: calc.best.overallRating,
@@ -44,7 +44,7 @@ export class ImprovementTracker<Chart, Score> {
     }
   }
 
-  refresh(calc: OngekiCalculator<Chart, Score>): FrameRating {
+  refresh(calc: OngekiCalculator<Score>): FrameRating {
     let now = this.snapshot(calc);
     let best = this.best;
     let changes = {} as FrameRating['changes'];

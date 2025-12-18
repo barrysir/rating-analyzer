@@ -4,6 +4,7 @@ import { KamaiSongData } from './KamaiSongData';
 import { UserScoreDatabase } from './UserScores';
 import { OngekiDifficulty } from '../rating/data-types';
 import SONG_DB_DATA from "../../data/song-db.json";
+import { ChartId } from '../rating/chartdb/ChartDb';
 
 // Maybe this should be a bookmarklet instead
 
@@ -93,7 +94,7 @@ function loadKamaiSongData(): KamaiSongData {
   return new KamaiSongData(SONG_DB_DATA);
 }
 
-function kamaiToChartId(kamai: KamaiSongData, songId: number, difficulty: OngekiDifficulty): string | undefined {
+function kamaiToChartId(kamai: KamaiSongData, songId: number, difficulty: OngekiDifficulty): ChartId | undefined {
   return kamai.toChartId(songId, difficulty);
 }
 

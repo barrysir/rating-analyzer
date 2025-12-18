@@ -1,4 +1,4 @@
-import type { ChartDb } from "./chartdb/ChartDb";
+import type { ChartDb, ChartId } from "./chartdb/ChartDb";
 import type { AgeFrameSnapshot } from "./frames/AgeFrame";
 import { BestFrame, UndoScore as BestUndo, type BestFrameSnapshot } from "./frames/BestFrame";
 import { OngekiRecentFrame, UndoScore as RecentUndo } from "./frames/OngekiRecentFrame";
@@ -65,27 +65,27 @@ type UndoScore<Extra> = {
 };
 
 type InnerUndoScore<Extra> = {
-    best?: BestUndo<string, OngekiScore<Extra>>; 
-    new?: BestUndo<string, OngekiScore<Extra>>; 
-    naive: BestUndo<string, OngekiScore<Extra>>;
+    best?: BestUndo<OngekiScore<Extra>>; 
+    new?: BestUndo<OngekiScore<Extra>>; 
+    naive: BestUndo<OngekiScore<Extra>>;
     recent: RecentUndo<OngekiScore<Extra>>;
 };
 
-export type OngekiCalculatorSnapshot<ChartId, Extra> = {
-    best: BestFrameSnapshot<ChartId, Extra>,
-    new: BestFrameSnapshot<ChartId, Extra>,
-    naive: BestFrameSnapshot<ChartId, Extra>,
+export type OngekiCalculatorSnapshot<Extra> = {
+    best: BestFrameSnapshot<Extra>,
+    new: BestFrameSnapshot<Extra>,
+    naive: BestFrameSnapshot<Extra>,
     recent: AgeFrameSnapshot<Extra>,
 }
 
-export class OngekiCalculator<Chart, Extra = undefined> {
-    db: ChartDb<Chart>;
-    best: BestFrame<string, OngekiScore<Extra>>;
-    new: BestFrame<string, OngekiScore<Extra>>;
-    naive: BestFrame<string, OngekiScore<Extra>>;
+export class OngekiCalculator<Extra = undefined> {
+    db: ChartDb;
+    best: BestFrame<OngekiScore<Extra>>;
+    new: BestFrame<OngekiScore<Extra>>;
+    naive: BestFrame<OngekiScore<Extra>>;
     recent: OngekiRecentFrame<OngekiScore<Extra>>;
 
-    constructor(db: ChartDb<Chart>) {
+    constructor(db: ChartDb) {
         this.db = db;
         this.best = new BestFrame(30);
         this.new = new BestFrame(15);
@@ -94,10 +94,10 @@ export class OngekiCalculator<Chart, Extra = undefined> {
     }
 
     static create<Extra>() {
-        return function <Chart>(db: ChartDb<Chart>) { return new OngekiCalculator<Chart, Extra>(db); };
+        return function (db: ChartDb) { return new OngekiCalculator<Extra>(db); };
     }
 
-    makeSnapshot(): OngekiCalculatorSnapshot<string, OngekiScore<Extra>> {
+    makeSnapshot(): OngekiCalculatorSnapshot<OngekiScore<Extra>> {
         return {
             best: this.best.makeSnapshot(),
             new: this.new.makeSnapshot(),
@@ -106,15 +106,15 @@ export class OngekiCalculator<Chart, Extra = undefined> {
         }
     }
 
-    loadSnapshot(snapshot: OngekiCalculatorSnapshot<string, OngekiScore<Extra>>) {
+    loadSnapshot(snapshot: OngekiCalculatorSnapshot<OngekiScore<Extra>>) {
         this.best.loadSnapshot(snapshot.best);
         this.new.loadSnapshot(snapshot.new);
         this.naive.loadSnapshot(snapshot.naive);
         this.recent.loadSnapshot(snapshot.recent);
     }
 
-    addScore(score: WithExtra<Extra, {points: number}>, chart: Chart): UndoScore<Extra> | null {
-        let chartData = this.db.getChartInfo(chart);
+    addScore(score: WithExtra<Extra, {points: number}>, chart: ChartId): UndoScore<Extra> | null {
+        let chartData = this.db.getChart(chart);
         if (chartData === null) {
             return null;
         }

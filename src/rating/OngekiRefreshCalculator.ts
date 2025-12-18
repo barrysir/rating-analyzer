@@ -1,4 +1,4 @@
-import type { ChartDb } from "./chartdb/ChartDb";
+import type { ChartDb, ChartId } from "./chartdb/ChartDb";
 import { BellLamp, ClearLamp, GradeLamp } from "./data-types";
 import { BestFrame, BestFrameSnapshot, UndoScore as BestUndo } from "./frames/BestFrame";
 import { findRegion, lerp, pointsToGradeLamp, type Prettify } from "./utils";
@@ -149,13 +149,13 @@ type ScoreInput<Extra> = WithExtra<Extra,
 >;
 
 
-type LampUndo = null | {chartId: string, prevLamps: LampDisplay|null};
+type LampUndo = null | {chartId: ChartId, prevLamps: LampDisplay|null};
 
 type InnerUndoScore<Extra> = {
-    best?: BestUndo<string, OngekiScore<Extra>>; 
-    new?: BestUndo<string, OngekiScore<Extra>>; 
-    naive: BestUndo<string, OngekiScore<Extra>>;
-    plat: BestUndo<string, PlatinumScore<Extra>>;
+    best?: BestUndo<OngekiScore<Extra>>; 
+    new?: BestUndo<OngekiScore<Extra>>; 
+    naive: BestUndo<OngekiScore<Extra>>;
+    plat: BestUndo<PlatinumScore<Extra>>;
     lamps: LampUndo;
 };
 
@@ -169,24 +169,24 @@ type UndoScore<Extra> = {
 
 type LampDisplay = {bell: BellLamp, clear: ClearLamp, grade: GradeLamp};
 
-type OngekiRefreshCalculatorSnapshot<ChartId, Extra> = {
-    best: BestFrameSnapshot<ChartId, OngekiScore<Extra>>,
-    new: BestFrameSnapshot<ChartId, OngekiScore<Extra>>,
-    naive: BestFrameSnapshot<ChartId, OngekiScore<Extra>>,
-    plat: BestFrameSnapshot<ChartId, PlatinumScore<Extra>>,
-    lamps: Map<string, LampDisplay>,
+type OngekiRefreshCalculatorSnapshot<Extra> = {
+    best: BestFrameSnapshot<OngekiScore<Extra>>,
+    new: BestFrameSnapshot<OngekiScore<Extra>>,
+    naive: BestFrameSnapshot<OngekiScore<Extra>>,
+    plat: BestFrameSnapshot<PlatinumScore<Extra>>,
+    lamps: Map<ChartId, LampDisplay>,
 };
 
-export class OngekiRefreshCalculator<Chart, Extra = undefined> {
-    db: ChartDb<Chart>;
-    best: BestFrame<string, OngekiScore<Extra>>;
-    new: BestFrame<string, OngekiScore<Extra>>;
-    naive: BestFrame<string, OngekiScore<Extra>>;
-    plat: BestFrame<string, PlatinumScore<Extra>>;
+export class OngekiRefreshCalculator<Extra = undefined> {
+    db: ChartDb;
+    best: BestFrame<OngekiScore<Extra>>;
+    new: BestFrame<OngekiScore<Extra>>;
+    naive: BestFrame<OngekiScore<Extra>>;
+    plat: BestFrame<PlatinumScore<Extra>>;
 
-    lamps: Map<string, LampDisplay>;
+    lamps: Map<ChartId, LampDisplay>;
 
-    constructor(db: ChartDb<Chart>) {
+    constructor(db: ChartDb) {
         this.db = db;
         this.best = new BestFrame(50);
         this.new = new BestFrame(10);
@@ -196,10 +196,10 @@ export class OngekiRefreshCalculator<Chart, Extra = undefined> {
     }
 
     static create<Extra>() {
-        return function <Chart>(db: ChartDb<Chart>) { return new OngekiRefreshCalculator<Chart, Extra>(db); };
+        return function (db: ChartDb) { return new OngekiRefreshCalculator<Extra>(db); };
     }
     
-    makeSnapshot(): OngekiRefreshCalculatorSnapshot<string, Extra> {
+    makeSnapshot(): OngekiRefreshCalculatorSnapshot<Extra> {
         return {
             best: this.best.makeSnapshot(),
             new: this.new.makeSnapshot(),
@@ -209,7 +209,7 @@ export class OngekiRefreshCalculator<Chart, Extra = undefined> {
         }
     }
 
-    loadSnapshot(snapshot: OngekiRefreshCalculatorSnapshot<string, Extra>) {
+    loadSnapshot(snapshot: OngekiRefreshCalculatorSnapshot<Extra>) {
         this.best.loadSnapshot(snapshot.best);
         this.new.loadSnapshot(snapshot.new);
         this.naive.loadSnapshot(snapshot.naive);
@@ -218,7 +218,7 @@ export class OngekiRefreshCalculator<Chart, Extra = undefined> {
     }
 
     // TODO: make this accept a Partial<LampDisplay> so API is easier to use
-    updateLamps(lamps: LampDisplay, chartId: string): {} & {lamps: LampDisplay, changed: LampUndo} {
+    updateLamps(lamps: LampDisplay, chartId: ChartId): {} & {lamps: LampDisplay, changed: LampUndo} {
         let existingLamps = this.lamps.get(chartId);
         if (existingLamps === undefined) {
             this.lamps.set(chartId, lamps);
@@ -264,8 +264,8 @@ export class OngekiRefreshCalculator<Chart, Extra = undefined> {
         }
     }
 
-    addScore(score: ScoreInput<Extra>, chart: Chart): UndoScore<Extra> | null {
-        let chartData = this.db.getChartInfo(chart);
+    addScore(score: ScoreInput<Extra>, chart: ChartId): UndoScore<Extra> | null {
+        let chartData = this.db.getChart(chart);
         if (chartData === null) {
             return null;
         }

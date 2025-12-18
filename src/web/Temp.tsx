@@ -13,6 +13,7 @@ import { OngekiRefreshCalculator } from '../rating/OngekiRefreshCalculator';
 import { ImprovementRefreshTracker } from './ImprovementRefreshTracker';
 import { ChartDataType, ExtendedScore, HistoryStore, VersionImproveRenderData, VersionInformation } from './stores/historyStore';
 import { Mode } from './stores/stateStore';
+import { ChartId } from '../rating/chartdb/ChartDb';
 
 function dateToUnix(date: Date): number {
   return Math.floor(date.getTime());
@@ -26,15 +27,15 @@ function calculateMaxRating(db: HistoricalChartDb) {
   // I can make it more efficient by iterating every chart, sorting by level,
   // and only adding the hardest best 30 + new 15
   let maximumLevelChart = {
-    key: null as null | {tag: string, difficulty: OngekiDifficulty},
+    key: null as null | ChartId,
     level: 0,
   };
   for (let song of Object.values(db.songs)) {
     for (let [diff,chart] of Object.entries(song.charts)) {
-      let key = {tag: song.tag, difficulty: diff as OngekiDifficulty};
-      ongeki.addScore({points: 1010000}, key);
+      let chartid = db.findChartId({tag: song.tag, difficulty: diff as OngekiDifficulty})!;
+      ongeki.addScore({points: 1010000}, chartid);
       if (maximumLevelChart.level < chart.level) {
-        maximumLevelChart.key = key;
+        maximumLevelChart.key = chartid;
         maximumLevelChart.level = chart.level;
       }
     }
@@ -77,7 +78,7 @@ class StuffForOngeki {
           points: score.kamai.scoreData.score, 
           extra: {id: i, timestamp: score.kamai.timeAchieved}
         };
-      return [temp, score.chartId] as [typeof temp, string];
+      return [temp, score.chartId] as [typeof temp, ChartId];
     });
   }
 
@@ -89,7 +90,7 @@ class StuffForOngeki {
     return calculateMaxRating(db);
   }
 
-  makeImprovementTracker<Calc extends OngekiCalculator<any, any>>(calc: Calc) {
+  makeImprovementTracker<Calc extends OngekiCalculator<any>>(calc: Calc) {
     return new ImprovementTracker(calc);
   }  
 
@@ -136,7 +137,7 @@ class StuffForRefresh {
           judgements: score.kamai.scoreData.judgements,
           extra: {id: i, timestamp: score.kamai.timeAchieved}
         };
-      return [temp, score.chartId] as [typeof temp, string];
+      return [temp, score.chartId] as [typeof temp, ChartId];
     });
   }
 
@@ -148,7 +149,7 @@ class StuffForRefresh {
     return calculateMaxRating(db);
   }
 
-  makeImprovementTracker<Calc extends OngekiRefreshCalculator<any, any>>(calc: Calc) {
+  makeImprovementTracker<Calc extends OngekiRefreshCalculator<any>>(calc: Calc) {
     return new ImprovementRefreshTracker(calc);
   }
 

@@ -6,7 +6,7 @@ import { getPlatinumInformation, OngekiRefreshCalculator } from '../rating/Ongek
 import { DisplayFrame, FrameEntry, PlatinumEntry } from './FrameRenderers';
 import { HistoryProvider, Mode, State } from './stores/stateStore';
 
-function bestEntries<ChartId extends string, Score extends {points: number, rating: number}>(db: HistoricalChartDb, frame: BestFrame<ChartId, Score>): FrameEntry[] {
+function bestEntries<Score extends {points: number, rating: number}>(db: HistoricalChartDb, frame: BestFrame<Score>): FrameEntry[] {
   return frame.frame.map((item) => {
     let a = db.findChart(item.id);
     if (a === null) {
@@ -42,7 +42,7 @@ function recentEntries<Score extends {points: number, rating: number}>(db: Histo
     }).filter(x => x !== null);
 }
 
-function platinumEntries<ChartId extends string, Score extends {platinum: number, rating: number}>(db: HistoricalChartDb, frame: BestFrame<ChartId, Score>): PlatinumEntry[] {
+function platinumEntries<Score extends {platinum: number, rating: number}>(db: HistoricalChartDb, frame: BestFrame<Score>): PlatinumEntry[] {
   return frame.frame.map((item) => {
     let a = db.findChart(item.id);
     if (a === null) {
@@ -61,7 +61,7 @@ function platinumEntries<ChartId extends string, Score extends {platinum: number
   }).filter(x => x !== null);
 }
 
-export function OngekiFrameTab<Chart, Score>(props: { pointId: number, calc: OngekiCalculator<Chart, Score> }) {
+export function OngekiFrameTab<Score>(props: { pointId: number, calc: OngekiCalculator<Score> }) {
   let db = () => props.calc.db;
   let songTitle = (helpers, theme) => {
     let pointInfo = helpers.pointToScoreId(props.pointId);
@@ -106,7 +106,7 @@ export function OngekiFrameTab<Chart, Score>(props: { pointId: number, calc: Ong
   )}</HistoryProvider>
 }
 
-export function RefreshFrameTab<Chart, Score>(props: { pointId: number, calc: OngekiRefreshCalculator<Chart, Score> }) {
+export function RefreshFrameTab<Score>(props: { pointId: number, calc: OngekiRefreshCalculator<Score> }) {
   let db = () => props.calc.db;
   let songTitle = (helpers: State<Mode.REFRESH>['helpers'], theme: State<Mode.REFRESH>['theme']) => {
     let pointInfo = helpers.pointToScoreId(props.pointId);

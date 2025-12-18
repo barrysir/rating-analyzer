@@ -1,20 +1,15 @@
-// export type BestFrameSnapshot<Score> = {
-//   chartsInFrame: Map<ChartId, Score>;
-//   frame: ChartId[];
-//   rating: number;
-// };
-
+import { ChartId } from "../chartdb/ChartDb";
 import { insertionIndexDesc } from "../utils";
 
 type InsertUndo = number;
-type PopUndo<ChartId, Score> = {id: ChartId, score: Score};
+type PopUndo<Score> = {id: ChartId, score: Score};
 type UpdateUndo<Score> = {curr: number, next: number, oldScore: Score};
 
-export type UndoScore<ChartId, Score> = null
- | { inserted: InsertUndo; removed?: PopUndo<ChartId, Score> }
+export type UndoScore<Score> = null
+ | { inserted: InsertUndo; removed?: PopUndo<Score> }
  | { updated: UpdateUndo<Score> };
 
-export type BestFrameSnapshot<ChartId, Score> = {
+export type BestFrameSnapshot<Score> = {
   frame: {id: ChartId, score: Score}[];
   rating: number;
 }
@@ -40,7 +35,7 @@ function moveIndex<T>(array: T[], a: number, b: number) {
  *  - keeps track of the best N rated scores
  *  - duplicates are not allowed / only one score is allowed per chart
  */
-export class BestFrame<ChartId extends string, Score extends {rating: number}> {
+export class BestFrame<Score extends {rating: number}> {
   frame: {id: ChartId, score: Score}[]; // scores sorted descending by rating
   
   // this is a private variable so people don't confusedly use it instead of totalRating
@@ -54,14 +49,14 @@ export class BestFrame<ChartId extends string, Score extends {rating: number}> {
     this.#rating = 0;
   }
 
-  makeSnapshot(): BestFrameSnapshot<ChartId, Score> {
+  makeSnapshot(): BestFrameSnapshot<Score> {
     return {
       frame: structuredClone(this.frame),
       rating: this.#rating,
     };
   }
 
-  loadSnapshot(snapshot: BestFrameSnapshot<ChartId, Score>) {
+  loadSnapshot(snapshot: BestFrameSnapshot<Score>) {
     this.frame = structuredClone(snapshot.frame);
     this.#rating = snapshot.rating;
   }
@@ -78,7 +73,7 @@ export class BestFrame<ChartId extends string, Score extends {rating: number}> {
     return this.totalRating / this.totalSize;
   }
 
-  addScore(t: Score, chartID: ChartId): UndoScore<ChartId, Score> {
+  addScore(t: Score, chartID: ChartId): UndoScore<Score> {
     let before = this.makeSnapshot();
     let result = this._addScore(t, chartID);
 
@@ -90,7 +85,7 @@ export class BestFrame<ChartId extends string, Score extends {rating: number}> {
     return result;
   }
 
-  _addScore(t: Score, chartID: ChartId): UndoScore<ChartId, Score> {
+  _addScore(t: Score, chartID: ChartId): UndoScore<Score> {
     // Check if a score for this chart already exists
     let existingScore = this._findScore(chartID);
     if (existingScore !== null) {
@@ -142,13 +137,13 @@ export class BestFrame<ChartId extends string, Score extends {rating: number}> {
     this.#rating -= removedScore.rating;
   }
 
-  _pop() : PopUndo<ChartId, Score> {
+  _pop() : PopUndo< Score> {
     let {id, score} = this.frame.pop()!;
     this.#rating -= score.rating;
     return {id: id, score: score};
   }
 
-  _undoPop(obj: PopUndo<ChartId, Score>) {
+  _undoPop(obj: PopUndo<Score>) {
     this.frame.push(obj);
     this.#rating += obj.score.rating;
   }
@@ -170,7 +165,7 @@ export class BestFrame<ChartId extends string, Score extends {rating: number}> {
     this.frame[obj.curr]!.score = obj.oldScore;
   }
 
-  undoScore(undo: UndoScore<ChartId, Score>) {
+  undoScore(undo: UndoScore<Score>) {
     if (undo === null) {
       return;
     }

@@ -104,6 +104,11 @@ export type Prettify<T> = {
   [K in keyof T]: T[K];
 } & {};
 
+declare const id: unique symbol
+export type UniqueType<A extends any, Id extends string | number | symbol> = {
+    [id]: Id
+} & A;
+
 /**
  * Function which models this behaviour, converting "eventIndex" into ["scoreIndex", "versionIndex"]
  * 

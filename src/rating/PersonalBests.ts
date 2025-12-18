@@ -1,15 +1,15 @@
-import { ChartDb } from "./chartdb/ChartDb";
+import { ChartDb, ChartId } from "./chartdb/ChartDb";
 
-type UndoScore<Score> = { id: string, score: Score|undefined };
+type UndoScore<Score> = { id: ChartId, score: Score|undefined };
 type PersonalBestsSnapshot<Score> = {
-    bests: Map<string, Score>;
+    bests: Map<ChartId, Score>;
 }
 
-export class PersonalBests<Chart, Score extends {points: number}> {
-    db: ChartDb<Chart>;
-    bests: Map<string, Score>;
+export class PersonalBests<Score extends {points: number}> {
+    db: ChartDb;
+    bests: Map<ChartId, Score>;
 
-    constructor(db: ChartDb<Chart>) {
+    constructor(db: ChartDb) {
         this.db = db;
         this.bests = new Map();
     }
@@ -24,8 +24,8 @@ export class PersonalBests<Chart, Score extends {points: number}> {
         this.bests = structuredClone(snapshot.bests);
     }
 
-    addScore(score: Score, chart: Chart): UndoScore<Score> | null {
-        let chartInfo = this.db.getChartInfo(chart);
+    addScore(score: Score, chart: ChartId): UndoScore<Score> | null {
+        let chartInfo = this.db.getChart(chart);
         if (chartInfo === null) {
             throw new Error("Chart doesn't exist");
         }

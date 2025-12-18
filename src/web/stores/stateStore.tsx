@@ -4,6 +4,7 @@ import { createHistory } from "../Temp";
 import { history, HistoryStore, initializeHistory, setPointId } from "./historyStore";
 import { theme } from "./themeStore";
 import { OngekiTheme } from "../themes/ongeki";
+import { ChartId } from "../../rating/chartdb/ChartDb";
 
 class HistoryHelpers<M extends Mode> {
   history: HistoryStore<M>;
@@ -32,7 +33,7 @@ class HistoryHelpers<M extends Mode> {
     return this.history.history!.calcAtIndex(pointId).db;
   }
 
-  getSong(pointId: number, chartId: string) {
+  getSong(pointId: number, chartId: ChartId) {
     let db = this.getDb(pointId);
     let chart = db.getChart(chartId);
     if (chart === null) {
@@ -41,7 +42,7 @@ class HistoryHelpers<M extends Mode> {
     return chart?.song;
   }
 
-  getChart(pointId: number, chartId: string) {
+  getChart(pointId: number, chartId: ChartId) {
     // TODO: refactor this together with historyGetSong
     let db = this.getDb(pointId);
     let chart = db.getChart(chartId);

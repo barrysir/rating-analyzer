@@ -1,13 +1,14 @@
+import { ChartId } from "../chartdb/ChartDb";
 import { insertionIndexDesc, minIndex } from "../utils";
 
 
 type PushUndo = { inserted: number };
-type PopUndo<Score> = { removed: {index: number, age: number, score: {id: string, score: Score}} };
+type PopUndo<Score> = { removed: {index: number, age: number, score: {id: ChartId, score: Score}} };
 
 export type UndoScore<Score> = PushUndo | PopUndo<Score>;
 
 export type AgeFrameSnapshot<Score> = {
-  byRating: {id: string, score: Score}[];
+  byRating: {id: ChartId, score: Score}[];
   age: number[];
   ageCounter: number;
   totalRating: number;
@@ -18,7 +19,7 @@ export type AgeFrameSnapshot<Score> = {
  */
 export class AgeFrame<Score extends {rating: number}> {
   // scores in frame, sorted descending by rating
-  byRating: {id: string, score: Score}[];
+  byRating: {id: ChartId, score: Score}[];
   age: number[];
   ageCounter: number;
   totalRating: number;
@@ -50,7 +51,7 @@ export class AgeFrame<Score extends {rating: number}> {
     return this.byRating.length;
   }
 
-  push(id: string, score: Score): PushUndo {
+  push(id: ChartId, score: Score): PushUndo {
     let pair = {id, score};
     let index = insertionIndexDesc(this.byRating, pair, (s) => s.score.rating);
     this.byRating.splice(index, 0, pair);
