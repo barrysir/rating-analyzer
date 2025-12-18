@@ -5,7 +5,7 @@ import { history, HistoryStore, initializeHistory, setPointId } from "./historyS
 import { theme } from "./themeStore";
 import { OngekiTheme } from "../themes/ongeki";
 
-class HistoryHelpers<T extends HistoryStore> {
+class HistoryHelpers<T extends HistoryStore<any>> {
   history: T;
 
   constructor(history: T) { 
@@ -79,26 +79,22 @@ export enum Mode {
 }
 
 // TODO: make types for these
-type RefreshHistory = HistoryStore;
+// type RefreshHistory = HistoryStore;
 type RefreshTheme = typeof OngekiTheme;
 
-type Theme<Hist extends Mode> =
-    Hist extends Mode.ONGEKI ? typeof OngekiTheme :
-    Hist extends Mode.REFRESH ? RefreshTheme :
-    // Hist extends Mode.REFRESH ? typeof OngekiTheme :
+type Theme<M extends Mode> =
+    M extends Mode.ONGEKI ? typeof OngekiTheme :
+    M extends Mode.REFRESH ? RefreshTheme :
     never;
 
-type HistoryType<Hist extends Mode> =
-    Hist extends Mode.ONGEKI ? HistoryStore :
-    Hist extends Mode.REFRESH ? RefreshHistory :
-    // Hist extends Mode.REFRESH ? HistoryStore :
-    never;
+type HistoryType<M extends Mode> = HistoryStore<M>;
 
-type State<Hist extends Mode> = {
-    history: HistoryType<Hist>,
+type State<M extends Mode> = {
+    mode: M,
+    history: HistoryType<M>,
     setPointId: typeof setPointId,
-    helpers: HistoryHelpers<HistoryType<Hist>>,
-    theme: Theme<Hist>,
+    helpers: HistoryHelpers<HistoryType<M>>,
+    theme: Theme<M>,
 }
 
 const [STATE, setState] = createSignal<State<Mode.ONGEKI> | State<Mode.REFRESH> | null>(null);
@@ -107,10 +103,12 @@ const [STATE, setState] = createSignal<State<Mode.ONGEKI> | State<Mode.REFRESH> 
 export function initializeState(scoredb: UserScoreDatabase, options: Parameters<typeof createHistory>[1]) {
     batch(() => {
       initializeHistory(scoredb, options);
+      let realHistory = history as HistoryType<Mode.REFRESH>;
       let _state = {
-          history: history,
+          mode: Mode.REFRESH as const,
+          history: realHistory,
           setPointId: setPointId,
-          helpers: new HistoryHelpers(history),
+          helpers: new HistoryHelpers(realHistory),
           theme: theme,
       };
       console.log("Setting initializeState", _state);
@@ -137,9 +135,4 @@ export function HistoryProvider<M extends Mode>(props: {children: (history: Stat
         })()}
         </>
     );
-    // let state = STATE();
-    // if (state === null) {
-    //     return;
-    // }
-    // return props.children(state as State<M>);
 }

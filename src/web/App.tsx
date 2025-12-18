@@ -1,16 +1,16 @@
 import type { Component } from 'solid-js';
-import { createEffect, onMount, Show } from 'solid-js';
+import { createEffect, Match, onMount, Show, Switch } from 'solid-js';
 import { RatingChart } from './RatingChart';
 import { loadScoreData } from './Temp';
 import { Icon } from '@iconify-icon/solid';
 import { Popover, Tabs } from '@ark-ui/solid';
 import { settings, setSettings } from './stores/settingsStore';
 import { history, initializeHistory, setPointId } from './stores/historyStore';
-import { OngekiFrameTab } from './FrameTab';
+import { OngekiFrameTab, RefreshFrameTab } from './FrameTab';
 import { ImprovementTab } from './ImprovementTab';
 import Slider from './Slider';
 import { TooltipDelegated } from './TooltipDelegatedTest';
-import { HistoryProvider, initializeState } from './stores/stateStore';
+import { HistoryProvider, initializeState, Mode } from './stores/stateStore';
 
 
 function SettingsWindow() {
@@ -86,7 +86,7 @@ const App: Component = () => {
     initializeState(scoreData, { decimalPlaces: settings.decimalPlaces });
   });
 
-  return <HistoryProvider>{({ history, helpers, theme }) => (
+  return <HistoryProvider>{({ mode, history, helpers, theme }) => (
   <div style="width: 100vw; height: 100vh;">
     <SettingsButton />
     <div style="width: 100%; height: 100%; display: grid; grid-template-columns: 4fr 6fr; align-items: center;">
@@ -113,13 +113,27 @@ const App: Component = () => {
               </div>
               <div style="overflow: auto; border: 1px solid #ddd; border-radius: 4px 4px 0 0; padding: 0px 4px; width: 100%; height: 100%;">
                 <Tabs.Content value="frame">
-                  <OngekiFrameTab pointId={history.pointId} calc={history.history!.calc} />
+                  <Switch>
+                    <Match when={mode == Mode.REFRESH}>
+                      <RefreshFrameTab pointId={history.pointId} calc={history.history!.calc} />
+                    </Match>
+                    <Match when={mode == Mode.ONGEKI}>
+                      <OngekiFrameTab pointId={history.pointId} calc={history.history!.calc} />
+                    </Match>
+                  </Switch>
                 </Tabs.Content>
                 <Tabs.Content value="image">
                   WIP
                 </Tabs.Content>
                 <Tabs.Content value="improve">
-                  <ImprovementTab improves={history.improves} scrollToPointId={history.pointId} />
+                  <Switch>
+                    <Match when={mode == Mode.REFRESH}>
+                      <></>
+                    </Match>
+                    <Match when={mode == Mode.ONGEKI}>
+                      <ImprovementTab improves={history.improves} scrollToPointId={history.pointId} />
+                    </Match>
+                  </Switch>
                 </Tabs.Content>
               </div>
             </div>

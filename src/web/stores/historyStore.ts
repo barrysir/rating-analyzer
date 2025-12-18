@@ -4,7 +4,9 @@ import { createHistory } from '../Temp';
 import { batch } from 'solid-js';
 import { RatingAlgo } from '../../rating/OngekiCalculator';
 import { KamaiScore } from '../../get-kamai/kamai';
-import { FrameRating } from '../ImprovementTracker';
+import { FrameRating as OngekiFrameRating } from '../ImprovementTracker';
+import { FrameRating as RefreshFrameRating } from '../ImprovementRefreshTracker';
+import { Mode } from './stateStore';
 
 type ExtendedScore = {
   chartId: string;
@@ -33,31 +35,33 @@ type ChartDataType = {
     maxRating: number[];
 };
 
-export type VersionImproveRenderData = {
+type FrameRating<M extends Mode> =
+    M extends Mode.ONGEKI ? OngekiFrameRating :
+    M extends Mode.REFRESH ? RefreshFrameRating :
+    never;
+
+export type VersionImproveRenderData<M extends Mode> = {
   versionId: number;
   improves: {
     pointId: number;
     scoreId: number;
-    data: FrameRating;
+    data: FrameRating<M>;
   }[];
 };
 
 type PersonalBestType = ReturnType<typeof createHistory>['bests'];
-type ScoresType = ExtendedScore[];
-type ImprovesType = VersionImproveRenderData[];
-type VersionsType = VersionInformation[];
 
-export interface HistoryStore {
+export type HistoryStore<M extends Mode> = {
   history: HistoryType | null;
   bests: PersonalBestType | null;
-  scores: ScoresType;
-  improves: ImprovesType;
-  versions: VersionsType;
+  scores: ExtendedScore[];
+  improves: VersionImproveRenderData<M>[];
+  versions: VersionInformation[];
   pointId: number;
   chartData: ChartDataType;
 }
 
-const [history, setHistory] = createStore<HistoryStore>({
+const [history, setHistory] = createStore<HistoryStore<Mode.ONGEKI> | HistoryStore<Mode.REFRESH>>({
   history: null,
   bests: null,
   scores: [],

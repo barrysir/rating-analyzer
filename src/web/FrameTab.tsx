@@ -2,6 +2,7 @@ import { HistoricalChartDb } from '../rating/chartdb/HistoricalChartDb';
 import { BestFrame } from '../rating/frames/BestFrame';
 import { OngekiRecentFrame } from '../rating/frames/OngekiRecentFrame';
 import { OngekiCalculator } from '../rating/OngekiCalculator';
+import { OngekiRefreshCalculator } from '../rating/OngekiRefreshCalculator';
 import { DisplayFrame } from './FrameRenderers';
 import { HistoryProvider, Mode } from './stores/stateStore';
 
@@ -40,6 +41,8 @@ function recentEntries<Score extends {points: number, rating: number}>(db: Histo
       };
     }).filter(x => x !== null);
 }
+
+
 
 export function OngekiFrameTab<Chart, Score>(props: { pointId: number, calc: OngekiCalculator<Chart, Score> }) {
   let db = () => props.calc.db;
@@ -80,6 +83,51 @@ export function OngekiFrameTab<Chart, Score>(props: { pointId: number, calc: Ong
       <div style="display: flex; flex-direction: column">
         <DisplayFrame data={bestEntries(db(), props.calc.new)} title="New" color={theme.frameColors['new']} rows={15} />
         <DisplayFrame data={recentEntries(db(), props.calc.recent)} title="Recent" color={theme.frameColors['recent']} rows={10} />
+      </div>
+    </div>
+  </div>
+  )}</HistoryProvider>
+}
+
+export function RefreshFrameTab<Chart, Score>(props: { pointId: number, calc: OngekiRefreshCalculator<Chart, Score> }) {
+  let db = () => props.calc.db;
+  let songTitle = (helpers, theme) => {
+    let pointInfo = helpers.pointToScoreId(props.pointId);
+    if (pointInfo.type == 'version') {
+      let version = helpers.getVersion(pointInfo.versionId);
+      return `Version change to ${version.name}`;
+    } else {
+      let score = helpers.getScore(pointInfo.scoreId)!;
+      let { chart, song } = helpers.getChart(props.pointId, score.chartId) ?? {};
+      return <>
+        <span>{song?.title} ({chart?.difficulty} {chart?.internalLevel})</span>
+        <span>{theme.formatRating(score.rating, pointInfo.scoreId)} / {theme.formatPoints(score.points)}</span>
+      </>
+    }
+  }
+
+  return <HistoryProvider<Mode.ONGEKI>>{({ helpers, theme }) => (<div>
+    <div style="display: flex; justify-content: space-between">
+      <div>
+        <h2>{props.pointId} - {theme.formatDateTime(new Date(helpers.getTimestamp(props.pointId)))}</h2>
+        <span>
+          {theme.formatFrameRating(props.calc.overallRating, 'total')}
+          &nbsp;/ {theme.formatFrameRating(props.calc.best.overallRating, 'best')} 
+          &nbsp;/ {theme.formatFrameRating(props.calc.new.overallRating, 'new')} 
+          &nbsp;/ {theme.formatFrameRating(props.calc.plat.overallRating, 'plat')}
+        </span>
+      </div>
+      <div style="display: flex; flex-direction: column; font-size: 0.8em; align-items: end">
+        {songTitle(helpers, theme)}
+      </div>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr;">
+      <div style="display: flex; flex-direction: column">
+        <DisplayFrame data={bestEntries(db(), props.calc.best)} title="Best" color={theme.frameColors['best']} rows={50} />
+      </div>
+      <div style="display: flex; flex-direction: column">
+        <DisplayFrame data={bestEntries(db(), props.calc.new)} title="New" color={theme.frameColors['new']} rows={10} />
+        <DisplayFrame data={bestEntries(db(), props.calc.plat)} title="Platinum" color={theme.frameColors['plat']} rows={50} />
       </div>
     </div>
   </div>

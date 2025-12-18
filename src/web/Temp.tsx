@@ -9,7 +9,10 @@ import { OngekiDifficulty } from '../rating/data-types';
 import { VersionChangeHistory } from '../rating/VersionChangeHistory';
 import { PersonalBests } from '../rating/PersonalBests';
 import { ImprovementTracker } from './ImprovementTracker';
+import { OngekiRefreshCalculator } from '../rating/OngekiRefreshCalculator';
+import { ImprovementRefreshTracker } from './ImprovementRefreshTracker';
 import { ExtendedScore, VersionImproveRenderData, VersionInformation } from './stores/historyStore';
+import { Mode } from './stores/stateStore';
 
 function dateToUnix(date: Date): number {
   return Math.floor(date.getTime());
@@ -67,9 +70,62 @@ const VERSIONS = [
   },
 ];
 
+class StuffForOngeki {
+  makeScores(scores: UserScoreDatabase['scores']) {
+    return scores.map((score, i) => {
+      let temp = {
+          points: score.kamai.scoreData.score, 
+          extra: {id: i, timestamp: score.kamai.timeAchieved}
+        };
+      return [temp, score.chartId] as [typeof temp, string];
+    });
+  }
+
+  makeCalculator(db: HistoricalChartDb) {
+    return OngekiCalculator.create<{id: number, timestamp: number}>()(db);
+  }
+
+  calculateMaxRating(db: HistoricalChartDb) {
+    return calculateMaxRating(db);
+  }
+
+  makeImprovementTracker<Calc extends OngekiCalculator<any, any>>(calc: Calc) {
+    return new ImprovementTracker(calc);
+  }  
+}
+
+class StuffForRefresh {
+  makeScores(scores: UserScoreDatabase['scores']) {
+    return scores.map((score, i) => {
+      let temp = {
+          points: score.kamai.scoreData.score, 
+          platinum: score.kamai.scoreData.platinumScore, 
+          bells: score.kamai.scoreData.optional.bellCount,
+          judgements: score.kamai.scoreData.judgements,
+          extra: {id: i, timestamp: score.kamai.timeAchieved}
+        };
+      return [temp, score.chartId] as [typeof temp, string];
+    });
+  }
+
+  makeCalculator(db: HistoricalChartDb) {
+    return OngekiRefreshCalculator.create<{id: number, timestamp: number}>()(db);
+  }
+
+  calculateMaxRating(db: HistoricalChartDb) {
+    return calculateMaxRating(db);
+  }
+
+  makeImprovementTracker<Calc extends OngekiRefreshCalculator<any, any>>(calc: Calc) {
+    return new ImprovementRefreshTracker(calc);
+  }
+}
+
+type M = Mode.REFRESH;
+
+// export function createHistory<M extends Mode>(scoredb: UserScoreDatabase, mode: M, options: {decimalPlaces: number} = {decimalPlaces: 2}) {
 export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlaces: number} = {decimalPlaces: 2}) {
   let songData = new SongData(SONG_DATA);
-
   let versions = structuredClone(VERSIONS) as VersionInformation[];
 
   let versionChanges = versions.map(v => ({
@@ -91,17 +147,23 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
     return a as ExtendedScore;
   });
 
-  let scoresArray = scores.map((score, i) => {
-    return [
-      {points: score.kamai.scoreData.score, extra: {id: i, timestamp: score.kamai.timeAchieved}}, 
-      score.chartId,
-    ] as [{points: number, extra: {id: number, timestamp: number}}, string]
-  });
+  // let getRefresh = function () {
+  //   switch (mode) {
+  //     case Mode.ONGEKI: 
+  //       return new StuffForOngeki();
+  //     case Mode.REFRESH:
+  //       return new StuffForRefresh();
+  //   }
+  // }();
+  
+  let getRefresh = new StuffForRefresh();  
+
+  let scoresArray = getRefresh.makeScores(scores);
 
   let history = new VersionChangeHistory(
     versionChanges.map(entry => (
       {
-        calculator: OngekiCalculator.create<{id: number, timestamp: number}>()(entry.db),
+        calculator: getRefresh.makeCalculator(entry.db),
         timestamp: entry.timestamp,
       }
     )),
@@ -131,14 +193,14 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
   };
 
   let maxRatings = versionChanges.map((x,i) => {
-    return calculateMaxRating(x.db).overallRating;
+    return getRefresh.calculateMaxRating(x.db).overallRating;
   });
 
-  let allImproves: VersionImproveRenderData[] = [];
+  let allImproves: VersionImproveRenderData<M>[] = [];
 
-  let tracker = new ImprovementTracker(history.calc);
+  let tracker = getRefresh.makeImprovementTracker(history.calc);
   let currWhichCalc = history.whichCalc;
-  let verImproves: VersionImproveRenderData = {
+  let verImproves: VersionImproveRenderData<M> = {
     versionId: history.whichCalc,
     improves: [],
   };
@@ -148,7 +210,7 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
     if (history.whichCalc != currWhichCalc) {
       verImproves = {versionId: history.whichCalc, improves: []};
       allImproves.push(verImproves);
-      tracker = new ImprovementTracker(history.calc);
+      tracker = getRefresh.makeImprovementTracker(history.calc);
       currWhichCalc = history.whichCalc;
     } else {
       let improve = tracker.refresh(history.calc);
@@ -171,10 +233,10 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
 
     let info = history.getCalcOutput(i);
     if (info !== null) {
-      if (info.rating !== undefined) {
+      if ('rating' in info) {
         extendedScores[history.whichScore]!.rating = info.rating;
       }
-      if (info.algo !== undefined) {
+      if ('algo' in info) {
         extendedScores[history.whichScore]!.algo = info.algo;
       }
     }
