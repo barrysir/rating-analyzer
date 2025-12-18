@@ -14,6 +14,7 @@ import { ImprovementRefreshTracker } from './ImprovementRefreshTracker';
 import { ChartDataType, ExtendedScore, HistoryStore, VersionImproveRenderData, VersionInformation } from './stores/historyStore';
 import { Mode } from './stores/stateStore';
 import { ChartId } from '../rating/chartdb/ChartDb';
+import { addWarning } from './stores/warningStore';
 
 function dateToUnix(date: Date): number {
   return Math.floor(date.getTime());
@@ -203,6 +204,46 @@ export function createHistory<M extends Mode>(scoredb: UserScoreDatabase, mode: 
   let scores = scoredb.scores;
   // TODO: move sorting into scoredb code; make sure scores are always sorted ascending by timestamp
   scores.sort((a, b) => a.kamai.timeAchieved - b.kamai.timeAchieved);
+
+  // Check for scores that don't exist in their given calculator; ignore them
+  //  e.g. a bright memory act 3 score shows up when the current version is act 2 (this can happen when playing on data)
+  //  - completely ignore the score
+  //  - move the score to the very beginning of act 3 (but this breaks chronological ordering)
+  let nextVersionIndex = 1;
+  let nextVersion = versionChanges[nextVersionIndex];
+  let scoresToSkip = new Map<number, number>();
+  for (let [i,score] of scores.entries()) {
+    let timestamp = score.kamai.timeAchieved;
+    while (true) {
+      if (nextVersion !== undefined && timestamp >= nextVersion!.timestamp) {
+        nextVersionIndex++;
+        nextVersion = versionChanges[nextVersionIndex];
+      } else {
+        break;
+      }
+    }
+
+    let currVersion = versionChanges[nextVersionIndex-1]!;
+    let db = currVersion.db;
+    let chart = db.getChart(score.chartId);
+    if (chart === null) {
+      scoresToSkip.set(i, nextVersionIndex-1);
+    }
+  }
+
+  if (scoresToSkip.size > 0) {
+    
+    let messageHeader = `Some scores were found for songs that did not exist at the time of playing. These scores were ignored.`;
+    let messageBody = scoresToSkip.entries().map(([i,versionIndex]) => {
+      let score = scores[i]!;
+      let versionName = versions[versionIndex]!.name;
+      return `${i} (${versionName}): ${score.chartId} at ${new Date(score.kamai.timeAchieved)}`;
+    }).toArray().join('\n');
+    let span = document.createElement("span");
+    span.innerText = `${messageHeader}\n${messageBody}`;
+    addWarning(span);
+    scores = scores.filter((value, i) => !scoresToSkip.has(i));
+  }
 
   let getRefresh = function () {
     switch (mode) {
