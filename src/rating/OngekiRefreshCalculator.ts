@@ -59,6 +59,11 @@ type RefreshTechScoreAlgoB = {
     multiplier: {multiplier: number, total: number},
 }
 
+export type RefreshPlatScoreAlgo = {
+    level: {level: number, total: number},
+    stars: {percentage: number, stars: number, multiplier: number, total: number},
+}
+
 function scoreRating(points: number, lamps: LampDisplay, level: number): {rating: number, algo: RefreshTechScoreAlgo} {
     if (points < 800000) {
         let multiplier = Math.max(0, (points - 500000) / 300000);
@@ -108,9 +113,22 @@ export function platinumStars(platinum: number, maxPlatinum: number) {
     return stars;
 }
 
-function pRating(platinum: number, maxPlatinum: number, level: number) {
-    let stars = platinumStars(platinum, maxPlatinum);
-    return Math.min(5, stars) * level * level / 1000;
+function pRating(platinum: number, maxPlatinum: number, level: number): {rating: number, algo: RefreshPlatScoreAlgo} {
+    let percentage = Math.floor(platinum * 100 / maxPlatinum);
+    let stars = Math.min(6, Math.max(0, percentage - 93));
+    let algo: Partial<RefreshPlatScoreAlgo> = {};
+
+    let total = level * level / 1000;
+    algo.level = { level, total };
+
+    let multiplier = Math.min(5, stars);
+    total *= multiplier;
+    algo.stars = { percentage, stars, multiplier, total }; 
+
+    return {
+        rating: total,
+        algo: algo as RefreshPlatScoreAlgo,
+    };
 }
 
 // --------------------------------------
@@ -143,6 +161,7 @@ type UndoScore<Extra> = {
     rating: number,
     algo: RefreshTechScoreAlgo,
     platRating: number,
+    platAlgo: RefreshPlatScoreAlgo,
 };
 
 type LampDisplay = {bell: BellLamp, clear: ClearLamp, grade: GradeLamp};
@@ -284,7 +303,7 @@ export class OngekiRefreshCalculator<Chart, Extra = undefined> {
 
         let {rating: normalRating, algo: ratingAlgo} = scoreRating(score.points, lamps, level);
         let normalScore = {points: score.points, rating: normalRating, ...optionalScore} as OngekiScore<Extra>;
-        let platinumRating = pRating(score.platinum, maxPlatinum, level);
+        let {rating: platinumRating, algo: platinumAlgo} = pRating(score.platinum, maxPlatinum, level);
         let platinumScore = {platinum: score.platinum, rating: platinumRating, ...optionalScore} as PlatinumScore<Extra>;
 
         let undo: InnerUndoScore<Extra> = {
@@ -302,6 +321,7 @@ export class OngekiRefreshCalculator<Chart, Extra = undefined> {
             rating: normalRating,
             algo: ratingAlgo,
             platRating: platinumRating,
+            platAlgo: platinumAlgo,
         };
     }
 
