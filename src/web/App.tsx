@@ -127,14 +127,7 @@ const App: Component = () => {
                   WIP
                 </Tabs.Content>
                 <Tabs.Content value="improve">
-                  <Switch>
-                    <Match when={mode == Mode.REFRESH}>
-                      <></>
-                    </Match>
-                    <Match when={mode == Mode.ONGEKI}>
-                      <ImprovementTab improves={history.improves} scrollToPointId={history.pointId} />
-                    </Match>
-                  </Switch>
+                  <ImprovementTab mode={mode} improves={history.improves} scrollToPointId={history.pointId} />
                 </Tabs.Content>
               </div>
             </div>

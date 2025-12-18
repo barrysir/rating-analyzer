@@ -82,7 +82,7 @@ export enum Mode {
 // type RefreshHistory = HistoryStore;
 type RefreshTheme = typeof OngekiTheme;
 
-type Theme<M extends Mode> =
+export type Theme<M extends Mode> =
     M extends Mode.ONGEKI ? typeof OngekiTheme :
     M extends Mode.REFRESH ? RefreshTheme :
     never;

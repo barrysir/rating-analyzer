@@ -62,7 +62,7 @@ export type ChartDataType<M extends Mode> = {
     plots: PlotDataAsdf<M>;
 };
 
-type FrameRating<M extends Mode> =
+export type FrameRating<M extends Mode> =
     M extends Mode.ONGEKI ? OngekiFrameRating :
     M extends Mode.REFRESH ? RefreshFrameRating :
     never;

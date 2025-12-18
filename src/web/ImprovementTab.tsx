@@ -1,11 +1,11 @@
 import { Accordion, Collapsible, MenuItem } from "@ark-ui/solid";
-import { VersionImproveRenderData } from './stores/historyStore';
-import { For, Index, Show, createEffect, createSignal } from "solid-js";
+import { FrameRating, VersionImproveRenderData } from './stores/historyStore';
+import { For, Index, Match, Show, Switch, createEffect, createSignal } from "solid-js";
 import './ImprovementTab.css';
 import { Icon } from "@iconify-icon/solid";
 import { settings } from "./stores/settingsStore";
 import { findRegion, getRegion } from "../rating/utils";
-import { HistoryProvider, Mode, unpackHistory } from "./stores/stateStore";
+import { HistoryProvider, Mode, Theme, unpackHistory } from "./stores/stateStore";
 
 function FrameImprovementRender(props: { rating: number, change?: number, color: string }) {
     return <HistoryProvider<Mode.ONGEKI>>{({theme}) => (
@@ -18,8 +18,37 @@ function FrameImprovementRender(props: { rating: number, change?: number, color:
     )}</HistoryProvider>;
 }
 
-function VersionImprovement(props: { improves: VersionImproveRenderData<Mode.ONGEKI>['improves'] }) {
-    return <HistoryProvider<Mode.ONGEKI>>{({ history, helpers, theme }) => (
+function OngekiRender(props: { frame: FrameRating<Mode.ONGEKI>, theme: Theme<Mode.ONGEKI>}) {
+    return <>
+        <FrameImprovementRender rating={props.frame.total} change={props.frame.changes.total} color={props.theme.frameColors['total']} />
+        <FrameImprovementRender rating={props.frame.best} change={props.frame.changes.best} color={props.theme.frameColors['best']} />
+        <FrameImprovementRender rating={props.frame.new} change={props.frame.changes.new} color={props.theme.frameColors['new']} />
+        <FrameImprovementRender rating={props.frame.recent} change={props.frame.changes.recent} color={props.theme.frameColors['recent']} />
+    </>;
+}
+
+function RefreshRender(props: { frame: FrameRating<Mode.REFRESH>, theme: Theme<Mode.REFRESH>}) {
+    return <>
+        <FrameImprovementRender rating={props.frame.total} change={props.frame.changes.total} color={props.theme.frameColors['total']} />
+        <FrameImprovementRender rating={props.frame.best} change={props.frame.changes.best} color={props.theme.frameColors['best']} />
+        <FrameImprovementRender rating={props.frame.new} change={props.frame.changes.new} color={props.theme.frameColors['new']} />
+        <FrameImprovementRender rating={props.frame.plat} change={props.frame.changes.plat} color={props.theme.frameColors['plat']} />
+    </>;
+}
+
+function GeneralRender<M extends Mode>(props: { mode: M, frame: FrameRating<M>, theme: Theme<M>}) {
+    return <Switch>
+        <Match when={props.mode == Mode.ONGEKI}>
+            <OngekiRender frame={props.frame as FrameRating<Mode.ONGEKI>} theme={props.theme as Theme<Mode.ONGEKI>} />
+        </Match>
+        <Match when={props.mode == Mode.REFRESH}>
+            <RefreshRender frame={props.frame as FrameRating<Mode.REFRESH>} theme={props.theme as Theme<Mode.REFRESH>} />
+        </Match>
+    </Switch>
+}
+
+function VersionImprovement<M extends Mode>(props: { mode: M, improves: VersionImproveRenderData<M>['improves'] }) {
+    return <HistoryProvider<M>>{({ history, helpers, theme }) => (
         <div class="improve-list">
             <For each={props.improves}>
                 {(item, index) => {
@@ -38,10 +67,7 @@ function VersionImprovement(props: { improves: VersionImproveRenderData<Mode.ONG
                         <span>{song?.title} - {theme.formatPoints(score.points)} ({theme.formatRating(score.rating, item.scoreId)})</span>
                         <span></span>
                         <span></span>
-                        <FrameImprovementRender rating={frame.total} change={frame.changes.total} color={theme.frameColors['total']} />
-                        <FrameImprovementRender rating={frame.best} change={frame.changes.best} color={theme.frameColors['best']} />
-                        <FrameImprovementRender rating={frame.new} change={frame.changes.new} color={theme.frameColors['new']} />
-                        <FrameImprovementRender rating={frame.recent} change={frame.changes.recent} color={theme.frameColors['recent']} />
+                        <GeneralRender mode={props.mode} frame={frame} theme={theme} />
                     </div>
                 }}
             </For>
@@ -49,9 +75,9 @@ function VersionImprovement(props: { improves: VersionImproveRenderData<Mode.ONG
     )}</HistoryProvider>
 }
 
-export function ImprovementTab(props: { improves: VersionImproveRenderData<Mode.ONGEKI>[], scrollToPointId?: number }) {
+export function ImprovementTab<M extends Mode>(props: { mode: M, improves: VersionImproveRenderData<M>[], scrollToPointId?: number }) {
     let rootElement: HTMLDivElement;
-    let renderedImproves: Map<number, VersionImproveRenderData<Mode.ONGEKI>['improves']> = new Map();
+    let renderedImproves: Map<number, VersionImproveRenderData<M>['improves']> = new Map();
     const [openItems, setOpenItems] = createSignal<string[]>([]);
 
     // Find which version contains the target pointId
@@ -137,7 +163,7 @@ export function ImprovementTab(props: { improves: VersionImproveRenderData<Mode.
                             </Accordion.ItemIndicator>
                         </Accordion.ItemTrigger>
                         <Accordion.ItemContent class="accordion-content">
-                            <VersionImprovement improves={improves()} />
+                            <VersionImprovement mode={props.mode} improves={improves()} />
                         </Accordion.ItemContent>
                     </Accordion.Item>;
                 }}
