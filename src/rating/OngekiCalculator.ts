@@ -54,50 +54,38 @@ export type RatingAlgo = {
     multiplier?: [number, number],
 };
 
-type OngekiScore<Score> = 
-    Prettify<{ points: number; rating: number; } & 
-    (Score extends undefined ? {} : {extra: Score})>;
+type WithExtra<Extra, T> = T & (Extra extends undefined ? {} : {extra: Extra});
 
-type UndoScore<Score> = {
+type OngekiScore<Extra> = WithExtra<Extra, { points: number; rating: number; }>;
+
+type UndoScore<Extra> = {
     rating: number;
     algo: RatingAlgo;
-    undo: InnerUndoScore<Score>;
+    undo: InnerUndoScore<Extra>;
 };
 
-type InnerUndoScore<Score> = {
-    best?: BestUndo<string, OngekiScore<Score>>; 
-    new?: BestUndo<string, OngekiScore<Score>>; 
-    naive: BestUndo<string, OngekiScore<Score>>;
-    recent: RecentUndo<OngekiScore<Score>>;
+type InnerUndoScore<Extra> = {
+    best?: BestUndo<string, OngekiScore<Extra>>; 
+    new?: BestUndo<string, OngekiScore<Extra>>; 
+    naive: BestUndo<string, OngekiScore<Extra>>;
+    recent: RecentUndo<OngekiScore<Extra>>;
 };
 
-export type OngekiCalculatorSnapshot<ChartId, Score> = {
-    best: BestFrameSnapshot<ChartId, Score>,
-    new: BestFrameSnapshot<ChartId, Score>,
-    naive: BestFrameSnapshot<ChartId, Score>,
-    recent: AgeFrameSnapshot<Score>,
+export type OngekiCalculatorSnapshot<ChartId, Extra> = {
+    best: BestFrameSnapshot<ChartId, Extra>,
+    new: BestFrameSnapshot<ChartId, Extra>,
+    naive: BestFrameSnapshot<ChartId, Extra>,
+    recent: AgeFrameSnapshot<Extra>,
 }
 
-export class OngekiCalculator<Chart, Score = undefined> {
+export class OngekiCalculator<Chart, Extra = undefined> {
     db: ChartDb<Chart>;
-    best: BestFrame<string, OngekiScore<Score>>;
-    new: BestFrame<string, OngekiScore<Score>>;
-    naive: BestFrame<string, OngekiScore<Score>>;
-    recent: OngekiRecentFrame<OngekiScore<Score>>;
+    best: BestFrame<string, OngekiScore<Extra>>;
+    new: BestFrame<string, OngekiScore<Extra>>;
+    naive: BestFrame<string, OngekiScore<Extra>>;
+    recent: OngekiRecentFrame<OngekiScore<Extra>>;
 
-    // constructor(db: ChartDb<Chart>);
-    // constructor(db: ChartDb<Chart>, extra: Extra);
-
-    // while this works for no extra at all and for simple cases,
-    //   - if automatically infers the type of extra which may be wrong
-    //   - it doesn't let you specify the type of extra explicitly to fix it
-    // so maybe it's better to have people use the create() method...
-    // the create() method is also a "Typescript only" construct,
-    // I wouldn't need it at all if I was doing this in plain javascript
-    // the problem is new OngekiCalculator<Score, ChartType>(db)
-    //      it's hard to infer ChartType
-    //      if I could find an easy way to do it it might not be that bad
-    constructor(db: ChartDb<Chart>, extra?: Score) {
+    constructor(db: ChartDb<Chart>) {
         this.db = db;
         this.best = new BestFrame(30);
         this.new = new BestFrame(15);
@@ -109,7 +97,7 @@ export class OngekiCalculator<Chart, Score = undefined> {
         return function <Chart>(db: ChartDb<Chart>) { return new OngekiCalculator<Chart, Extra>(db); };
     }
 
-    makeSnapshot(): OngekiCalculatorSnapshot<string, OngekiScore<Score>> {
+    makeSnapshot(): OngekiCalculatorSnapshot<string, OngekiScore<Extra>> {
         return {
             best: this.best.makeSnapshot(),
             new: this.new.makeSnapshot(),
@@ -118,42 +106,43 @@ export class OngekiCalculator<Chart, Score = undefined> {
         }
     }
 
-    loadSnapshot(snapshot: OngekiCalculatorSnapshot<string, OngekiScore<Score>>) {
+    loadSnapshot(snapshot: OngekiCalculatorSnapshot<string, OngekiScore<Extra>>) {
         this.best.loadSnapshot(snapshot.best);
         this.new.loadSnapshot(snapshot.new);
         this.naive.loadSnapshot(snapshot.naive);
         this.recent.loadSnapshot(snapshot.recent);
     }
 
-    addScore(score: {points: number} & (Score extends undefined ? {} : {extra: Score}), chart: Chart): UndoScore<Score> | null {
+    addScore(score: WithExtra<Extra, {points: number}>, chart: Chart): UndoScore<Extra> | null {
         let chartData = this.db.getChartInfo(chart);
-        // if this is for a chart that doesn't exist (maybe it comes in a future version), then ignore the score
         if (chartData === null) {
             return null;
         }
         let { internalLevel: level, chartId: id, isNew, isLunatic } = chartData;
 
         let {rating, info} = scoreRating(score.points, level);
-        let entry: OngekiScore<Score> = {
-            points: score.points,
-            rating,
-        };
+        
+        const entry = { points: score.points, rating } as OngekiScore<Extra>;
         if ('extra' in score) {
-            entry.extra = score.extra;
+            // @ts-expect-error
+            entry.extra = score.extra; 
         }
 
-        let undo: InnerUndoScore<Score> = {};
+        let undo: InnerUndoScore<Extra> = {
+            naive: this.naive.addScore(entry, id),
+            recent: this.recent.addScore(entry, {chartId: id, isLunatic}),
+        };
+        
         if (isNew) {
             undo.new = this.new.addScore(entry, id);
         } else {
             undo.best = this.best.addScore(entry, id);
         }
-        undo.naive = this.naive.addScore(entry, id);
-        undo.recent = this.recent.addScore(entry, {chartId: id, isLunatic});
+        
         return {rating, algo: info, undo};
     }
 
-    undoScore(undo_: UndoScore<Score> | null) {
+    undoScore(undo_: UndoScore<Extra> | null) {
         if (undo_ === null) { 
             return; 
         }

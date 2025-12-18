@@ -64,47 +64,49 @@ function pRating(platinum: number, maxPlatinum: number, level: number) {
 
 // --------------------------------------
 
-type OngekiScore<Score> = { points: number; rating: number; } & (Score extends undefined ? {} : {extra: Score});
-type PlatinumScore<Score> = { platinum: number; rating: number; } & (Score extends undefined ? {} : {extra: Score});
+type WithExtra<Extra, T> = T & (Extra extends undefined ? {} : {extra: Extra});
+type OngekiScore<Extra> = WithExtra<Extra, { points: number; rating: number; }>;
+type PlatinumScore<Extra> = WithExtra<Extra, { platinum: number; rating: number; }>;
 
-type ScoreInput<Score> = {points: number, platinum: number}
-& (Score extends undefined ? {} : {extra: Score})
-& 
-(
-    {bells: number, judgements: {crit?: number, break: number, hit: number, miss: number}}
-    | {lamps: {bell: BellLamp, clear: ClearLamp, grade?: GradeLamp}}
-);
+type ScoreInput<Extra> = WithExtra<Extra, 
+    {points: number, platinum: number}
+    & (
+        {bells: number, judgements: {crit?: number, break: number, hit: number, miss: number}}
+        | {lamps: {bell: BellLamp, clear: ClearLamp, grade?: GradeLamp}}
+    )  
+>;
+
 
 type LampUndo = null | {chartId: string, prevLamps: LampDisplay|null};
 
-type UndoScore<Score> = {
-    best?: BestUndo<string, OngekiScore<Score>>; 
-    new?: BestUndo<string, OngekiScore<Score>>; 
-    naive: BestUndo<string, OngekiScore<Score>>;
-    plat: BestUndo<string, PlatinumScore<Score>>;
+type UndoScore<Extra> = {
+    best?: BestUndo<string, OngekiScore<Extra>>; 
+    new?: BestUndo<string, OngekiScore<Extra>>; 
+    naive: BestUndo<string, OngekiScore<Extra>>;
+    plat: BestUndo<string, PlatinumScore<Extra>>;
     lamps: LampUndo;
 };
 
 type LampDisplay = {bell: BellLamp, clear: ClearLamp, grade: GradeLamp};
 
-type OngekiRefreshCalculatorSnapshot<ChartId, Score> = {
-    best: BestFrameSnapshot<ChartId, OngekiScore<Score>>,
-    new: BestFrameSnapshot<ChartId, OngekiScore<Score>>,
-    naive: BestFrameSnapshot<ChartId, OngekiScore<Score>>,
-    plat: BestFrameSnapshot<ChartId, PlatinumScore<Score>>,
+type OngekiRefreshCalculatorSnapshot<ChartId, Extra> = {
+    best: BestFrameSnapshot<ChartId, OngekiScore<Extra>>,
+    new: BestFrameSnapshot<ChartId, OngekiScore<Extra>>,
+    naive: BestFrameSnapshot<ChartId, OngekiScore<Extra>>,
+    plat: BestFrameSnapshot<ChartId, PlatinumScore<Extra>>,
     lamps: Map<string, LampDisplay>,
 };
 
-export class OngekiRefreshCalculator<Chart, Score = undefined> {
+export class OngekiRefreshCalculator<Chart, Extra = undefined> {
     db: ChartDb<Chart>;
-    best: BestFrame<string, OngekiScore<Score>>;
-    new: BestFrame<string, OngekiScore<Score>>;
-    naive: BestFrame<string, OngekiScore<Score>>;
-    plat: BestFrame<string, PlatinumScore<Score>>;
+    best: BestFrame<string, OngekiScore<Extra>>;
+    new: BestFrame<string, OngekiScore<Extra>>;
+    naive: BestFrame<string, OngekiScore<Extra>>;
+    plat: BestFrame<string, PlatinumScore<Extra>>;
 
     lamps: Map<string, LampDisplay>;
 
-    constructor(db: ChartDb<Chart>, extra?: Score) {
+    constructor(db: ChartDb<Chart>) {
         this.db = db;
         this.best = new BestFrame(50);
         this.new = new BestFrame(10);
@@ -117,7 +119,7 @@ export class OngekiRefreshCalculator<Chart, Score = undefined> {
         return function <Chart>(db: ChartDb<Chart>) { return new OngekiRefreshCalculator<Chart, Extra>(db); };
     }
     
-    makeSnapshot(): OngekiRefreshCalculatorSnapshot<string, Score> {
+    makeSnapshot(): OngekiRefreshCalculatorSnapshot<string, Extra> {
         return {
             best: this.best.makeSnapshot(),
             new: this.new.makeSnapshot(),
@@ -127,7 +129,7 @@ export class OngekiRefreshCalculator<Chart, Score = undefined> {
         }
     }
 
-    loadSnapshot(snapshot: OngekiRefreshCalculatorSnapshot<string, Score>) {
+    loadSnapshot(snapshot: OngekiRefreshCalculatorSnapshot<string, Extra>) {
         this.best.loadSnapshot(snapshot.best);
         this.new.loadSnapshot(snapshot.new);
         this.naive.loadSnapshot(snapshot.naive);
@@ -182,7 +184,7 @@ export class OngekiRefreshCalculator<Chart, Score = undefined> {
         }
     }
 
-    addScore(score: ScoreInput<Score>, chart: Chart) {
+    addScore(score: ScoreInput<Extra>, chart: Chart) {
         let chartData = this.db.getChartInfo(chart);
         if (chartData === null) {
             return null;
@@ -223,23 +225,24 @@ export class OngekiRefreshCalculator<Chart, Score = undefined> {
         let optionalScore = ('extra' in score) ? { extra: score.extra } : {};
 
         let normalRating = scoreRating(score.points, lamps, level);
-        let normalScore: OngekiScore<Score> = {points: score.points, rating: normalRating, ...optionalScore};
+        let normalScore = {points: score.points, rating: normalRating, ...optionalScore} as OngekiScore<Extra>;
         let platinumRating = pRating(score.platinum, maxPlatinum, level);
-        let platinumScore: PlatinumScore<Score> = {platinum: score.platinum, rating: platinumRating, ...optionalScore};
+        let platinumScore = {platinum: score.platinum, rating: platinumRating, ...optionalScore} as PlatinumScore<Extra>;
 
-        let undo: UndoScore<Score> = {};
-        undo.lamps = changed;
+        let undo: UndoScore<Extra> = {
+            naive: this.naive.addScore(normalScore, chartId),
+            plat: this.plat.addScore(platinumScore, chartId),
+            lamps: changed,
+        };
         if (isNew) {
             undo.new = this.new.addScore(normalScore, chartId);
         } else {
             undo.best = this.best.addScore(normalScore, chartId);
         }
-        undo.naive = this.naive.addScore(normalScore, chartId);
-        undo.plat = this.plat.addScore(platinumScore, chartId);
         return undo;
     }
 
-    undoScore(undo: UndoScore<Score> | null) {
+    undoScore(undo: UndoScore<Extra> | null) {
         if (undo === null) { 
             return; 
         }
