@@ -97,6 +97,7 @@ class StuffForOngeki {
 
   makeExtendedScore(score: UserScoreDatabase['scores'][number], _calcOutput: any, attemptNumber: number): ExtendedScore<Mode.ONGEKI> {
     let calcOutput = _calcOutput as NonNullable<ReturnType<HistoryStore<Mode.ONGEKI>['history']['getCalcOutput']>>;
+    let judges = score.kamai.scoreData.judgements;
     return {
       chartId: score.chartId,
       attemptNumber: attemptNumber,
@@ -105,6 +106,8 @@ class StuffForOngeki {
       kamai: score.kamai,
       rating: calcOutput.rating,
       algo: calcOutput.algo,
+      judgements: judges,
+      totalJudgements: judges.cbreak + judges.break + judges.hit + judges.miss,
     };
   }
 
@@ -157,6 +160,7 @@ class StuffForRefresh {
 
   makeExtendedScore(score: UserScoreDatabase['scores'][number], _calcOutput: any, attemptNumber: number): ExtendedScore<Mode.REFRESH> {
     let calcOutput = _calcOutput as NonNullable<ReturnType<HistoryStore<Mode.REFRESH>['history']['getCalcOutput']>>;
+    let judges = score.kamai.scoreData.judgements;
     return {
       chartId: score.chartId,
       points: score.kamai.scoreData.score,
@@ -168,6 +172,8 @@ class StuffForRefresh {
       platAlgo: calcOutput.platAlgo,
       platRating: calcOutput.platRating,
       platScore: score.kamai.scoreData.platinumScore,
+      judgements: judges,
+      totalJudgements: judges.cbreak + judges.break + judges.hit + judges.miss,
     };
   }
 

@@ -3,7 +3,7 @@ import { UserScoreDatabase } from '../../get-kamai/UserScores';
 import { createHistory } from '../Temp';
 import { batch } from 'solid-js';
 import { RatingAlgo as OngekiScoreAlgo } from '../../rating/OngekiCalculator';
-import { KamaiScore } from '../../get-kamai/kamai';
+import { KamaiScore, OngekiJudgements } from '../../get-kamai/kamai';
 import { FrameRating as OngekiFrameRating } from '../ImprovementTracker';
 import { FrameRating as RefreshFrameRating } from '../ImprovementRefreshTracker';
 import { Mode } from './stateStore';
@@ -18,15 +18,18 @@ export type ExtendedScore<M extends Mode> = {
   points: number;
   timeAchieved: number;
   kamai: KamaiScore;
+  totalJudgements: number;    // used for completion percentage
 } & (
   M extends Mode.ONGEKI ? {
-    algo: OngekiScoreAlgo
+    algo: OngekiScoreAlgo,
+    judgements: OngekiJudgements,
   } :
   M extends Mode.REFRESH ? {
     platRating: number,
     platScore: number,
     techAlgo: RefreshTechScoreAlgo,
     platAlgo: RefreshPlatScoreAlgo,
+    judgements: OngekiJudgements,
   } :
   never
 );

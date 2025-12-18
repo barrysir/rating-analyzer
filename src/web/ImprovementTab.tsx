@@ -56,15 +56,25 @@ function VersionImprovement<M extends Mode>(props: { mode: M, improves: VersionI
                     if (score === undefined) {
                         return;
                     }
-                    let song = helpers.getSong(item.pointId, score.chartId);
-                    if (song === undefined) {
+                    let info = helpers.getChart(item.pointId, score.chartId);
+                    if (info === null) {
                         console.warn("Couldn't find song info for", score.chartId, "at", item.pointId);
                         return;
                     }
+                    let {song, chart} = info;
                     let frame = item.data;
+
+                    let completionPercentage = score.totalJudgements / chart.noteCount;
+                    let survival;
+                    if (completionPercentage == 1) {
+                        survival = "";
+                    } else {
+                        survival = `(completed ${Math.floor(completionPercentage * 100)}%) `;
+                    }
+                    
                     return <div class="improve-row" data-point-id={item.pointId.toString()}>
                         <span classList={{'text-blue-500': (history.pointId == item.pointId)}}>{item.pointId}</span>
-                        <span>{song?.title} #{score.attemptNumber + 1} - {theme.formatPoints(score.points)} ({theme.formatRating(score.rating, item.scoreId)})</span>
+                        <span>{song?.title} #{score.attemptNumber + 1} {survival}- {theme.formatPoints(score.points)} ({theme.formatRating(score.rating, item.scoreId)})</span>
                         <span></span>
                         <span></span>
                         <GeneralRender mode={props.mode} frame={frame} theme={theme} />
