@@ -73,7 +73,7 @@ export function OngekiFrameTab<Score>(props: { pointId: number, calc: OngekiCalc
       let { chart, song } = helpers.getChart(props.pointId, score.chartId) ?? {};
       return <>
         <span>{song?.title} ({chart?.difficulty} {chart?.internalLevel})</span>
-        <span>{theme.formatRating(score.rating, pointInfo.scoreId)} / {theme.formatPoints(score.points)}</span>
+        <span>{theme.formatRating(score.rating, pointInfo.scoreId)} / {theme.formatPoints(score.points, pointInfo.scoreId)}</span>
       </>
     }
   }
@@ -121,7 +121,7 @@ export function RefreshFrameTab<Score>(props: { pointId: number, calc: OngekiRef
       let {percentage, stars} = getPlatinumInformation(plat, maxPlat);
       return <>
         <span>{song?.title} ({chart?.difficulty} {chart?.internalLevel})</span>
-        <span>{theme.formatRating(score.rating, pointInfo.scoreId)} / {theme.formatPoints(score.points)}</span>
+        <span>{theme.formatRating(score.rating, pointInfo.scoreId)} / {theme.formatPoints(score.points, pointInfo.scoreId)}</span>
         <span>{theme.formatPlatinumRating(score.platRating, pointInfo.scoreId)} / {theme.formatPlatinumStarsWithBorders(stars, plat, maxPlat)} / {theme.formatPlatinumPercentage(percentage)}</span>
       </>
     }

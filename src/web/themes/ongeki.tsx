@@ -4,6 +4,7 @@ import { settings } from "../stores/settingsStore";
 import { BellLamp, ClearLamp, GradeLamp } from "../../rating/data-types";
 import { getPlatinumInformation, getPlatinumStarBorder } from "../../rating/OngekiRefreshCalculator";
 import "./ongeki.css";
+import { OngekiJudgements } from "../stores/historyStore";
 
 const scoreColors = [
     [0, "text-blue-500"],
@@ -43,6 +44,19 @@ const frameColors = {
     'plat': 'silver',
 } as const;
 
+const judgementColors = {
+    // crit: '#ffd45e',
+    // break: '#ff9500',
+    // hit: '#00eaff',
+    // miss: '#888',
+    crit: '#f0b100',
+    break: '#e17100',
+    hit: '#00b8db',
+    miss: '#4a5565',
+    bell: 'oklch(85.2% 0.199 91.936)',
+    damage: 'red',
+};
+
 // I don't know if this needs to be a store
 // I'll leave it as a plain object for now
 const OngekiTheme = {
@@ -64,16 +78,19 @@ const OngekiTheme = {
         return <span data-platinum-tooltip={(scoreId)?.toString()}>{this.formatRatingText(rating)}</span>;
     },
 
-
+    formatJudgements(judges: OngekiJudgements, totalBells: number) {
+        let spanColour = (val, color) => <span style={`color: ${color}`}>{val}</span>;
+        return <span style="font-weight: bold">{spanColour(judges.cbreak, judgementColors.crit)}-{spanColour(judges.break, judgementColors.break)}-{spanColour(judges.hit, judgementColors.hit)}-{spanColour(judges.miss, judgementColors.miss)} {spanColour(`${judges.bells}/${totalBells}`, judgementColors.bell)} {spanColour(judges.damage, judgementColors.damage)}</span>
+    },
 
     formatChangeRating(change: number) {
         let sign = (change > 0) ? '+' : '';
         return `${sign}${change.toFixed(3)}`;
     },
 
-    formatPoints(points: number) {
+    formatPoints(points: number, scoreId?: number) {
         let color = getRegion(scoreColors, points, p => p[0] as number)![1] as string;
-        return <span classList={{[color]: true}}>{points}</span>;
+        return <span data-judge-tooltip={(scoreId)?.toString()} classList={{[color]: true}}>{points}</span>;
     },
 
     formatPlatinumPercentage(percentage: number) {

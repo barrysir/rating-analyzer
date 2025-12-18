@@ -3,13 +3,21 @@ import { UserScoreDatabase } from '../../get-kamai/UserScores';
 import { createHistory } from '../Temp';
 import { batch } from 'solid-js';
 import { RatingAlgo as OngekiScoreAlgo } from '../../rating/OngekiCalculator';
-import { KamaiScore, OngekiJudgements } from '../../get-kamai/kamai';
+import { KamaiScore } from '../../get-kamai/kamai';
 import { FrameRating as OngekiFrameRating } from '../ImprovementTracker';
 import { FrameRating as RefreshFrameRating } from '../ImprovementRefreshTracker';
 import { Mode } from './stateStore';
 import { RefreshPlatScoreAlgo, RefreshTechScoreAlgo } from '../../rating/OngekiRefreshCalculator';
 import { ChartId } from '../../rating/chartdb/ChartDb';
 
+export type OngekiJudgements = {
+  cbreak: number;
+  break: number;
+  hit: number;
+  miss: number;
+  damage: number;
+  bells: number;
+}
 
 export type ExtendedScore<M extends Mode> = {
   chartId: ChartId;

@@ -3,6 +3,7 @@ import { theme } from "./stores/themeStore";
 import "./RatingTooltip.css";
 import { RatingAlgo } from "../rating/OngekiCalculator";
 import { RefreshPlatScoreAlgo, RefreshTechScoreAlgo } from "../rating/OngekiRefreshCalculator";
+import { OngekiJudgements } from "./stores/historyStore";
 
 export function OngekiRatingTooltip(props: {algo: RatingAlgo}) {
     return <table class="rating-tooltip">
@@ -78,4 +79,8 @@ export function RefreshPlatRatingTooltip(props: {algo: RefreshPlatScoreAlgo}) {
             </tr>
         </tbody>
     </table>
+}
+
+export function OngekiJudgementTooltip(props: {judges: OngekiJudgements, totalBells: number}) {
+    return theme.formatJudgements(props.judges, props.totalBells);
 }

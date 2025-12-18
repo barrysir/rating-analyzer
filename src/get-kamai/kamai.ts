@@ -27,7 +27,7 @@ let TACHI_ENDPOINT = `https://kamai.tachi.ac/api/v1`;
 //     playtype: string,
 // };
 
-export type OngekiJudgements = {
+export type OngekiKamaiJudgements = {
   cbreak: number;
   break: number;
   hit: number;
@@ -39,7 +39,7 @@ export type KamaiScore = {
   scoreData: {
     score: number;
     platinumScore: number;
-    judgements: OngekiJudgements;
+    judgements: OngekiKamaiJudgements;
     optional: {
       damage: number;
       bellCount: number;

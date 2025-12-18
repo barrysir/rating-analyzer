@@ -106,7 +106,11 @@ class StuffForOngeki {
       kamai: score.kamai,
       rating: calcOutput.rating,
       algo: calcOutput.algo,
-      judgements: judges,
+      judgements: {
+        ...judges,
+        damage: score.kamai.scoreData.optional.damage,
+        bells: score.kamai.scoreData.optional.bellCount,
+      },
       totalJudgements: judges.cbreak + judges.break + judges.hit + judges.miss,
     };
   }
@@ -172,7 +176,11 @@ class StuffForRefresh {
       platAlgo: calcOutput.platAlgo,
       platRating: calcOutput.platRating,
       platScore: score.kamai.scoreData.platinumScore,
-      judgements: judges,
+      judgements: {
+        ...judges,
+        damage: score.kamai.scoreData.optional.damage,
+        bells: score.kamai.scoreData.optional.bellCount,
+      },
       totalJudgements: judges.cbreak + judges.break + judges.hit + judges.miss,
     };
   }

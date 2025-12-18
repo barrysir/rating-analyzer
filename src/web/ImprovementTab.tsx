@@ -74,7 +74,7 @@ function VersionImprovement<M extends Mode>(props: { mode: M, improves: VersionI
                     
                     return <div class="improve-row" data-point-id={item.pointId.toString()}>
                         <span classList={{'text-blue-500': (history.pointId == item.pointId)}}>{item.pointId}</span>
-                        <span>{song?.title} #{score.attemptNumber + 1} {survival}- {theme.formatPoints(score.points)} ({theme.formatRating(score.rating, item.scoreId)})</span>
+                        <span>{song?.title} #{score.attemptNumber + 1} {survival}- {theme.formatPoints(score.points, item.scoreId)} ({theme.formatRating(score.rating, item.scoreId)})</span>
                         <span></span>
                         <span></span>
                         <GeneralRender mode={props.mode} frame={frame} theme={theme} />

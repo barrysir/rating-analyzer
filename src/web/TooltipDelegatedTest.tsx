@@ -1,7 +1,7 @@
 import { followCursor, delegate } from "tippy.js";
 import { onMount, onCleanup, children, createRoot, JSXElement } from "solid-js";
 import "tippy.js/dist/tippy.css";
-import { OngekiRatingTooltip, RefreshPlatRatingTooltip, RefreshTechRatingTooltip } from "./RatingTooltip";
+import { OngekiJudgementTooltip, OngekiRatingTooltip, RefreshPlatRatingTooltip, RefreshTechRatingTooltip } from "./RatingTooltip";
 import 'tippy.js/themes/light.css';
 import { render } from "solid-js/web";
 import { Mode, unpackHistory } from "./stores/stateStore";
@@ -30,9 +30,17 @@ export function TooltipDelegated(props: {children: JSXElement}) {
         const {helpers} = unpackHistory<Mode.REFRESH>();
         let scoreInfo = helpers.getScore(scoreId)!;
         let algo = scoreInfo.platAlgo;
-        console.log(scoreId, scoreInfo, algo);
         const tooltipEl = document.createElement("div");
         render(() => <RefreshPlatRatingTooltip algo={algo} />, tooltipEl)
+        return tooltipEl;
+      },
+      createJudgements: (scoreId: number) => {
+        const {helpers} = unpackHistory();
+        let scoreInfo = helpers.getScore(scoreId)!;
+        let judges = scoreInfo.judgements;
+        const {chart} = helpers.getChart(scoreId, scoreInfo.chartId)!;
+        const tooltipEl = document.createElement("div");
+        render(() => <OngekiJudgementTooltip judges={judges} totalBells={chart.maxBells} />, tooltipEl)
         return tooltipEl;
       },
       dispose,
@@ -77,10 +85,12 @@ export function TooltipDelegated(props: {children: JSXElement}) {
       }
     });
     const platTooltips = makeTooltip("data-platinum-tooltip", (scoreId) => tooltipMaker.createPlatinum(scoreId));
+    const judgeTooltips = makeTooltip("data-judge-tooltip", (scoreId) => tooltipMaker.createJudgements(scoreId));
 
     onCleanup(() => {
       ratingTooltips.destroy();
       platTooltips.destroy();
+      judgeTooltips.destroy();
       tooltipMaker.dispose();
     });
   });

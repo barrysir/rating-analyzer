@@ -76,7 +76,7 @@ export function DisplayFrame(props: { data: FrameEntry[] | PlatinumEntry[], titl
                   <td>{item ? theme.formatPlatinum(item.platinum, item.maxPlatinum) : NULL_MARKER}</td>
                 </Match>
                 <Match when={!props.platinum}>  
-                  <td>{item ? theme.formatPoints(item.points) : NULL_MARKER}</td>
+                  <td>{item ? theme.formatPoints(item.points, item.scoreId) : NULL_MARKER}</td>
                 </Match>
               </Switch>
             </tr>
