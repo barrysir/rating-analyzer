@@ -17,7 +17,7 @@ const technicalBonusLerp: [number, number][] = [
 
 const bellLampBonus: Record<BellLamp, number> = {
     [BellLamp.NONE]: 0,
-    [BellLamp.FB]: 0.5,
+    [BellLamp.FB]: 0.05,
 };
 
 const clearLampBonus: Record<ClearLamp, number> = {
