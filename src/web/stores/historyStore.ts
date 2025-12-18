@@ -39,12 +39,27 @@ export type VersionInformation = {
 
 type HistoryType = ReturnType<typeof createHistory>['history'];
 
-type ChartDataType = {
+type PlotData = {
+  name: string;
+  data: number[];
+};
+
+type OngekiPlots = {
+  maxRating: PlotData,
+  naiveRating: PlotData,
+  overallRating: PlotData,
+};
+
+type PlotDataAsdf<M extends Mode> = 
+    M extends Mode.ONGEKI ? OngekiPlots :
+    M extends Mode.REFRESH ? OngekiPlots :
+    never;
+
+
+export type ChartDataType<M extends Mode> = {
     timestamps: number[];
-    overallRating: number[];
-    naiveRating: number[];
     version: number[];
-    maxRating: number[];
+    plots: PlotDataAsdf<M>;
 };
 
 type FrameRating<M extends Mode> =
@@ -70,7 +85,7 @@ export type HistoryStore<M extends Mode> = {
   improves: VersionImproveRenderData<M>[];
   versions: VersionInformation[];
   pointId: number;
-  chartData: ChartDataType;
+  chartData: ChartDataType<M>;
 }
 
 const [history, setHistory] = createStore<HistoryStore<Mode.ONGEKI> | HistoryStore<Mode.REFRESH>>({

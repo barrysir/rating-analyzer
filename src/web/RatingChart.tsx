@@ -2,9 +2,10 @@ import { Component, createMemo, createEffect, mergeProps } from 'solid-js';
 import ApexCharts from 'apexcharts';
 import { onMount, onCleanup } from 'solid-js';
 import { unpackHistory } from './stores/stateStore';
+import { ChartDataType } from './stores/historyStore';
 
 export function RatingChart(incomingProps: { 
-  data: { timestamps: number[]; overallRating: number[], naiveRating: number[], version: number[], maxRating: number[] };
+  data: ChartDataType<any>;
   onClick?: (index: number) => void;
   options?: {decimalPlaces?: number};
 }) {
@@ -16,29 +17,15 @@ export function RatingChart(incomingProps: {
   };
   const props = mergeProps(defaultProps, incomingProps);
 
-  const seriesData = createMemo(() => [
-    {
-      name: 'Overall Rating',
-      data: props.data.timestamps.map((timestamp, i) => ({
-        x: timestamp,
-        y: props.data.overallRating[i]
-      }))
-    },
-    {
-      name: 'Naive Rating',
-      data: props.data.timestamps.map((timestamp, i) => ({
-        x: timestamp,
-        y: props.data.naiveRating[i]
-      }))
-    },
-    {
-      name: 'Max Rating',
-      data: props.data.timestamps.map((timestamp, i) => ({
-        x: timestamp,
-        y: props.data.maxRating[i]
-      }))
-    },
-  ]);
+  const seriesData = createMemo(() => Object.entries(props.data.plots).map(([, plotData]) => {
+    return {
+      name: plotData.name,
+      data: plotData.data.map((v, i) => ({
+        x: props.data.timestamps[i]!,
+        y: v,
+      })),
+    };
+  }));
 
   const annotations = createMemo(() => {
     const xaxis: any[] = [];

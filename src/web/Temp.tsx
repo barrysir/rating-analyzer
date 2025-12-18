@@ -11,7 +11,7 @@ import { PersonalBests } from '../rating/PersonalBests';
 import { ImprovementTracker } from './ImprovementTracker';
 import { OngekiRefreshCalculator } from '../rating/OngekiRefreshCalculator';
 import { ImprovementRefreshTracker } from './ImprovementRefreshTracker';
-import { ExtendedScore, HistoryStore, VersionImproveRenderData, VersionInformation } from './stores/historyStore';
+import { ChartDataType, ExtendedScore, HistoryStore, VersionImproveRenderData, VersionInformation } from './stores/historyStore';
 import { Mode } from './stores/stateStore';
 
 function dateToUnix(date: Date): number {
@@ -104,6 +104,26 @@ class StuffForOngeki {
       algo: calcOutput.algo,
     };
   }
+
+  makeChartData(): ChartDataType<Mode.ONGEKI> {
+    return {
+      timestamps: [] as number[],
+      version: [] as number[],
+      plots: {
+        naiveRating: { name: 'Naive Rating', data: [] as number[] },
+        overallRating: { name: 'Overall Rating', data: [] as number[] },
+        maxRating: { name: 'Max Rating', data: [] as number[] },
+      }
+    };
+  }
+
+  addToChartData(chartData: ChartDataType<Mode.ONGEKI>, history: HistoryStore<Mode.ONGEKI>['history'], maxRatings: number[]) {
+    chartData.timestamps.push(history.currentTimestamp);
+    chartData.plots.overallRating.data.push(history.calc.overallRating);
+    chartData.plots.naiveRating.data.push(history.calc.overallNaiveRating);
+    chartData.version.push(history.whichCalc);
+    chartData.plots.maxRating.data.push(maxRatings[history.whichCalc]!);
+  }
 }
 
 class StuffForRefresh {
@@ -145,6 +165,26 @@ class StuffForRefresh {
       platRating: calcOutput.platRating,
       platScore: score.kamai.scoreData.platinumScore,
     };
+  }
+
+  makeChartData(): ChartDataType<Mode.REFRESH> {
+    return {
+      timestamps: [] as number[],
+      version: [] as number[],
+      plots: {
+        naiveRating: { name: 'Naive Rating', data: [] as number[] },
+        overallRating: { name: 'Overall Rating', data: [] as number[] },
+        maxRating: { name: 'Max Rating', data: [] as number[] },
+      }
+    };
+  }
+
+  addToChartData(chartData: ChartDataType<Mode.REFRESH>, history: HistoryStore<Mode.REFRESH>['history'], maxRatings: number[]) {
+    chartData.timestamps.push(history.currentTimestamp);
+    chartData.plots.overallRating.data.push(history.calc.overallRating);
+    chartData.plots.naiveRating.data.push(history.calc.overallNaiveRating);
+    chartData.version.push(history.whichCalc);
+    chartData.plots.maxRating.data.push(maxRatings[history.whichCalc]!);
   }
 }
 
@@ -196,13 +236,7 @@ export function createHistory<M extends Mode>(scoredb: UserScoreDatabase, mode: 
 
   let bests = new RatingHistory(new PersonalBests(new HistoricalChartDb(songData)), scoresArray);
   
-  let chartData = {
-    timestamps: [] as number[],
-    overallRating: [] as number[],
-    naiveRating: [] as number[],
-    version: [] as number[],
-    maxRating: [] as number[],
-  };
+  let chartData: ChartDataType<M> = getRefresh.makeChartData();
 
   let maxRatings = versionChanges.map((x,i) => {
     return getRefresh.calculateMaxRating(x.db).overallRating;
@@ -235,15 +269,11 @@ export function createHistory<M extends Mode>(scoredb: UserScoreDatabase, mode: 
       });
     }
 
-    chartData.timestamps.push(history.currentTimestamp);
+    getRefresh.addToChartData(chartData, history, maxRatings);
     if (chartData.timestamps.length >= 2 && chartData.timestamps.at(-1) < chartData.timestamps.at(-2)) {
       console.log(history.versionChangeTimestamps);
       throw new Error(`timestamp went backwards at index ${i} ${history.currentTimestamp}`);
     }
-    chartData.overallRating.push(history.calc.overallRating);
-    chartData.naiveRating.push(history.calc.overallNaiveRating);
-    chartData.version.push(history.whichCalc);
-    chartData.maxRating.push(maxRatings[history.whichCalc]!);
 
     let info = history.getCalcOutput(i);
     if (info !== null) {
