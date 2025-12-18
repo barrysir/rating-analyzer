@@ -1,4 +1,10 @@
 {
+  "exclude": [
+    "data",
+    "old",
+    "src/rating/test",
+    "ongeki-reference",
+  ],
   "compilerOptions": {
     // General
     "jsx": "preserve",
