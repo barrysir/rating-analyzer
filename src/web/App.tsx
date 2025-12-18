@@ -12,6 +12,7 @@ import Slider from './Slider';
 import { TooltipDelegated } from './TooltipDelegatedTest';
 import { HistoryProvider, initializeState, Mode } from './stores/stateStore';
 import WarningWindow from './WarningWindow';
+import { clearWarnings } from './stores/warningStore';
 
 
 function SettingsWindow() {
@@ -84,7 +85,8 @@ const App: Component = () => {
   const scoreData = loadScoreData();
 
   onMount(() => {
-    let mode = Mode.ONGEKI;
+    let mode = Mode.REFRESH;
+    clearWarnings();
     initializeState(scoreData, mode, { decimalPlaces: settings.decimalPlaces });
   });
 
