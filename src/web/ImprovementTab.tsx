@@ -18,12 +18,15 @@ function FrameImprovementRender(props: { rating: number, change?: number, color:
     )}</HistoryProvider>;
 }
 
-function VersionImprovement(props: { improves: VersionImproveRenderData['improves'] }) {
+function VersionImprovement(props: { improves: VersionImproveRenderData<Mode.ONGEKI>['improves'] }) {
     return <HistoryProvider<Mode.ONGEKI>>{({ history, helpers, theme }) => (
         <div class="improve-list">
             <For each={props.improves}>
                 {(item, index) => {
-                    let score = helpers.getScore(item.scoreId)!;
+                    let score = helpers.getScore(item.scoreId);
+                    if (score === undefined) {
+                        return;
+                    }
                     let song = helpers.getSong(item.pointId, score.chartId);
                     if (song === undefined) {
                         console.warn("Couldn't find song info for", score.chartId, "at", item.pointId);
@@ -46,9 +49,9 @@ function VersionImprovement(props: { improves: VersionImproveRenderData['improve
     )}</HistoryProvider>
 }
 
-export function ImprovementTab(props: { improves: VersionImproveRenderData[], scrollToPointId?: number }) {
+export function ImprovementTab(props: { improves: VersionImproveRenderData<Mode.ONGEKI>[], scrollToPointId?: number }) {
     let rootElement: HTMLDivElement;
-    let renderedImproves: Map<number, VersionImproveRenderData['improves']> = new Map();
+    let renderedImproves: Map<number, VersionImproveRenderData<Mode.ONGEKI>['improves']> = new Map();
     const [openItems, setOpenItems] = createSignal<string[]>([]);
 
     // Find which version contains the target pointId

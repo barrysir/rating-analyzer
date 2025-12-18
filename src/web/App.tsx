@@ -83,7 +83,8 @@ const App: Component = () => {
   const scoreData = loadScoreData();
 
   onMount(() => {
-    initializeState(scoreData, { decimalPlaces: settings.decimalPlaces });
+    let mode = Mode.ONGEKI;
+    initializeState(scoreData, mode, { decimalPlaces: settings.decimalPlaces });
   });
 
   return <HistoryProvider>{({ mode, history, helpers, theme }) => (

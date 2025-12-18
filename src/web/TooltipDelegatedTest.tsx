@@ -69,7 +69,13 @@ export function TooltipDelegated(props: {children: JSXElement}) {
 
   onMount(() => {
     // Create delegated tippy instances
-    const ratingTooltips = makeTooltip("data-rating-tooltip", (scoreId) => tooltipMaker.createRefresh(scoreId));
+    const ratingTooltips = makeTooltip("data-rating-tooltip", (scoreId) => {
+      const {mode} = unpackHistory();
+      switch (mode) {
+        case Mode.ONGEKI: return tooltipMaker.createOngeki(scoreId);
+        case Mode.REFRESH: return tooltipMaker.createRefresh(scoreId);
+      }
+    });
     const platTooltips = makeTooltip("data-platinum-tooltip", (scoreId) => tooltipMaker.createPlatinum(scoreId));
 
     onCleanup(() => {

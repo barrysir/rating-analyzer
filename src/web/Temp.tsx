@@ -148,10 +148,7 @@ class StuffForRefresh {
   }
 }
 
-type M = Mode.REFRESH;
-
-// export function createHistory<M extends Mode>(scoredb: UserScoreDatabase, mode: M, options: {decimalPlaces: number} = {decimalPlaces: 2}) {
-export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlaces: number} = {decimalPlaces: 2}) {
+export function createHistory<M extends Mode>(scoredb: UserScoreDatabase, mode: M, options: {decimalPlaces: number} = {decimalPlaces: 2}) {
   let songData = new SongData(SONG_DATA);
   let versions = structuredClone(VERSIONS) as VersionInformation[];
 
@@ -164,16 +161,14 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
   // TODO: move sorting into scoredb code; make sure scores are always sorted ascending by timestamp
   scores.sort((a, b) => a.kamai.timeAchieved - b.kamai.timeAchieved);
 
-  // let getRefresh = function () {
-  //   switch (mode) {
-  //     case Mode.ONGEKI: 
-  //       return new StuffForOngeki();
-  //     case Mode.REFRESH:
-  //       return new StuffForRefresh();
-  //   }
-  // }();
-  
-  let getRefresh = new StuffForRefresh();  
+  let getRefresh = function () {
+    switch (mode) {
+      case Mode.ONGEKI: 
+        return new StuffForOngeki();
+      case Mode.REFRESH:
+        return new StuffForRefresh();
+    }
+  }();
 
   let scoresArray = getRefresh.makeScores(scores);
 

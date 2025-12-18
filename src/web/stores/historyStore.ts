@@ -89,8 +89,8 @@ const [history, setHistory] = createStore<HistoryStore<Mode.ONGEKI> | HistorySto
   },
 });
 
-export function initializeHistory(scoredb: UserScoreDatabase, options: Parameters<typeof createHistory>[1]) {
-  let {history, bests, improves, scores, versions, chartData} = createHistory(scoredb, options);
+export function initializeHistory<M extends Mode>(scoredb: UserScoreDatabase, mode: M, options: Parameters<typeof createHistory>[2]) {
+  let {history, bests, improves, scores, versions, chartData} = createHistory(scoredb, mode, options);
   batch(() => {
     setHistory('history', createMutable(history));
     // setHistory('bests', createMutable(bests));

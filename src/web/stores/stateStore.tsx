@@ -87,11 +87,9 @@ type Theme<M extends Mode> =
     M extends Mode.REFRESH ? RefreshTheme :
     never;
 
-type HistoryType<M extends Mode> = HistoryStore<M>;
-
 export type State<M extends Mode> = {
     mode: M,
-    history: HistoryType<M>,
+    history: HistoryStore<M>,
     setPointId: typeof setPointId,
     helpers: HistoryHelpers<M>,
     theme: Theme<M>,
@@ -100,16 +98,16 @@ export type State<M extends Mode> = {
 const [STATE, setState] = createSignal<State<Mode.ONGEKI> | State<Mode.REFRESH> | null>(null);
 
 // todo: rename this function to initializeHistory
-export function initializeState(scoredb: UserScoreDatabase, options: Parameters<typeof createHistory>[1]) {
+export function initializeState<M extends Mode>(scoredb: UserScoreDatabase, mode: M, options: Parameters<typeof createHistory>[2]) {
     batch(() => {
-      initializeHistory(scoredb, options);
-      let realHistory = history as HistoryType<Mode.REFRESH>;
-      let _state = {
-          mode: Mode.REFRESH as const,
+      initializeHistory(scoredb, mode, options);
+      let realHistory = history as HistoryStore<M>;
+      let _state: State<M> = {
+          mode: mode,
           history: realHistory,
           setPointId: setPointId,
           helpers: new HistoryHelpers(realHistory),
-          theme: theme,
+          theme: theme as Theme<M>,
       };
       console.log("Setting initializeState", _state);
       setState(_state);
