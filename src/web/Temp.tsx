@@ -94,10 +94,11 @@ class StuffForOngeki {
     return new ImprovementTracker(calc);
   }  
 
-  makeExtendedScore(score: UserScoreDatabase['scores'][number], _calcOutput: any): ExtendedScore<Mode.ONGEKI> {
+  makeExtendedScore(score: UserScoreDatabase['scores'][number], _calcOutput: any, attemptNumber: number): ExtendedScore<Mode.ONGEKI> {
     let calcOutput = _calcOutput as NonNullable<ReturnType<HistoryStore<Mode.ONGEKI>['history']['getCalcOutput']>>;
     return {
       chartId: score.chartId,
+      attemptNumber: attemptNumber,
       points: score.kamai.scoreData.score,
       timeAchieved: score.kamai.timeAchieved,
       kamai: score.kamai,
@@ -153,11 +154,12 @@ class StuffForRefresh {
     return new ImprovementRefreshTracker(calc);
   }
 
-  makeExtendedScore(score: UserScoreDatabase['scores'][number], _calcOutput: any): ExtendedScore<Mode.REFRESH> {
+  makeExtendedScore(score: UserScoreDatabase['scores'][number], _calcOutput: any, attemptNumber: number): ExtendedScore<Mode.REFRESH> {
     let calcOutput = _calcOutput as NonNullable<ReturnType<HistoryStore<Mode.REFRESH>['history']['getCalcOutput']>>;
     return {
       chartId: score.chartId,
       points: score.kamai.scoreData.score,
+      attemptNumber: attemptNumber,
       timeAchieved: score.kamai.timeAchieved,
       kamai: score.kamai,
       rating: calcOutput.rating,
@@ -235,7 +237,7 @@ export function createHistory<M extends Mode>(scoredb: UserScoreDatabase, mode: 
     versions[index+1]!.pointId = value;
   });
 
-  let bests = new RatingHistory(new PersonalBests(new HistoricalChartDb(songData)), scoresArray);
+  let bests = new PersonalBests(scoresArray);
   
   let chartData: ChartDataType<M> = getRefresh.makeChartData();
 
@@ -278,14 +280,14 @@ export function createHistory<M extends Mode>(scoredb: UserScoreDatabase, mode: 
 
     let info = history.getCalcOutput(i);
     if (info !== null) {
-      extendedScores[history.whichScore] = getRefresh.makeExtendedScore(scores[history.whichScore]!, info);
+      let attemptNumber = bests.howManyTimesHasThisChartBeenPlayed[history.whichScore]!;
+      extendedScores[history.whichScore] = getRefresh.makeExtendedScore(scores[history.whichScore]!, info, attemptNumber);
     }
 
     if (i != history.length-1) {
       history.seek(1);
     }
   }
-  // bests.seek(history.currentIndex);
 
   return {
     history, 

@@ -1,52 +1,49 @@
 import { ChartDb, ChartId } from "./chartdb/ChartDb";
 
-type UndoScore<Score> = { id: ChartId, score: Score|undefined };
-type PersonalBestsSnapshot<Score> = {
-    bests: Map<ChartId, Score>;
-}
-
 export class PersonalBests<Score extends {points: number}> {
-    db: ChartDb;
-    bests: Map<ChartId, Score>;
+    bests: Map<ChartId, number[]>;
+    scores: [Score, ChartId][];
+    currentIndex: number;
+    howManyTimesHasThisChartBeenPlayed: number[];
 
-    constructor(db: ChartDb) {
-        this.db = db;
+    constructor(scores: [Score, ChartId][]) {
+        this.scores = scores;
         this.bests = new Map();
+        this.howManyTimesHasThisChartBeenPlayed = [];
+
+        // first, group each score by chart id
+        for (let [index, [score, id]] of scores.entries()) {    
+            let pb = this.bests.get(id);
+            if (pb === undefined) {
+                pb = [];
+                this.bests.set(id, pb);
+            }
+            pb.push(index);
+            this.howManyTimesHasThisChartBeenPlayed.push(pb.length - 1);
+        }
+
+        // sort the scores for each chart id by points descending
+        for (let scoreIndexes of this.bests.values()) {
+            scoreIndexes.sort((a, b) => {
+                let scoreA = this.scores[a]![0];
+                let scoreB = this.scores[b]![0];
+                return scoreB.points - scoreA.points;
+            });
+        }
+
+        this.currentIndex = this.scores.length;
     }
 
-    makeSnapshot(): PersonalBestsSnapshot<Score> {
-        return {
-            bests: structuredClone(this.bests),
-        };
+    // Get all scores for this chart, sorted descending by points
+    getBests(chartid: ChartId): Score[] {
+        let scoreIndexes = this.bests.get(chartid);
+        if (scoreIndexes === undefined) {
+            return [];
+        }
+        return scoreIndexes.filter(i => i < this.currentIndex).map(i => this.scores[i]![0]);
     }
 
-    loadSnapshot(snapshot: PersonalBestsSnapshot<Score>) {
-        this.bests = structuredClone(snapshot.bests);
-    }
-
-    addScore(score: Score, chart: ChartId): UndoScore<Score> | null {
-        let chartInfo = this.db.getChart(chart);
-        if (chartInfo === null) {
-            throw new Error("Chart doesn't exist");
-        }
-        let chartId = chartInfo.chartId; 
-        let pb = this.bests.get(chartId);
-        if (pb === undefined || pb.points < score.points) {
-            let undo = {id: chartId, score: pb};
-            this.bests.set(chartId, score);
-            return undo;
-        }
-        return null;
-    }
-
-    undoScore(undo: UndoScore<Score> | null) {
-        if (undo === null) {
-            return;
-        }
-        if (undo.score === undefined) {
-            this.bests.delete(undo.id);
-        } else {
-            this.bests.set(undo.id, undo.score);
-        }
+    goto(index: number) {
+        this.currentIndex = index;
     }
 }

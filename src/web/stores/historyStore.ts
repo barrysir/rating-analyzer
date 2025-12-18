@@ -13,6 +13,7 @@ import { ChartId } from '../../rating/chartdb/ChartDb';
 
 export type ExtendedScore<M extends Mode> = {
   chartId: ChartId;
+  attemptNumber: number;  // The number of times this chart has been played before this time: Attempt #0, Attempt #1, etc.
   rating: number;
   points: number;
   timeAchieved: number;
