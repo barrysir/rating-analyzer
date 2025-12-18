@@ -1,6 +1,7 @@
 import { format } from "date-fns";
 import { getRegion } from "../../rating/utils";
 import { settings } from "../stores/settingsStore";
+import { BellLamp, ClearLamp, GradeLamp } from "../../rating/data-types";
 
 const scoreColors = [
     [0, "text-blue-500"],
@@ -37,6 +38,7 @@ const frameColors = {
     'best': 'blue',
     'new': 'green',
     'recent': 'red',
+    'plat': 'silver',
 } as const;
 
 // I don't know if this needs to be a store
@@ -72,6 +74,26 @@ const OngekiTheme = {
 
     formatDateTime(date: Date) {
         return format(date, "PP, pp");
+    },
+
+    formatGradeLamp(lamp: GradeLamp) {
+        return lamp;
+    },
+
+    formatBellLamp(lamp: BellLamp) {
+        switch (lamp) {
+            case BellLamp.FB: return "FB";   
+            case BellLamp.NONE: return "None";
+        }
+    },
+
+    formatClearLamp(lamp: ClearLamp) {
+        switch (lamp) {
+            case ClearLamp.NONE: return "None";
+            case ClearLamp.FC: return "FC";
+            case ClearLamp.AB: return "AB";
+            case ClearLamp.ACB: return "AB+";
+        }
     },
 
     frameColors,

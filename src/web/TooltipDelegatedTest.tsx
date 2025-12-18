@@ -1,22 +1,28 @@
 import { followCursor, delegate } from "tippy.js";
 import { onMount, onCleanup, children, createRoot, JSXElement } from "solid-js";
 import "tippy.js/dist/tippy.css";
-import { RatingTooltip } from "./RatingTooltip";
+import { RatingTooltip, RefreshTechRatingTooltip } from "./RatingTooltip";
 import 'tippy.js/themes/light.css';
 import { render } from "solid-js/web";
-import { unpackHistory } from "./stores/stateStore";
+import { Mode, unpackHistory } from "./stores/stateStore";
 
 export function TooltipDelegated(props: {children: JSXElement}) {
-  const {helpers} = unpackHistory();
+  const {helpers} = unpackHistory<Mode.REFRESH>();
 
   const tooltipMaker = createRoot((dispose) => {
     return {
       create: (scoreId: number) => {
         let scoreInfo = helpers.getScore(scoreId)!;
         let algo = scoreInfo.algo;
+        console.log(scoreId, scoreInfo, algo);
         const tooltipEl = document.createElement("div");
-        render(() => <RatingTooltip algo={algo} />, tooltipEl)
+        render(() => <RefreshTechRatingTooltip algo={algo} />, tooltipEl)
         return tooltipEl;
+        // let scoreInfo = helpers.getScore(scoreId)!;
+        // let algo = scoreInfo.algo;
+        // const tooltipEl = document.createElement("div");
+        // render(() => <RatingTooltip algo={algo} />, tooltipEl)
+        // return tooltipEl;
       },
       dispose,
     };

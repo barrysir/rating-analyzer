@@ -43,17 +43,61 @@ function technicalBonus(points: number) {
     return lerp(points, technicalBonusLerp);
 }
 
-function scoreRating(points: number, lamps: LampDisplay, level: number) {
+export type RefreshTechScoreBreakdown = RefreshTechScoreBreakdownA | RefreshTechScoreBreakdownB;
+
+type RefreshTechScoreBreakdownA = {
+    level: number,
+    techBonus: {points: number, change: number, total: number},
+    gradeLamp: {lamp: GradeLamp, change: number, total: number},
+    clearLamp: {lamp: ClearLamp, change: number, total: number},
+    bellLamp: {lamp: BellLamp, change: number, total: number},
+};
+
+type RefreshTechScoreBreakdownB = {
+    level: number,
+    techBonus: {points: number, change: number, total: number},
+    multiplier: {multiplier: number, total: number},
+}
+
+function scoreRating(points: number, lamps: LampDisplay, level: number): {rating: number, breakdown: RefreshTechScoreBreakdown} {
     if (points < 800000) {
-        return Math.max(0, ratingTrunc((level - 6) * (points - 500000) / 300000));
+        let multiplier = Math.max(0, (points - 500000) / 300000);
+        let value1 = Math.max(0, (level - 6));
+        let value2 = value1 * multiplier;
+        return {
+            rating: ratingTrunc(value2),
+            breakdown: {
+                level: level,
+                techBonus: {points, change: -6, total: value1},
+                multiplier: {multiplier, total: value2},
+            } as RefreshTechScoreBreakdownB,
+        };
     }
 
-    return Math.max(0, level 
-        + ratingTrunc(technicalBonus(points))
-        + bellLampBonus[lamps.bell]
-        + clearLampBonus[lamps.clear]
-        + gradeLampBonus[lamps.grade]
-    );
+    let total = level;
+    const breakdown: Partial<RefreshTechScoreBreakdownA> = {};
+    breakdown.level = level;
+
+    const techBonus = ratingTrunc(technicalBonus(points));
+    total = Math.max(0, level + techBonus);
+    breakdown.techBonus = { points, change: techBonus, total };
+
+    const grade = gradeLampBonus[lamps.grade];
+    total += grade;
+    breakdown.gradeLamp = { lamp: lamps.grade, change: grade, total };
+
+    const clear = clearLampBonus[lamps.clear];
+    total += clear;
+    breakdown.clearLamp = { lamp: lamps.clear, change: clear, total };
+
+    const bell = bellLampBonus[lamps.bell];
+    total += bell;
+    breakdown.bellLamp = { lamp: lamps.bell, change: bell, total };
+
+    return {
+        rating: total,
+        breakdown: breakdown as RefreshTechScoreBreakdownA,
+    }
 }
 
 function pRating(platinum: number, maxPlatinum: number, level: number) {
@@ -79,12 +123,19 @@ type ScoreInput<Extra> = WithExtra<Extra,
 
 type LampUndo = null | {chartId: string, prevLamps: LampDisplay|null};
 
-type UndoScore<Extra> = {
+type InnerUndoScore<Extra> = {
     best?: BestUndo<string, OngekiScore<Extra>>; 
     new?: BestUndo<string, OngekiScore<Extra>>; 
     naive: BestUndo<string, OngekiScore<Extra>>;
     plat: BestUndo<string, PlatinumScore<Extra>>;
     lamps: LampUndo;
+};
+
+type UndoScore<Extra> = {
+    undo: InnerUndoScore<Extra>,
+    rating: number,
+    algo: RefreshTechScoreBreakdown,
+    platRating: number,
 };
 
 type LampDisplay = {bell: BellLamp, clear: ClearLamp, grade: GradeLamp};
@@ -184,7 +235,7 @@ export class OngekiRefreshCalculator<Chart, Extra = undefined> {
         }
     }
 
-    addScore(score: ScoreInput<Extra>, chart: Chart) {
+    addScore(score: ScoreInput<Extra>, chart: Chart): UndoScore<Extra> | null {
         let chartData = this.db.getChartInfo(chart);
         if (chartData === null) {
             return null;
@@ -224,12 +275,12 @@ export class OngekiRefreshCalculator<Chart, Extra = undefined> {
 
         let optionalScore = ('extra' in score) ? { extra: score.extra } : {};
 
-        let normalRating = scoreRating(score.points, lamps, level);
+        let {rating: normalRating, breakdown: ratingBreakdown} = scoreRating(score.points, lamps, level);
         let normalScore = {points: score.points, rating: normalRating, ...optionalScore} as OngekiScore<Extra>;
         let platinumRating = pRating(score.platinum, maxPlatinum, level);
         let platinumScore = {platinum: score.platinum, rating: platinumRating, ...optionalScore} as PlatinumScore<Extra>;
 
-        let undo: UndoScore<Extra> = {
+        let undo: InnerUndoScore<Extra> = {
             naive: this.naive.addScore(normalScore, chartId),
             plat: this.plat.addScore(platinumScore, chartId),
             lamps: changed,
@@ -239,13 +290,19 @@ export class OngekiRefreshCalculator<Chart, Extra = undefined> {
         } else {
             undo.best = this.best.addScore(normalScore, chartId);
         }
-        return undo;
+        return {
+            undo,
+            rating: normalRating,
+            algo: ratingBreakdown,
+            platRating: platinumRating,
+        };
     }
 
-    undoScore(undo: UndoScore<Extra> | null) {
-        if (undo === null) { 
+    undoScore(undo_: UndoScore<Extra> | null) {
+        if (undo_ === null) { 
             return; 
         }
+        const undo = undo_.undo;
         if ('new' in undo) { this.new.undoScore(undo.new!); }
         if ('best' in undo) { this.best.undoScore(undo.best!); }
         this.naive.undoScore(undo.naive);
