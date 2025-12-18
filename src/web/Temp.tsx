@@ -11,7 +11,7 @@ import { PersonalBests } from '../rating/PersonalBests';
 import { ImprovementTracker } from './ImprovementTracker';
 import { OngekiRefreshCalculator } from '../rating/OngekiRefreshCalculator';
 import { ImprovementRefreshTracker } from './ImprovementRefreshTracker';
-import { ExtendedScore, VersionImproveRenderData, VersionInformation } from './stores/historyStore';
+import { ExtendedScore, HistoryStore, VersionImproveRenderData, VersionInformation } from './stores/historyStore';
 import { Mode } from './stores/stateStore';
 
 function dateToUnix(date: Date): number {
@@ -92,6 +92,18 @@ class StuffForOngeki {
   makeImprovementTracker<Calc extends OngekiCalculator<any, any>>(calc: Calc) {
     return new ImprovementTracker(calc);
   }  
+
+  makeExtendedScore(score: UserScoreDatabase['scores'][number], _calcOutput: any): ExtendedScore<Mode.ONGEKI> {
+    let calcOutput = _calcOutput as NonNullable<ReturnType<HistoryStore<Mode.ONGEKI>['history']['getCalcOutput']>>;
+    return {
+      chartId: score.chartId,
+      points: score.kamai.scoreData.score,
+      timeAchieved: score.kamai.timeAchieved,
+      kamai: score.kamai,
+      rating: calcOutput.rating,
+      algo: calcOutput.algo,
+    };
+  }
 }
 
 class StuffForRefresh {
@@ -119,6 +131,19 @@ class StuffForRefresh {
   makeImprovementTracker<Calc extends OngekiRefreshCalculator<any, any>>(calc: Calc) {
     return new ImprovementRefreshTracker(calc);
   }
+
+  makeExtendedScore(score: UserScoreDatabase['scores'][number], _calcOutput: any): ExtendedScore<Mode.REFRESH> {
+    let calcOutput = _calcOutput as NonNullable<ReturnType<HistoryStore<Mode.REFRESH>['history']['getCalcOutput']>>;
+    return {
+      chartId: score.chartId,
+      points: score.kamai.scoreData.score,
+      timeAchieved: score.kamai.timeAchieved,
+      kamai: score.kamai,
+      rating: calcOutput.rating,
+      techAlgo: calcOutput.algo,
+      platAlgo: calcOutput.platAlgo,
+    };
+  }
 }
 
 type M = Mode.REFRESH;
@@ -136,16 +161,6 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
   let scores = scoredb.scores;
   // TODO: move sorting into scoredb code; make sure scores are always sorted ascending by timestamp
   scores.sort((a, b) => a.kamai.timeAchieved - b.kamai.timeAchieved);
-
-  let extendedScores = scores.map((score) => {
-    let a: Omit<ExtendedScore, 'rating'> = {
-      chartId: score.chartId,
-      points: score.kamai.scoreData.score,
-      timeAchieved: score.kamai.timeAchieved,
-      kamai: score.kamai,
-    };
-    return a as ExtendedScore;
-  });
 
   // let getRefresh = function () {
   //   switch (mode) {
@@ -196,6 +211,8 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
     return getRefresh.calculateMaxRating(x.db).overallRating;
   });
 
+  let extendedScores = [];
+
   let allImproves: VersionImproveRenderData<M>[] = [];
 
   let tracker = getRefresh.makeImprovementTracker(history.calc);
@@ -233,12 +250,7 @@ export function createHistory(scoredb: UserScoreDatabase, options: {decimalPlace
 
     let info = history.getCalcOutput(i);
     if (info !== null) {
-      if ('rating' in info) {
-        extendedScores[history.whichScore]!.rating = info.rating;
-      }
-      if ('algo' in info) {
-        extendedScores[history.whichScore]!.algo = info.algo;
-      }
+      extendedScores[history.whichScore] = getRefresh.makeExtendedScore(scores[history.whichScore]!, info);
     }
 
     if (i != history.length-1) {

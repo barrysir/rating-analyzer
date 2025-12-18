@@ -2,15 +2,15 @@ import { createSignal, Show } from "solid-js";
 import { theme } from "./stores/themeStore";
 import "./RatingTooltip.css";
 import { RatingAlgo } from "../rating/OngekiCalculator";
-import { RefreshTechScoreAlgo } from "../rating/OngekiRefreshCalculator";
+import { RefreshPlatScoreAlgo, RefreshTechScoreAlgo } from "../rating/OngekiRefreshCalculator";
 
-export function RatingTooltip(props: {algo: RatingAlgo}) {
+export function OngekiRatingTooltip(props: {algo: RatingAlgo}) {
     return <table class="rating-tooltip">
         <tbody style="font-size: 0.8em;">
             <tr>
                 <td>Constant</td>
                 <td></td>
-                <td>{props.algo.level}</td>
+                <td>{theme.formatRatingText(props.algo.level)}</td>
             </tr>
             <tr>
                 <td>Score Bonus</td>
@@ -30,14 +30,14 @@ export function RatingTooltip(props: {algo: RatingAlgo}) {
 
 export function RefreshTechRatingTooltip(props: {algo: RefreshTechScoreAlgo}) {
     if ('multiplier' in props.algo) {
-        return <RatingTooltip algo={props.algo} />;
+        return <OngekiRatingTooltip algo={props.algo} />;
     }
     return <table class="rating-tooltip">
         <tbody style="font-size: 0.8em;">
             <tr>
                 <td>Constant</td>
                 <td></td>
-                <td>{props.algo.level}</td>
+                <td>{theme.formatRatingText(props.algo.level)}</td>
             </tr>
             <tr>
                 <td>Score Bonus</td>
@@ -58,6 +58,23 @@ export function RefreshTechRatingTooltip(props: {algo: RefreshTechScoreAlgo}) {
                 <td>Bell Lamp</td>
                 <td>{theme.formatChangeRating(props.algo.bellLamp.change)} ({theme.formatBellLamp(props.algo.bellLamp.lamp)})</td>
                 <td>{theme.formatRatingText(props.algo.bellLamp.total)}</td>
+            </tr>
+        </tbody>
+    </table>
+}
+
+export function RefreshPlatRatingTooltip(props: {algo: RefreshPlatScoreAlgo}) {
+    return <table class="rating-tooltip">
+        <tbody style="font-size: 0.8em;">
+            <tr>
+                <td>Level</td>
+                <td>{props.algo.level.level}</td>
+                <td>{theme.formatRatingText(props.algo.level.total)}</td>
+            </tr>
+            <tr>
+                <td>Stars</td>
+                <td>x{props.algo.stars.multiplier}</td>
+                <td>{theme.formatRatingText(props.algo.stars.total)}</td>
             </tr>
         </tbody>
     </table>

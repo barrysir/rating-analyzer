@@ -1,28 +1,39 @@
 import { followCursor, delegate } from "tippy.js";
 import { onMount, onCleanup, children, createRoot, JSXElement } from "solid-js";
 import "tippy.js/dist/tippy.css";
-import { RatingTooltip, RefreshTechRatingTooltip } from "./RatingTooltip";
+import { OngekiRatingTooltip, RefreshPlatRatingTooltip, RefreshTechRatingTooltip } from "./RatingTooltip";
 import 'tippy.js/themes/light.css';
 import { render } from "solid-js/web";
 import { Mode, unpackHistory } from "./stores/stateStore";
 
 export function TooltipDelegated(props: {children: JSXElement}) {
-  const {helpers} = unpackHistory<Mode.REFRESH>();
 
   const tooltipMaker = createRoot((dispose) => {
     return {
-      create: (scoreId: number) => {
+      createOngeki: (scoreId: number) => {
+        const {helpers} = unpackHistory<Mode.ONGEKI>();
         let scoreInfo = helpers.getScore(scoreId)!;
         let algo = scoreInfo.algo;
-        console.log(scoreId, scoreInfo, algo);
+        const tooltipEl = document.createElement("div");
+        render(() => <OngekiRatingTooltip algo={algo} />, tooltipEl)
+        return tooltipEl;
+      },
+      createRefresh: (scoreId: number) => {
+        const {helpers} = unpackHistory<Mode.REFRESH>();
+        let scoreInfo = helpers.getScore(scoreId)!;
+        let algo = scoreInfo.techAlgo;
         const tooltipEl = document.createElement("div");
         render(() => <RefreshTechRatingTooltip algo={algo} />, tooltipEl)
         return tooltipEl;
-        // let scoreInfo = helpers.getScore(scoreId)!;
-        // let algo = scoreInfo.algo;
-        // const tooltipEl = document.createElement("div");
-        // render(() => <RatingTooltip algo={algo} />, tooltipEl)
-        // return tooltipEl;
+      },
+      createPlatinum: (scoreId: number) => {
+        const {helpers} = unpackHistory<Mode.REFRESH>();
+        let scoreInfo = helpers.getScore(scoreId)!;
+        let algo = scoreInfo.platAlgo;
+        console.log(scoreId, scoreInfo, algo);
+        const tooltipEl = document.createElement("div");
+        render(() => <RefreshPlatRatingTooltip algo={algo} />, tooltipEl)
+        return tooltipEl;
       },
       dispose,
     };
@@ -30,13 +41,12 @@ export function TooltipDelegated(props: {children: JSXElement}) {
 
   let container!: HTMLDivElement;
 
-  onMount(() => {
-    // Create delegated tippy instances
-    const delegated = delegate(container, {
-      target: "[data-rating-tooltip]",
+  function makeTooltip(dataAttributeName: string, makeElement: (scoreId: number) => Element) {
+    return delegate(container, {
+      target: `[${dataAttributeName}]`,
       theme: 'light',
       onShow(instance) {
-        let t = instance.reference.getAttribute("data-rating-tooltip");
+        let t = instance.reference.getAttribute(dataAttributeName);
         if (t === null) {
           console.warn("Tried to show rating tooltip but element doesn't have the proper data attribute set", instance.reference);
           return;
@@ -46,7 +56,7 @@ export function TooltipDelegated(props: {children: JSXElement}) {
           console.warn("Tried to show rating tooltip but element data attribute couldn't be parsed as number", instance.reference);
           return;
         }
-        let element = tooltipMaker.create(scoreId); // <RatingTooltip scoreId={/*@once*/ scoreId} />
+        let element = makeElement(scoreId);
         instance.setContent(element);
       },
       followCursor: true,
@@ -55,9 +65,16 @@ export function TooltipDelegated(props: {children: JSXElement}) {
       animation: false,
       plugins: [followCursor],
     });
+  }
+
+  onMount(() => {
+    // Create delegated tippy instances
+    const ratingTooltips = makeTooltip("data-rating-tooltip", (scoreId) => tooltipMaker.createRefresh(scoreId));
+    const platTooltips = makeTooltip("data-platinum-tooltip", (scoreId) => tooltipMaker.createPlatinum(scoreId));
 
     onCleanup(() => {
-      delegated.destroy();
+      ratingTooltips.destroy();
+      platTooltips.destroy();
       tooltipMaker.dispose();
     });
   });

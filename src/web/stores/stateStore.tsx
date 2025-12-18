@@ -5,10 +5,10 @@ import { history, HistoryStore, initializeHistory, setPointId } from "./historyS
 import { theme } from "./themeStore";
 import { OngekiTheme } from "../themes/ongeki";
 
-class HistoryHelpers<T extends HistoryStore<any>> {
-  history: T;
+class HistoryHelpers<M extends Mode> {
+  history: HistoryStore<M>;
 
-  constructor(history: T) { 
+  constructor(history: HistoryStore<M>) { 
     this.history = history;
   }
 
@@ -93,7 +93,7 @@ type State<M extends Mode> = {
     mode: M,
     history: HistoryType<M>,
     setPointId: typeof setPointId,
-    helpers: HistoryHelpers<HistoryType<M>>,
+    helpers: HistoryHelpers<M>,
     theme: Theme<M>,
 }
 

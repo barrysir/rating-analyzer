@@ -60,6 +60,10 @@ const OngekiTheme = {
         return <span data-rating-tooltip={(scoreId)?.toString()} classList={{[color]: true}}>{this.formatRatingText(rating)}</span>;
     },
 
+    formatPlatinumRating(rating: number, scoreId?: number) {
+        return <span data-platinum-tooltip={(scoreId)?.toString()}>{this.formatRatingText(rating)}</span>;
+    },
+
     formatChangeRating(change: number) {
         let sign = (change > 0) ? '+' : '';
         return `${sign}${change.toFixed(3)}`;

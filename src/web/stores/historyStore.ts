@@ -2,20 +2,30 @@ import { createMutable, createStore } from 'solid-js/store';
 import { UserScoreDatabase } from '../../get-kamai/UserScores';
 import { createHistory } from '../Temp';
 import { batch } from 'solid-js';
-import { RatingAlgo } from '../../rating/OngekiCalculator';
+import { RatingAlgo as OngekiScoreAlgo } from '../../rating/OngekiCalculator';
 import { KamaiScore } from '../../get-kamai/kamai';
 import { FrameRating as OngekiFrameRating } from '../ImprovementTracker';
 import { FrameRating as RefreshFrameRating } from '../ImprovementRefreshTracker';
 import { Mode } from './stateStore';
+import { RefreshPlatScoreAlgo, RefreshTechScoreAlgo } from '../../rating/OngekiRefreshCalculator';
 
-type ExtendedScore = {
+
+export type ExtendedScore<M extends Mode> = {
   chartId: string;
   rating: number;
-  algo: RatingAlgo;
   points: number;
   timeAchieved: number;
   kamai: KamaiScore;
-};
+} & (
+  M extends Mode.ONGEKI ? {
+    algo: OngekiScoreAlgo
+  } :
+  M extends Mode.REFRESH ? {
+    techAlgo: RefreshTechScoreAlgo,
+    platAlgo: RefreshPlatScoreAlgo,
+  } :
+  never
+);
 
 export type VersionInformation = {
     name: string;

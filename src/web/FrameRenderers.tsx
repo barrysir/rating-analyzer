@@ -61,7 +61,14 @@ export function DisplayFrame(props: { data: FrameEntry[] | PlatinumEntry[], titl
           {(item, index) => {
             return <tr>
               <td>#{index()+1}</td>
-              <td>{item ? theme.formatRating(item.rating, item.scoreId) : NULL_MARKER}</td>
+              <Switch>
+                <Match when={props.platinum}>
+                  <td>{item ? theme.formatPlatinumRating(item.rating, item.scoreId) : NULL_MARKER}</td>
+                </Match>
+                <Match when={!props.platinum}>  
+                  <td>{item ? theme.formatRating(item.rating, item.scoreId) : NULL_MARKER}</td>
+                </Match>
+              </Switch>
               <td style="width: 100%;">{item ? item.title : NULL_MARKER}</td>
               <td>{item ? item.level : NULL_MARKER}</td>
               <Switch>
