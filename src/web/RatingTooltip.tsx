@@ -2,7 +2,7 @@ import { createSignal, Show } from "solid-js";
 import { theme } from "./stores/themeStore";
 import "./RatingTooltip.css";
 import { RatingAlgo } from "../rating/OngekiCalculator";
-import { RefreshTechScoreBreakdown } from "../rating/OngekiRefreshCalculator";
+import { RefreshTechScoreAlgo } from "../rating/OngekiRefreshCalculator";
 
 export function RatingTooltip(props: {algo: RatingAlgo}) {
     return <table class="rating-tooltip">
@@ -28,7 +28,7 @@ export function RatingTooltip(props: {algo: RatingAlgo}) {
     </table>
 }
 
-export function RefreshTechRatingTooltip(props: {algo: RefreshTechScoreBreakdown}) {
+export function RefreshTechRatingTooltip(props: {algo: RefreshTechScoreAlgo}) {
     if ('multiplier' in props.algo) {
         return <RatingTooltip algo={props.algo} />;
     }
