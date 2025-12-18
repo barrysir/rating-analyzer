@@ -7,6 +7,7 @@ export type ChartId = UniqueType<string, "chart">;
 export type ChartInfo = {
     internalLevel: number;
     maxPlatinum: number;
+    noteCount: number;
     maxBells: number;
     isLunatic: boolean;
     isNew: boolean;

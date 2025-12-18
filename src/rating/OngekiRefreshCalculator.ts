@@ -143,7 +143,7 @@ type PlatinumScore<Extra> = WithExtra<Extra, { platinum: number; rating: number;
 type ScoreInput<Extra> = WithExtra<Extra, 
     {points: number, platinum: number}
     & (
-        {bells: number, judgements: {crit?: number, break: number, hit: number, miss: number}}
+        {bells: number, judgements: {cbreak: number, break: number, hit: number, miss: number}}
         | {lamps: {bell: BellLamp, clear: ClearLamp, grade?: GradeLamp}}
     )  
 >;
@@ -269,19 +269,23 @@ export class OngekiRefreshCalculator<Extra = undefined> {
         if (chartData === null) {
             return null;
         }
-        let { internalLevel: level, maxPlatinum, maxBells, chartId, isNew } = chartData;
+        let { internalLevel: level, noteCount, maxPlatinum, maxBells, chartId, isNew } = chartData;
 
         let scoreLamps;
         if ('bells' in score) {
             // compute lamps from bell / judgement counts
             let judges = score.judgements;
             let clear: ClearLamp = ClearLamp.NONE;
-            if (judges.miss == 0) {
-                clear = ClearLamp.FC;
-                if (judges.hit == 0) {
-                    clear = ClearLamp.AB;
-                    if (judges.break == 0) {
-                        clear = ClearLamp.ACB;
+            // make sure that the song was played to completion / all notes in the song received a judgement
+            if (judges.cbreak + judges.break + judges.hit + judges.miss == noteCount) {
+                // normal FC / AB / AB+ detection
+                if (judges.miss == 0) {
+                    clear = ClearLamp.FC;
+                    if (judges.hit == 0) {
+                        clear = ClearLamp.AB;
+                        if (judges.break == 0) {
+                            clear = ClearLamp.ACB;
+                        }
                     }
                 }
             }

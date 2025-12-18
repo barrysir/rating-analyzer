@@ -157,6 +157,7 @@ export class HistoricalChartDb implements ChartDb {
         return {
             internalLevel: chart.level,
             maxPlatinum: chart.maxPlatinumScore,
+            noteCount: Math.floor(chart.maxPlatinumScore / 2),
             maxBells: chart.bells,
             isLunatic: (difficulty == OngekiDifficulty.LUNATIC),
             isNew: (song.date_added >= this.currentVersion.start),
