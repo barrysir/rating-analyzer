@@ -21,12 +21,26 @@ class HistoryHelpers<M extends Mode> {
     return result;
   }
 
+  getUndo(scoreIndex: number, calcIndex?: number) {
+    if (calcIndex === undefined) {
+      // if not specified, default to the calculator this score "belongs" to
+      calcIndex = this.history.history.scoreIndexToCalcIndex(scoreIndex);
+    }
+    return this.history.history.getUndo(scoreIndex, calcIndex);
+  }
+
   pointToScoreId(pointId: number) : {type: 'version', versionId: number} | {type: 'score', scoreId: number} {
     let {scoreIndex, calcIndex, justBumped} = this.history.history!._makeComponents(pointId);
     if (justBumped) {
       return {type: 'version', versionId: calcIndex};
     }
     return {type: 'score', scoreId: scoreIndex};
+  }
+
+  scoreToPointId(scoreId: number) {
+    // Probably something like (scoreId) + (calculator index at scoreId)
+    // but not needed right now
+    throw new Error("Not implemented");
   }
 
   getDb(pointId: number) {

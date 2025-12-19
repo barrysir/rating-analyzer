@@ -57,6 +57,41 @@ const judgementColors = {
     damage: 'red',
 };
 
+export type RefId = {
+    scoreId: number;
+    calcId?: number;
+}
+
+type RefInput = number | RefId;
+
+export function encodeRefId(id?: RefInput): string|undefined {
+    if (id === undefined) {
+        return undefined;
+    }
+    if (typeof id === 'number') {
+        id = { scoreId: id } as RefId;
+    }
+    return id.scoreId.toString() + ((id.calcId !== undefined) ? `,${id.calcId}` : "");
+}
+
+export function decodeRefId(d: string): RefId | undefined {
+    let parts = d.split(',');
+    if (parts.length == 1) {
+        let scoreId = parseInt(parts[0]!);
+        if (isNaN(scoreId)) {
+            return undefined;
+        }
+        return { scoreId };
+    } else {
+        let scoreId = parseInt(parts[0]!);
+        let calcId = parseInt(parts[1]!);
+        if (isNaN(scoreId) || isNaN(calcId)) {
+            return undefined;
+        }
+        return { scoreId, calcId };
+    }
+}
+
 // I don't know if this needs to be a store
 // I'll leave it as a plain object for now
 const OngekiTheme = {
@@ -69,13 +104,14 @@ const OngekiTheme = {
         return <span style={{'color': color}}>{this.formatRatingText(rating)}</span>;
     },
 
-    formatRating(rating: number, scoreId?: number) {
+    formatRating(rating: number, refId?: RefInput) {
+        // need to know score id and the calculator (optional; if left out, it fills in the calcIndex for that scoreid)
         let color = getRegion(ratingColors, rating, p => p[0] as number)![1] as string;
-        return <span data-rating-tooltip={(scoreId)?.toString()} classList={{[color]: true}}>{this.formatRatingText(rating)}</span>;
+        return <span data-rating-tooltip={encodeRefId(refId)} classList={{[color]: true}}>{this.formatRatingText(rating)}</span>;
     },
 
-    formatPlatinumRating(rating: number, scoreId?: number) {
-        return <span data-platinum-tooltip={(scoreId)?.toString()}>{this.formatRatingText(rating)}</span>;
+    formatPlatinumRating(rating: number, refId?: RefInput) {
+        return <span data-platinum-tooltip={encodeRefId(refId)}>{this.formatRatingText(rating)}</span>;
     },
 
     formatJudgements(judges: OngekiJudgements, totalBells: number) {
@@ -88,9 +124,9 @@ const OngekiTheme = {
         return `${sign}${change.toFixed(3)}`;
     },
 
-    formatPoints(points: number, scoreId?: number) {
+    formatPoints(points: number, refId?: RefInput) {
         let color = getRegion(scoreColors, points, p => p[0] as number)![1] as string;
-        return <span data-judge-tooltip={(scoreId)?.toString()} classList={{[color]: true}}>{points}</span>;
+        return <span data-judge-tooltip={encodeRefId(refId)} classList={{[color]: true}}>{points}</span>;
     },
 
     formatPlatinumPercentage(percentage: number) {

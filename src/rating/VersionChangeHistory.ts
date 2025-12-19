@@ -146,4 +146,16 @@ export class VersionChangeHistory<
         let result = undos[scoreIndex]!;        
         return result;
     }
+
+    getUndo(scoreIndex: number, calcIndex: number) {
+        return this.histories[calcIndex]?.undos[scoreIndex];
+    }
+
+    scoreIndexToCalcIndex(scoreIndex: number) {
+        // Get the calculator index this score "belongs" to
+        let versionChanges = this.versionChangeScoreIndexes;
+        let i = versionChanges.findIndex(v => v >= scoreIndex);
+        if (i == -1) { i = versionChanges.length; }
+        return i;
+    }
 }

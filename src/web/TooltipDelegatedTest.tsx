@@ -5,36 +5,38 @@ import { OngekiJudgementTooltip, OngekiRatingTooltip, RefreshPlatRatingTooltip, 
 import 'tippy.js/themes/light.css';
 import { render } from "solid-js/web";
 import { Mode, unpackHistory } from "./stores/stateStore";
+import { decodeRefId, RefId } from "./themes/ongeki";
 
 export function TooltipDelegated(props: {children: JSXElement}) {
 
   const tooltipMaker = createRoot((dispose) => {
     return {
-      createOngeki: (scoreId: number) => {
+      createOngeki: (refId: RefId) => {
         const {helpers} = unpackHistory<Mode.ONGEKI>();
-        let scoreInfo = helpers.getScore(scoreId)!;
+        let scoreInfo = helpers.getUndo(refId.scoreId, refId.calcId)!;
         let algo = scoreInfo.algo;
         const tooltipEl = document.createElement("div");
         render(() => <OngekiRatingTooltip algo={algo} />, tooltipEl)
         return tooltipEl;
       },
-      createRefresh: (scoreId: number) => {
+      createRefresh: (refId: RefId) => {
         const {helpers} = unpackHistory<Mode.REFRESH>();
-        let scoreInfo = helpers.getScore(scoreId)!;
-        let algo = scoreInfo.techAlgo;
+        let scoreInfo = helpers.getUndo(refId.scoreId, refId.calcId)!;
+        let algo = scoreInfo.algo;
         const tooltipEl = document.createElement("div");
         render(() => <RefreshTechRatingTooltip algo={algo} />, tooltipEl)
         return tooltipEl;
       },
-      createPlatinum: (scoreId: number) => {
+      createPlatinum: (refId: RefId) => {
         const {helpers} = unpackHistory<Mode.REFRESH>();
-        let scoreInfo = helpers.getScore(scoreId)!;
+        let scoreInfo = helpers.getUndo(refId.scoreId, refId.calcId)!;
         let algo = scoreInfo.platAlgo;
         const tooltipEl = document.createElement("div");
         render(() => <RefreshPlatRatingTooltip algo={algo} />, tooltipEl)
         return tooltipEl;
       },
-      createJudgements: (scoreId: number) => {
+      createJudgements: (refId: RefId) => {
+        let scoreId = refId.scoreId;
         const {helpers} = unpackHistory();
         let scoreInfo = helpers.getScore(scoreId)!;
         let judges = scoreInfo.judgements;
@@ -49,7 +51,7 @@ export function TooltipDelegated(props: {children: JSXElement}) {
 
   let container!: HTMLDivElement;
 
-  function makeTooltip(dataAttributeName: string, makeElement: (scoreId: number) => Element) {
+  function makeTooltip(dataAttributeName: string, makeElement: (refId: RefId) => Element) {
     return delegate(container, {
       target: `[${dataAttributeName}]`,
       theme: 'light',
@@ -59,12 +61,12 @@ export function TooltipDelegated(props: {children: JSXElement}) {
           console.warn("Tried to show rating tooltip but element doesn't have the proper data attribute set", instance.reference);
           return;
         }
-        let scoreId = parseInt(t);
-        if (isNaN(scoreId)) {
+        let refId = decodeRefId(t);
+        if (refId === undefined) {
           console.warn("Tried to show rating tooltip but element data attribute couldn't be parsed as number", instance.reference);
           return;
         }
-        let element = makeElement(scoreId);
+        let element = makeElement(refId);
         instance.setContent(element);
       },
       followCursor: true,
@@ -77,15 +79,15 @@ export function TooltipDelegated(props: {children: JSXElement}) {
 
   onMount(() => {
     // Create delegated tippy instances
-    const ratingTooltips = makeTooltip("data-rating-tooltip", (scoreId) => {
+    const ratingTooltips = makeTooltip("data-rating-tooltip", (refId) => {
       const {mode} = unpackHistory();
       switch (mode) {
-        case Mode.ONGEKI: return tooltipMaker.createOngeki(scoreId);
-        case Mode.REFRESH: return tooltipMaker.createRefresh(scoreId);
+        case Mode.ONGEKI: return tooltipMaker.createOngeki(refId);
+        case Mode.REFRESH: return tooltipMaker.createRefresh(refId);
       }
     });
-    const platTooltips = makeTooltip("data-platinum-tooltip", (scoreId) => tooltipMaker.createPlatinum(scoreId));
-    const judgeTooltips = makeTooltip("data-judge-tooltip", (scoreId) => tooltipMaker.createJudgements(scoreId));
+    const platTooltips = makeTooltip("data-platinum-tooltip", (refId) => tooltipMaker.createPlatinum(refId));
+    const judgeTooltips = makeTooltip("data-judge-tooltip", (refId) => tooltipMaker.createJudgements(refId));
 
     onCleanup(() => {
       ratingTooltips.destroy();

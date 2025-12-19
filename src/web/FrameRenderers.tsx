@@ -59,14 +59,18 @@ export function DisplayFrame(props: { data: FrameEntry[] | PlatinumEntry[], titl
       <tbody>
         <For each={displayData()}>
           {(item, index) => {
+            let refId = {
+              scoreId: item.scoreId,
+              calcId: history.history.whichCalc,
+            };
             return <tr>
               <td>#{index()+1}</td>
               <Switch>
                 <Match when={props.platinum}>
-                  <td>{item ? theme.formatPlatinumRating(item.rating, item.scoreId) : NULL_MARKER}</td>
+                  <td>{item ? theme.formatPlatinumRating(item.rating, refId) : NULL_MARKER}</td>
                 </Match>
                 <Match when={!props.platinum}>  
-                  <td>{item ? theme.formatRating(item.rating, item.scoreId) : NULL_MARKER}</td>
+                  <td>{item ? theme.formatRating(item.rating, refId) : NULL_MARKER}</td>
                 </Match>
               </Switch>
               <td style="width: 100%;">{item ? item.title : NULL_MARKER}</td>
@@ -76,7 +80,7 @@ export function DisplayFrame(props: { data: FrameEntry[] | PlatinumEntry[], titl
                   <td>{item ? theme.formatPlatinum(item.platinum, item.maxPlatinum) : NULL_MARKER}</td>
                 </Match>
                 <Match when={!props.platinum}>  
-                  <td>{item ? theme.formatPoints(item.points, item.scoreId) : NULL_MARKER}</td>
+                  <td>{item ? theme.formatPoints(item.points, refId) : NULL_MARKER}</td>
                 </Match>
               </Switch>
             </tr>
