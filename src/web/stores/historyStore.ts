@@ -1,6 +1,6 @@
 import { createMutable, createStore } from 'solid-js/store';
 import { UserScoreDatabase } from '../../get-kamai/UserScores';
-import { createHistory } from '../Temp';
+import { createHistory, HistoryType } from '../Temp';
 import { batch } from 'solid-js';
 import { RatingAlgo as OngekiScoreAlgo } from '../../rating/OngekiCalculator';
 import { KamaiScore } from '../../get-kamai/kamai';
@@ -50,8 +50,6 @@ export type VersionInformation = {
     plotBackgroundColor: string;
   };
 
-type HistoryType = ReturnType<typeof createHistory>['history'];
-
 type PlotData = {
   name: string;
   data: number[];
@@ -92,7 +90,7 @@ export type VersionImproveRenderData<M extends Mode> = {
 type PersonalBestType = ReturnType<typeof createHistory>['bests'];
 
 export type HistoryStore<M extends Mode> = {
-  history: HistoryType;
+  history: HistoryType<M>;
   bests: PersonalBestType;
   scores: ExtendedScore<M>[];
   improves: VersionImproveRenderData<M>[];

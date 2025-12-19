@@ -15,6 +15,7 @@ import { ChartDataType, ExtendedScore, HistoryStore, VersionImproveRenderData, V
 import { Mode } from './stores/stateStore';
 import { ChartId } from '../rating/chartdb/ChartDb';
 import { addWarning } from './stores/warningStore';
+import { KamaiScore } from '../get-kamai/kamai';
 
 function dateToUnix(date: Date): number {
   return Math.floor(date.getTime());
@@ -217,9 +218,57 @@ class StuffForRefresh {
   }
 }
 
+type ScoresOf<T> =
+  T extends { makeScores: (...args: any[]) => infer U } ? U : never;
+
+type CalculatorOf<T> =
+  T extends { makeCalculator: (...args: any[]) => infer V } ? V : never;
+
+function makeHistoryTempFunction<
+  T extends {
+    makeScores: (scores: any[]) => any;
+    makeCalculator: (db: HistoricalChartDb) => any;
+  }
+>(
+  versionChanges: { db: HistoricalChartDb; timestamp: number; }[],
+  scores: { chartId: ChartId; kamai: KamaiScore; }[], 
+  getRefresh: T
+) {
+  let scoresArray: ScoresOf<T> = getRefresh.makeScores(scores);
+
+  let history = new VersionChangeHistory(
+    versionChanges.map(entry => (
+      {
+        calculator: getRefresh.makeCalculator(entry.db) as CalculatorOf<T>,
+        timestamp: entry.timestamp,
+      }
+    )),
+    scoresArray,
+    (s) => s.extra.timestamp
+  );
+
+  return {scoresArray, history};
+}
+
+type StuffForType<M extends Mode> = 
+    M extends Mode.ONGEKI ? StuffForOngeki :
+    M extends Mode.REFRESH ? StuffForRefresh :
+    never;
+  
+export type HistoryType<M extends Mode> = ReturnType<typeof makeHistoryTempFunction<StuffForType<M>>>['history'];
+
 export function createHistory<M extends Mode>(scoredb: UserScoreDatabase, mode: M, options: {decimalPlaces: number} = {decimalPlaces: 2}) {
   let songData = new SongData(SONG_DATA);
   let versions = structuredClone(VERSIONS) as VersionInformation[];
+
+  let getRefresh = function () {
+    switch (mode) {
+      case Mode.ONGEKI: 
+        return new StuffForOngeki();
+      case Mode.REFRESH:
+        return new StuffForRefresh();
+    }
+  }();
 
   let versionChanges = versions.map(v => ({
     db: new HistoricalChartDb(songData, { version: v.version }), 
@@ -257,7 +306,6 @@ export function createHistory<M extends Mode>(scoredb: UserScoreDatabase, mode: 
   }
 
   if (scoresToSkip.size > 0) {
-    
     let messageHeader = `Some scores were found for songs that did not exist at the time of playing. These scores were ignored.`;
     let messageBody = scoresToSkip.entries().map(([i,versionIndex]) => {
       let score = scores[i]!;
@@ -270,27 +318,7 @@ export function createHistory<M extends Mode>(scoredb: UserScoreDatabase, mode: 
     scores = scores.filter((value, i) => !scoresToSkip.has(i));
   }
 
-  let getRefresh = function () {
-    switch (mode) {
-      case Mode.ONGEKI: 
-        return new StuffForOngeki();
-      case Mode.REFRESH:
-        return new StuffForRefresh();
-    }
-  }();
-
-  let scoresArray = getRefresh.makeScores(scores);
-
-  let history = new VersionChangeHistory(
-    versionChanges.map(entry => (
-      {
-        calculator: getRefresh.makeCalculator(entry.db),
-        timestamp: entry.timestamp,
-      }
-    )),
-    scoresArray,
-    (s) => s.extra.timestamp
-  );
+  let { scoresArray, history } = makeHistoryTempFunction(versionChanges, scores, getRefresh);
 
   let versionPointIds = history.versionPointIds;
   if (versionPointIds.length != versions.length - 1) {
