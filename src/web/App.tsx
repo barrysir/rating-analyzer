@@ -1,5 +1,5 @@
 import type { Component } from 'solid-js';
-import { createEffect, Match, onMount, Show, Switch } from 'solid-js';
+import { createEffect, createSignal, Match, onMount, Show, Switch } from 'solid-js';
 import { RatingChart } from './RatingChart';
 import { loadScoreData } from './Temp';
 import { Icon } from '@iconify-icon/solid';
@@ -14,6 +14,45 @@ import { HistoryProvider, initializeState, Mode } from './stores/stateStore';
 import WarningWindow from './WarningWindow';
 import { clearWarnings } from './stores/warningStore';
 
+function FileLoadBar(props: { onFileLoad: (data: any) => void }) {
+  let fileInputRef: HTMLInputElement | undefined;
+
+  const handleFileSelect = async (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    const file = target.files?.[0];
+    
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      props.onFileLoad(data);
+    } catch (error) {
+      console.error('Error loading file:', error);
+      alert('Failed to load file. Please ensure it is a valid JSON file.');
+    }
+  };
+
+  return (
+    <div style="width: 100%; background: #f3f4f6; border-bottom: 1px solid #e5e7eb; padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
+      <label style="font-weight: 500; font-size: 14px;">Load Score Data:</label>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".json"
+        onChange={handleFileSelect}
+        style="font-size: 14px;"
+      />
+      <button
+        onClick={() => fileInputRef?.click()}
+        style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;"
+      >
+        <Icon icon="lucide:upload" style="vertical-align: middle; margin-right: 4px;" />
+        Choose File
+      </button>
+    </div>
+  );
+}
 
 function SettingsWindow() {
   return (
@@ -82,19 +121,27 @@ function SettingsButton() {
 }
 
 const App: Component = () => {
-  const scoreData = loadScoreData();
+  const [scoreData, setScoreData] = createSignal(loadScoreData());
+
+  const handleFileLoad = (data: any) => {
+    setScoreData(data);
+    clearWarnings();
+    initializeState(data, Mode.REFRESH, { decimalPlaces: settings.decimalPlaces });
+  };
 
   onMount(() => {
     let mode = Mode.REFRESH;
+    let a = 4;
     clearWarnings();
-    initializeState(scoreData, mode, { decimalPlaces: settings.decimalPlaces });
+    initializeState(scoreData(), mode, { decimalPlaces: settings.decimalPlaces });
   });
 
   return <HistoryProvider>{({ mode, history, helpers, theme }) => (
-  <div style="width: 100vw; height: 100vh;">
+  <div style="width: 100vw; height: 100vh; display: flex; flex-direction: column;">
+    <FileLoadBar onFileLoad={handleFileLoad} />
     <WarningWindow />
     <SettingsButton />
-    <div style="width: 100%; height: 100%; display: grid; grid-template-columns: 4fr 6fr; align-items: center;">
+    <div style="width: 100%; flex: 1; display: grid; grid-template-columns: 4fr 6fr; align-items: center;">
       <div style="height: 50%; display: flex; flex-direction: column; align-items: center;">
         <RatingChart data={history.chartData} options={{decimalPlaces: settings.decimalPlaces}} onClick={(index) => setPointId(index)} />
         <div style="width: 90%">
