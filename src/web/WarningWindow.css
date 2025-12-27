@@ -1,5 +1,5 @@
 .warning-button {
-    position: fixed;
+    position: absolute;
     top: 16px;
     left: 16px;
     width: 44px;
@@ -17,7 +17,7 @@
 }
 
 .warning-panel {
-    position: fixed;
+    position: absolute;
     top: 16px;
     left: 16px;
     width: 360px;

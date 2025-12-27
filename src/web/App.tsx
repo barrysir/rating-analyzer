@@ -139,9 +139,9 @@ const App: Component = () => {
   return <HistoryProvider>{({ mode, history, helpers, theme }) => (
   <div style="width: 100vw; height: 100vh; display: flex; flex-direction: column;">
     <FileLoadBar onFileLoad={handleFileLoad} />
-    <WarningWindow />
-    <SettingsButton />
-    <div style="width: 100%; flex: 1; display: grid; grid-template-columns: 4fr 6fr; align-items: center;">
+    <div style="position: relative; flex: 1; overflow: hidden; display: grid; grid-template-columns: 4fr 6fr; align-items: center;">
+      <WarningWindow />
+      <SettingsButton />
       <div style="height: 50%; display: flex; flex-direction: column; align-items: center;">
         <RatingChart data={history.chartData} options={{decimalPlaces: settings.decimalPlaces}} onClick={(index) => setPointId(index)} />
         <div style="width: 90%">
@@ -150,41 +150,37 @@ const App: Component = () => {
           </Show>
         </div>
       </div>
-      <div style="height: 100%; padding-top: 50px;">
-         <TooltipDelegated>
-  
+      <TooltipDelegated style="height: 100%; padding-top: 50px; display: flex; flex-direction: column; overflow: hidden;">  
         <Show when={history.history !== null}>
-          <Tabs.Root defaultValue="frame">
-            <div style="height: 90vh; display: grid; grid-template-rows: auto 1fr;">
-              <div>
+          <Tabs.Root defaultValue="frame" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+            <div>
               <Tabs.List>
                 <Tabs.Trigger value="frame">Frame</Tabs.Trigger>
                 <Tabs.Trigger value="image">Reiwa</Tabs.Trigger>
                 <Tabs.Trigger value="improve">Improvements</Tabs.Trigger>
               </Tabs.List>
-              </div>
-              <div style="overflow: auto; border: 1px solid #ddd; border-radius: 4px 4px 0 0; padding: 0px 4px; width: 100%; height: 100%;">
-                <Tabs.Content value="frame">
-                  <Switch>
-                    <Match when={mode == Mode.REFRESH}>
-                      <RefreshFrameTab pointId={history.pointId} calc={history.history!.calc} />
-                    </Match>
-                    <Match when={mode == Mode.ONGEKI}>
-                      <OngekiFrameTab pointId={history.pointId} calc={history.history!.calc} />
-                    </Match>
-                  </Switch>
-                </Tabs.Content>
-                <Tabs.Content value="image">
-                  WIP
-                </Tabs.Content>
-                <Tabs.Content value="improve">
-                  <ImprovementTab mode={mode} improves={history.improves} scrollToPointId={history.pointId} />
-                </Tabs.Content>
-              </div>
+            </div>
+            <div style="border: 1px solid #ddd; border-radius: 4px 4px 0 0; padding: 0px 4px; flex: 1; overflow: auto;">
+              <Tabs.Content value="frame">
+                <Switch>
+                  <Match when={mode == Mode.REFRESH}>
+                    <RefreshFrameTab pointId={history.pointId} calc={history.history!.calc} />
+                  </Match>
+                  <Match when={mode == Mode.ONGEKI}>
+                    <OngekiFrameTab pointId={history.pointId} calc={history.history!.calc} />
+                  </Match>
+                </Switch>
+              </Tabs.Content>
+              <Tabs.Content value="image">
+                WIP
+              </Tabs.Content>
+              <Tabs.Content value="improve">
+                <ImprovementTab mode={mode} improves={history.improves} scrollToPointId={history.pointId} />
+              </Tabs.Content>
             </div>
           </Tabs.Root>
-        </Show></TooltipDelegated>
-      </div>
+        </Show>
+      </TooltipDelegated>
     </div>
   </div>
   )}</HistoryProvider>

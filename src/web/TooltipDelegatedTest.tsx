@@ -1,5 +1,5 @@
 import { followCursor, delegate } from "tippy.js";
-import { onMount, onCleanup, children, createRoot, JSXElement } from "solid-js";
+import { onMount, onCleanup, children, createRoot, JSXElement, splitProps } from "solid-js";
 import "tippy.js/dist/tippy.css";
 import { OngekiJudgementTooltip, OngekiRatingTooltip, RefreshPlatRatingTooltip, RefreshTechRatingTooltip } from "./RatingTooltip";
 import 'tippy.js/themes/light.css';
@@ -97,10 +97,11 @@ export function TooltipDelegated(props: {children: JSXElement}) {
     });
   });
 
-  const c = children(() => props.children);
+  const [local, others] = splitProps(props, ['children']);
+  const c = children(() => local.children);
 
   return (
-    <div ref={container}>
+    <div ref={container} {...others}>
       {c()}
     </div>
   );
