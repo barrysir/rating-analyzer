@@ -48,6 +48,7 @@ function GeneralRender<M extends Mode>(props: { mode: M, frame: FrameRating<M>, 
 }
 
 function VersionImprovement<M extends Mode>(props: { mode: M, improves: VersionImproveRenderData<M>['improves'] }) {
+    console.log("I'm being rendered?", props.improves[0]);
     return <HistoryProvider<M>>{({ history, helpers, theme }) => (
         <div class="improve-list">
             <For each={props.improves}>
@@ -164,8 +165,10 @@ export function ImprovementTab<M extends Mode>(props: { mode: M, improves: Versi
                         return improves;
                     };
                     renderedImproves.set(versionId, improves());
+
+                    const value = index.toString();
                     
-                    return <Accordion.Item value={index.toString()} class="accordion-item">
+                    return <Accordion.Item value={value} class="accordion-item">
                         <Accordion.ItemTrigger class="accordion-trigger">
                             <span class="accordion-title">{versionDate} - {version.name}</span>
                             <Accordion.ItemIndicator class="accordion-indicator">
@@ -173,7 +176,10 @@ export function ImprovementTab<M extends Mode>(props: { mode: M, improves: Versi
                             </Accordion.ItemIndicator>
                         </Accordion.ItemTrigger>
                         <Accordion.ItemContent class="accordion-content">
-                            <VersionImprovement mode={props.mode} improves={improves()} />
+                            {/* TODO: currently it'll rerender everytime you open the accordion -- add caching so it only renders the first time? */}
+                            <Show when={openItems().includes(value)}>
+                                <VersionImprovement mode={props.mode} improves={improves()} />
+                            </Show>
                         </Accordion.ItemContent>
                     </Accordion.Item>;
                 }}

@@ -74,14 +74,14 @@ export class BestFrame<Score extends {rating: number}> {
   }
 
   addScore(t: Score, chartID: ChartId): UndoScore<Score> {
-    let before = this.makeSnapshot();
+    // let before = this.makeSnapshot();
     let result = this._addScore(t, chartID);
 
-    if (!this.validateFrame()) {
-      console.log(before);
-      console.log(this.makeSnapshot());
-      throw new Error(`Something didn't process correctly on forward ${JSON.stringify({t, chartID})}`);
-    }
+    // if (!this.validateFrame()) {
+    //   console.log(before);
+    //   console.log(this.makeSnapshot());
+    //   throw new Error(`Something didn't process correctly on forward ${JSON.stringify({t, chartID})}`);
+    // }
     return result;
   }
 

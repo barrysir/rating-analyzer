@@ -33,7 +33,7 @@ export class RatingHistory<
         this.snapshots = [];
         this.currentIndex = 0;
 
-        this.snapshotInterval = options.snapshotInterval ?? 100;
+        this.snapshotInterval = options.snapshotInterval ?? 250;
 
         if (scores.length == 0) {
             throw new Error("Scores array is empty; must pass at least one score to RatingHistory");
