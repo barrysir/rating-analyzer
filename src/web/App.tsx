@@ -13,6 +13,7 @@ import { HistoryProvider, initializeState, Mode } from './stores/stateStore';
 import WarningWindow from './WarningWindow';
 import { clearWarnings } from './stores/warningStore';
 import { UserScoreDatabase } from '../get-kamai/UserScores';
+import { BestsTab } from './BestsTab';
 
 function FileLoadBar(props: { onFileLoad: (data: any) => void }) {
   let fileInputRef: HTMLInputElement | undefined;
@@ -166,6 +167,9 @@ function Actual(props: {scoreData: UserScoreDatabase}) {
               </Tabs.Content>
               <Tabs.Content value="improve">
                 <ImprovementTab mode={mode} improves={history.improves} scrollToPointId={history.pointId} />
+              </Tabs.Content>
+              <Tabs.Content value="best">
+                <BestsTab mode={mode} db={history.history.calc.db} />
               </Tabs.Content>
             </div>
           </Tabs.Root>
