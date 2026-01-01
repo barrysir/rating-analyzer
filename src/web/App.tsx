@@ -1,11 +1,10 @@
 import type { Component } from 'solid-js';
-import { createEffect, createSignal, Match, onMount, Show, Switch } from 'solid-js';
+import { createEffect, createSignal, Match, on, onMount, Show, Switch } from 'solid-js';
 import { RatingChart } from './RatingChart';
 import { loadScoreData } from './Temp';
 import { Icon } from '@iconify-icon/solid';
 import { Popover, Tabs } from '@ark-ui/solid';
 import { settings, setSettings } from './stores/settingsStore';
-import { history, initializeHistory, setPointId } from './stores/historyStore';
 import { OngekiFrameTab, RefreshFrameTab } from './FrameTab';
 import { ImprovementTab } from './ImprovementTab';
 import Slider from './Slider';
@@ -13,6 +12,7 @@ import { TooltipDelegated } from './TooltipDelegatedTest';
 import { HistoryProvider, initializeState, Mode } from './stores/stateStore';
 import WarningWindow from './WarningWindow';
 import { clearWarnings } from './stores/warningStore';
+import { UserScoreDatabase } from '../get-kamai/UserScores';
 
 function FileLoadBar(props: { onFileLoad: (data: any) => void }) {
   let fileInputRef: HTMLInputElement | undefined;
@@ -120,25 +120,14 @@ function SettingsButton() {
     </Popover.Root>;
 }
 
-const App: Component = () => {
-  const [scoreData, setScoreData] = createSignal(loadScoreData());
+function Actual(props: {scoreData: UserScoreDatabase}) {
+  createEffect(on(() => props.scoreData, (data) => {
+      let mode = Mode.REFRESH;
+      clearWarnings();
+      initializeState(data, mode, { decimalPlaces: settings.decimalPlaces });
+  }));
 
-  const handleFileLoad = (data: any) => {
-    setScoreData(data);
-    clearWarnings();
-    initializeState(data, Mode.REFRESH, { decimalPlaces: settings.decimalPlaces });
-  };
-
-  onMount(() => {
-    let mode = Mode.REFRESH;
-    let a = 4;
-    clearWarnings();
-    initializeState(scoreData(), mode, { decimalPlaces: settings.decimalPlaces });
-  });
-
-  return <HistoryProvider>{({ mode, history, helpers, theme }) => (
-  <div style="width: 100vw; height: 100vh; display: flex; flex-direction: column;">
-    <FileLoadBar onFileLoad={handleFileLoad} />
+  return <HistoryProvider>{({ mode, history, helpers, theme, setPointId }) => (
     <div style="position: relative; flex: 1; overflow: hidden; display: grid; grid-template-columns: 4fr 6fr; align-items: center;">
       <WarningWindow />
       <SettingsButton />
@@ -158,6 +147,7 @@ const App: Component = () => {
                 <Tabs.Trigger value="frame">Frame</Tabs.Trigger>
                 <Tabs.Trigger value="image">Reiwa</Tabs.Trigger>
                 <Tabs.Trigger value="improve">Improvements</Tabs.Trigger>
+                <Tabs.Trigger value="best">Bests</Tabs.Trigger>
               </Tabs.List>
             </div>
             <div style="border: 1px solid #ddd; border-radius: 4px 4px 0 0; padding: 0px 4px; flex: 1; overflow: auto;">
@@ -182,8 +172,21 @@ const App: Component = () => {
         </Show>
       </TooltipDelegated>
     </div>
-  </div>
   )}</HistoryProvider>
+}
+
+const App: Component = () => {
+  const [scoreData, setScoreData] = createSignal<UserScoreDatabase>(loadScoreData());
+
+  const handleFileLoad = (data: UserScoreDatabase) => {
+    console.log(`Loading new score data - ${data.scores.length} scores`);
+    setScoreData(data);
+  };
+
+  return <div style="width: 100vw; height: 100vh; display: flex; flex-direction: column;">
+    <FileLoadBar onFileLoad={handleFileLoad} />
+    <Actual scoreData={scoreData()} />
+  </div>;
 };
 
 export default App;
