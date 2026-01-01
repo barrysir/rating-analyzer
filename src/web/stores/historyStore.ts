@@ -99,41 +99,43 @@ export type HistoryStore<M extends Mode> = {
   chartData: ChartDataType<M>;
 }
 
-const [history, setHistory] = createStore<HistoryStore<Mode.ONGEKI> | HistoryStore<Mode.REFRESH>>({
-  history: null,
-  bests: null,
-  scores: [],
-  improves: [],
-  versions: [],
-  pointId: 0,
-  chartData: {    
-    timestamps: [] as number[],
-    overallRating: [] as number[],
-    naiveRating: [] as number[],
-    version: [] as number[],
-    maxRating: [] as number[],
-  },
-});
+// const [history, setHistory] = createStore<HistoryStore<Mode.ONGEKI> | HistoryStore<Mode.REFRESH>>({
+//   history: null,
+//   bests: null,
+//   scores: [],
+//   improves: [],
+//   versions: [],
+//   pointId: 0,
+//   chartData: {    
+//     timestamps: [] as number[],
+//     overallRating: [] as number[],
+//     naiveRating: [] as number[],
+//     version: [] as number[],
+//     maxRating: [] as number[],
+//   },
+// });
 
-export function initializeHistory<M extends Mode>(scoredb: UserScoreDatabase, mode: M, options: Parameters<typeof createHistory>[2]) {
+export function initializeHistory<M extends Mode>(scoredb: UserScoreDatabase, mode: M, options: Parameters<typeof createHistory>[2]): HistoryStore<M> {
   let {history, bests, improves, scores, versions, chartData} = createHistory(scoredb, mode, options);
-  batch(() => {
-    setHistory('history', createMutable(history));
-    // setHistory('bests', createMutable(bests));
-    setHistory('scores', scores);
-    setHistory('improves', improves);
-    setHistory('versions', versions);
-    setHistory('chartData', chartData);
-    setHistory('pointId', history.currentIndex);
-  });
+  return {
+    bests,
+    improves,
+    scores,
+    versions,
+    chartData,
+    history: createMutable(history),
+    pointId: history.currentIndex,
+  } as HistoryStore<M>;
+
+  // let {history, bests, improves, scores, versions, chartData} = createHistory(scoredb, mode, options);
+  // batch(() => {
+  //   setHistory('history', createMutable(history));
+  //   // setHistory('bests', createMutable(bests));
+  //   setHistory('scores', scores);
+  //   setHistory('improves', improves);
+  //   setHistory('versions', versions);
+  //   setHistory('chartData', chartData);
+  //   setHistory('pointId', history.currentIndex);
+  // });
 }
 
-export function setPointId(pointId: number) {
-  batch(() => {
-    history.history?.goto(pointId);
-    // history.bests?.goto(index);
-    setHistory('pointId', pointId);
-  });
-}
-
-export { history };

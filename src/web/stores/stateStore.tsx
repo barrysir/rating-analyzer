@@ -1,10 +1,11 @@
 import { batch, createSignal, JSXElement } from "solid-js";
 import { UserScoreDatabase } from "../../get-kamai/UserScores";
 import { createHistory } from "../Temp";
-import { history, HistoryStore, initializeHistory, setPointId } from "./historyStore";
+import { HistoryStore, initializeHistory } from "./historyStore";
 import { theme } from "./themeStore";
 import { OngekiTheme } from "../themes/ongeki";
 import { ChartId } from "../../rating/chartdb/ChartDb";
+import { createStore } from "solid-js/store";
 
 class HistoryHelpers<M extends Mode> {
   history: HistoryStore<M>;
@@ -105,33 +106,43 @@ export type Theme<M extends Mode> =
 export type State<M extends Mode> = {
     mode: M,
     history: HistoryStore<M>,
-    setPointId: typeof setPointId,
+    setPointId: (pointId: number) => void,
     helpers: HistoryHelpers<M>,
     theme: Theme<M>,
 }
 
-const [STATE, setState] = createSignal<State<Mode.ONGEKI> | State<Mode.REFRESH> | null>(null);
+function setPointId(pointId: number) {
+  STATE.history!.history.goto(pointId);
+  // history.bests?.goto(index);
+  setState('history', 'pointId', pointId);
+}
+
+const [STATE, setState] = createStore<State<Mode.ONGEKI> | State<Mode.REFRESH> | Partial<State<Mode.ONGEKI>>>({
+  setPointId: setPointId,
+});
 
 // todo: rename this function to initializeHistory
 export function initializeState<M extends Mode>(scoredb: UserScoreDatabase, mode: M, options: Parameters<typeof createHistory>[2]) {
     batch(() => {
-      initializeHistory(scoredb, mode, options);
-      let realHistory = history as HistoryStore<M>;
-      let _state: State<M> = {
-          mode: mode,
-          history: realHistory,
-          setPointId: setPointId,
-          helpers: new HistoryHelpers(realHistory),
-          theme: theme as Theme<M>,
-      };
-      console.log("Setting initializeState", _state);
-      setState(_state);
+      let history = initializeHistory(scoredb, mode, options);
+      // let _state: State<M> = {
+      //     mode: mode,
+      //     history: history,
+      //     setPointId: setPointId,
+      //     helpers: new HistoryHelpers(history),
+      //     theme: theme as Theme<M>,
+      // };
+      console.log("Setting initializeState", history.history.currentIndex);
+      setState('mode', mode);
+      setState('history', history);
+      setState('helpers', new HistoryHelpers(history));
+      setState('theme', theme);
     });
 }
 
 export function unpackHistory<M extends Mode>() {
-    let state = STATE();
-    if (state === null) {
+    let state = STATE;
+    if (state.mode == null) {
         throw new Error();
     }
     // can typecast the state as needed
@@ -142,8 +153,8 @@ export function HistoryProvider<M extends Mode>(props: {children: (history: Stat
     return (
         <>
         {(() => {
-            const state = STATE();
-            if (state === null) return null;
+            const state = STATE;
+            if (state.mode == null) return null;
             return props.children(state as State<M>);
         })()}
         </>
