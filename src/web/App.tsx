@@ -169,7 +169,7 @@ function Actual(props: {scoreData: UserScoreDatabase}) {
                 <ImprovementTab mode={mode} improves={history.improves} scrollToPointId={history.pointId} />
               </Tabs.Content>
               <Tabs.Content value="best">
-                <BestsTab mode={mode} db={history.history.calc.db} />
+                <BestsTab mode={mode} db={history.history.calc.db} best={history.bests} />
               </Tabs.Content>
             </div>
           </Tabs.Root>
