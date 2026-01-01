@@ -94,7 +94,7 @@ export function decodeRefId(d: string): RefId | undefined {
 
 // I don't know if this needs to be a store
 // I'll leave it as a plain object for now
-const OngekiTheme = {
+export const OngekiTheme = {
     formatRatingText(rating: number) {
         return rating.toFixed(settings.decimalPlaces);
     },
@@ -201,4 +201,4 @@ const OngekiTheme = {
     frameColors,
 };
 
-export {OngekiTheme};
+export type OngekiTheme = typeof OngekiTheme;

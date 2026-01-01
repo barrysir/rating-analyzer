@@ -112,10 +112,11 @@ export type State<M extends Mode> = {
 }
 
 function setPointId(pointId: number) {
-  STATE.history!.history.goto(pointId);
-  STATE.history!.bests.goto(pointId);
-  // history.bests?.goto(index);
-  setState('history', 'pointId', pointId);
+  batch(() => {
+    STATE.history!.history.goto(pointId);
+    STATE.history!.bests.goto(pointId);
+    setState('history', 'pointId', pointId);
+  });
 }
 
 const [STATE, setState] = createStore<State<Mode.ONGEKI> | State<Mode.REFRESH> | Partial<State<Mode.ONGEKI>>>({

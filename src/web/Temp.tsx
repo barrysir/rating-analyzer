@@ -89,6 +89,8 @@ class StuffForOngeki {
     return scores.map((score, i) => {
       let temp = {
           points: score.kamai.scoreData.score, 
+          bells: score.kamai.scoreData.optional.bellCount,
+          judgements: score.kamai.scoreData.judgements,
           extra: {id: i, timestamp: score.kamai.timeAchieved}
         };
       return [temp, score.chartId] as [typeof temp, ChartId];
@@ -331,7 +333,8 @@ export function createHistory<M extends Mode>(scoredb: UserScoreDatabase, mode: 
     versions[index+1]!.pointId = value;
   });
 
-  let bests = new PersonalBests(scoresArray);
+  // TODO: properly implement the db argument here...
+  let bests = new PersonalBests(scoresArray, versionChanges.at(-1)?.db);
   
   let chartData: ChartDataType<M> = getRefresh.makeChartData();
 

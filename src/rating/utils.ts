@@ -26,7 +26,22 @@ export function insertionIndexDesc<T>(array: T[], score: T, key: (value: T) => n
     return low;
 }
 
+/**
+ * Given a list of "regions" [arr[0], arr[1]), [arr[1], arr[2]), ...,
+ * find the index of the region which val should fall into.
+ * 
+ * The array is assumed to be sorted in ascending order by `key(a)`.
+ *
+ * Examples (keys shown):
+ *   keys: [10, 20, 30]
+ *   val = 5   -> null
+ *   val = 10  -> 0
+ *   val = 15  -> 0
+ *   val = 25  -> 1
+ *   val = 35  -> 2
+ */
 export function findRegion<T>(arr: T[], val: number, key: (a: T) => number): number | null {
+    // TODO: rename to indexRegion
     function myInsert(element: number, array: T[]): number {
         if (array.length === 0)
             return 0;
@@ -53,6 +68,12 @@ export function findRegion<T>(arr: T[], val: number, key: (a: T) => number): num
     return (pivot != 0) ? pivot-1 : null;
 }
 
+/**
+ * Given a list of "regions" [arr[0], arr[1]), [arr[1], arr[2]), ...,
+ * return the region object which val should fall into.
+ * 
+ * The array is assumed to be sorted in ascending order by `key(a)`.
+ */
 export function getRegion<T>(arr: T[], val: number, key: (a: T) => number): T | null {
     let index = findRegion(arr, val, key);
     if (index === null) {
@@ -140,4 +161,26 @@ export function xWithBumps(x: number, bumps: (number | null)[]): [number, number
         justBumped = (adjustedX == previousBump);
     }
     return [adjustedX, bumpsBeforeX, justBumped];
+}
+
+/**
+ * Returns whether obj is an empty object
+ */
+export function objectIsEmpty(obj: object): boolean {
+    return Object.keys(obj).length == 0;
+}
+
+/**
+ * Insert key with a value of default if key is not in the map.
+   Return the value for key if key is in the map, else default.
+
+   For objects, use obj.key ??= value.
+ */
+export function mapEmplace<K,V>(map: Map<K,V>, key: K, defaultValue: V): V {
+    if (map.has(key)) {
+        return map.get(key)!;
+    } else {
+        map.set(key, defaultValue);
+        return defaultValue;
+    }
 }
