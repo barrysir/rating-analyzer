@@ -4,7 +4,7 @@ import { indexRegion } from "../utils";
 import { OngekiDifficulty } from "../data-types";
 import type { ChartDb, ChartId } from "./ChartDb";
 import type { SongData } from "../data/SongData";
-import { parseChartId } from "../../get-kamai/KamaiSongData";
+import { makeChartId, parseChartId } from "../../get-kamai/KamaiSongData";
 
 export type HistChart = 
     ChartId
@@ -161,7 +161,7 @@ export class HistoricalChartDb implements ChartDb {
             maxBells: chart.bells,
             isLunatic: (difficulty == OngekiDifficulty.LUNATIC),
             isNew: (song.date_added >= this.currentVersion.start),
-            chartId: `${song.tag} ${difficulty}` as ChartId,
+            chartId: makeChartId(song.tag, difficulty),
             difficulty: difficulty,
             song: song,
         };
