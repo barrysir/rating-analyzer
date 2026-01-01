@@ -1,6 +1,6 @@
 // if no date provided, will assume the song data
 
-import { findRegion } from "../utils";
+import { indexRegion } from "../utils";
 import { OngekiDifficulty } from "../data-types";
 import type { ChartDb, ChartId } from "./ChartDb";
 import type { SongData } from "../data/SongData";
@@ -47,7 +47,7 @@ export class HistoricalChartDb implements ChartDb {
             date.setHours(date.getHours() - 1);
         }
         
-        let index = findRegion(data.newVersions, date.valueOf(), (ver => data.versions[ver]!.start.valueOf()));
+        let index = indexRegion(data.newVersions, date.valueOf(), (ver => data.versions[ver]!.start.valueOf()));
         if (index === null) {
             throw new Error("Couldn't find new version");
         }
@@ -77,7 +77,7 @@ export class HistoricalChartDb implements ChartDb {
         // find the correct difference for the given date
         let currentDifference;
         { 
-            let index = findRegion(data.differences, date.valueOf(), (diff => diff.date.valueOf()));
+            let index = indexRegion(data.differences, date.valueOf(), (diff => diff.date.valueOf()));
             if (index === null) {
                 throw new Error("Couldn't apply correct difference");
             }

@@ -1,7 +1,7 @@
 import type { ChartDb, ChartId } from "./chartdb/ChartDb";
 import { BellLamp, ClearLamp, GradeLamp } from "./data-types";
 import { BestFrame, BestFrameSnapshot, UndoScore as BestUndo } from "./frames/BestFrame";
-import { findRegion, lerp, pointsToGradeLamp, type Prettify } from "./utils";
+import { indexRegion, lerp, pointsToGradeLamp, type Prettify } from "./utils";
 
 
 

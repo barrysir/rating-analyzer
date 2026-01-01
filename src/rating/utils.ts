@@ -40,8 +40,7 @@ export function insertionIndexDesc<T>(array: T[], score: T, key: (value: T) => n
  *   val = 25  -> 1
  *   val = 35  -> 2
  */
-export function findRegion<T>(arr: T[], val: number, key: (a: T) => number): number | null {
-    // TODO: rename to indexRegion
+export function indexRegion<T>(arr: T[], val: number, key: (a: T) => number): number | null {
     function myInsert(element: number, array: T[]): number {
         if (array.length === 0)
             return 0;
@@ -75,7 +74,7 @@ export function findRegion<T>(arr: T[], val: number, key: (a: T) => number): num
  * The array is assumed to be sorted in ascending order by `key(a)`.
  */
 export function getRegion<T>(arr: T[], val: number, key: (a: T) => number): T | null {
-    let index = findRegion(arr, val, key);
+    let index = indexRegion(arr, val, key);
     if (index === null) {
         return null;
     }
@@ -114,7 +113,7 @@ let pointsLampArray: [number, GradeLamp][] = [
 ];
 
 export function pointsToGradeLamp(points: number): GradeLamp {
-    let index = findRegion(pointsLampArray, points, x => x[0]);
+    let index = indexRegion(pointsLampArray, points, x => x[0]);
     if (index === null) {
         throw new Error(`Could not identify grade lamp for point value ${points}`);
     }

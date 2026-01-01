@@ -4,7 +4,7 @@ import { For, Index, Match, Show, Switch, createEffect, createSignal } from "sol
 import './ImprovementTab.css';
 import { Icon } from "@iconify-icon/solid";
 import { settings } from "./stores/settingsStore";
-import { findRegion, getRegion } from "../rating/utils";
+import { indexRegion, getRegion } from "../rating/utils";
 import { HistoryProvider, Mode, Theme, unpackHistory } from "./stores/stateStore";
 
 function FrameImprovementRender(props: { rating: number, change?: number, color: string }) {
@@ -93,7 +93,7 @@ export function ImprovementTab<M extends Mode>(props: { mode: M, improves: Versi
 
     // Find which version contains the target pointId
     const findVersionIndexForPoint = (pointId: number): number | undefined => {
-        return findRegion(props.improves, pointId, versionData => versionData.improves[0]!.pointId) ?? undefined;
+        return indexRegion(props.improves, pointId, versionData => versionData.improves[0]!.pointId) ?? undefined;
     };
 
     createEffect(() => {

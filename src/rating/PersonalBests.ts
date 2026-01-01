@@ -1,7 +1,7 @@
 import { ChartDb, ChartId, ChartInfo } from "./chartdb/ChartDb";
 import { HistoricalChartDb } from "./chartdb/HistoricalChartDb";
 import { BellLamp, ClearLamp, GradeLamp } from "./data-types";
-import { findRegion, getRegion, mapEmplace, objectIsEmpty, pointsToGradeLamp } from "./utils";
+import { indexRegion, getRegion, mapEmplace, objectIsEmpty, pointsToGradeLamp } from "./utils";
 
 export type OngekiLampDisplay = {bell: BellLamp, clear: ClearLamp, grade: GradeLamp};
 
