@@ -18,6 +18,7 @@ export type SongDataSchema<Parsed extends boolean> = {
             maxPlatinumScore: number,
             bells: number,
         }>>,
+        jacketPath: string,
     }[],
     differences: {
         date: Parsed extends true ? Date : string,

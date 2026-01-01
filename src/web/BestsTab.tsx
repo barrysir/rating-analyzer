@@ -26,7 +26,8 @@ function ChartTileNumber(props: {constant: number}) {
 
 function ChartTile(props: {info: ChartInformation}) {
     return <div style="width: 100px; height: 100px; border: 2px solid black; position: relative">
-        <div style="position: absolute; bottom: 0; left: 0; background: #00000088; color: white; white-space: nowrap; overflow: hidden; width: 100%; font-size: 0.8em">
+        <img src={props.info.jacketUrl} loading='lazy' />
+        <div style="position: absolute; bottom: 0; left: 0; background: #00000088; color: white; white-space: nowrap; overflow: hidden; width: 100%; font-size: 0.8em; text-align: center;">
             {props.info.title}
         </div>
     </div>
@@ -40,7 +41,7 @@ export function BestsTab<M extends Mode>(props: { mode: M, db: HistoricalChartDb
         for (let [tag, song] of Object.entries(db.songs)) {
             for (let [diff, chart] of Object.entries(song.charts)) {
                 let info: ChartInformation = {
-                    jacketUrl: 'todo',
+                    jacketUrl: song.jacketPath,
                     title: song.title,
                     chartId: makeChartId(tag, diff as OngekiDifficulty),
                 };
@@ -68,10 +69,10 @@ export function BestsTab<M extends Mode>(props: { mode: M, db: HistoricalChartDb
         return chartConstants.slice(0, 10);
     }
 
-    return <div style="display: flex; flex-direction: column; gap: 10px;">
+    return <div style="display: flex; flex-direction: column; gap: 5px;">
         <For each={firstFewKeys()}>{(chartConstant) => {
             let charts = songsByLevel().get(chartConstant)!;
-            return <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+            return <div style="display: flex; flex-wrap: wrap; gap: 5px;">
                 <ChartTileNumber constant={chartConstant} />
                 <For each={charts}>{(info) => <ChartTile info={info} />}</For>
             </div>
