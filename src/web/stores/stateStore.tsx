@@ -7,7 +7,7 @@ import { OngekiTheme } from "../themes/ongeki";
 import { ChartId } from "../../rating/chartdb/ChartDb";
 import { createStore } from "solid-js/store";
 
-class HistoryHelpers<M extends Mode> {
+export class HistoryHelpers<M extends Mode> {
   history: HistoryStore<M>;
 
   constructor(history: HistoryStore<M>) { 

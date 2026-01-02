@@ -58,34 +58,35 @@ function calculateOngekiLamps(score: ScoreInput, chart: ChartInfo): OngekiLampDi
 
 function updateOngekiLamps(existing: OngekiLampDisplay | undefined, incoming: OngekiLampDisplay): {lamps: OngekiLampDisplay, changed: Partial<OngekiLampDisplay>} {
     if (existing === undefined) {
-        return {
-            lamps: incoming,
-            changed: incoming,
+        existing = {
+            bell: BellLamp.NONE,
+            clear: ClearLamp.NONE,
+            grade: GradeLamp.NONE,
         }
-    } else {
-        // update lamps - don't overwrite lamps with a lower tier one
-        let changes = {} as Partial<OngekiLampDisplay>;
-        if (bellLampComparison[incoming.bell] > bellLampComparison[existing.bell]) {
-            changes.bell = incoming.bell;
-        }
-        if (clearLampComparison[incoming.clear] > clearLampComparison[existing.clear]) {
-            changes.clear = incoming.clear;
-        }
-        if (gradeLampComparison[incoming.grade] > gradeLampComparison[existing.grade]) {
-            changes.grade = incoming.grade;
-        }
-        return {
-            lamps: objectIsEmpty(changes) ? existing : Object.assign(existing, changes),
-            changed: changes,
-        };
     }
+
+    // update lamps - don't overwrite lamps with a lower tier one
+    let changes = {} as Partial<OngekiLampDisplay>;
+    if (bellLampComparison[incoming.bell] > bellLampComparison[existing.bell]) {
+        changes.bell = incoming.bell;
+    }
+    if (clearLampComparison[incoming.clear] > clearLampComparison[existing.clear]) {
+        changes.clear = incoming.clear;
+    }
+    if (gradeLampComparison[incoming.grade] > gradeLampComparison[existing.grade]) {
+        changes.grade = incoming.grade;
+    }
+    return {
+        lamps: objectIsEmpty(changes) ? existing : Object.assign(structuredClone(existing), changes),
+        changed: changes,
+    };
 }
 
 export class PersonalBests<Score extends ScoreInput> {
     // sorted ascending by score index
     plays: Map<ChartId, number[]>;
     pbs: Map<ChartId, number[]>;
-    lamps: Map<ChartId, {id: number, lamps: OngekiLampDisplay}[]>;
+    lamps: Map<ChartId, {id: number, changed: Partial<OngekiLampDisplay>, lamps: OngekiLampDisplay}[]>;
 
     scores: [Score, ChartId][];
     currentIndex: number;
@@ -126,10 +127,10 @@ export class PersonalBests<Score extends ScoreInput> {
             let scoreLamps = calculateOngekiLamps(score, chart);
             let { lamps: newLamps, changed } = updateOngekiLamps(currentLamps.get(id), scoreLamps);
 
-            currentLamps.set(id, newLamps);
-            if (!objectIsEmpty(changed)) {
-                mapEmplace(this.lamps, id, []).push({id: index, lamps: newLamps});
+            if (currentLamps.get(id) === undefined || !objectIsEmpty(changed)) {
+                mapEmplace(this.lamps, id, []).push({id: index, changed, lamps: newLamps});
             }
+            currentLamps.set(id, newLamps);
         }
 
         this.currentIndex = this.scores.length;
@@ -154,12 +155,35 @@ export class PersonalBests<Score extends ScoreInput> {
 
         // return the scores and lamps at this point in time
         let allLamps = this.lamps.get(chartid)!;
+        if (allLamps === undefined) {
+            console.log(chartid, scoreIndexes);
+        }
         let currLamps = getRegion(allLamps, this.currentIndex, (v) => v.id)!.lamps;
 
         return {
             score: this.scores[scoreIndex]![0],
             lamps: currLamps,
         };
+    }
+    
+    getAllScores(chartid: ChartId) {
+        let scoreIndexes = this.pbs.get(chartid);
+        if (scoreIndexes === undefined) {
+            return null;
+        }
+
+        let mostRecentScoreIndex = indexRegion(scoreIndexes, this.currentIndex, (a) => a);
+        if (mostRecentScoreIndex == null) {
+            return null;
+        }
+
+        let allLamps = this.lamps.get(chartid)!;
+        let mostRecentLampIndex = indexRegion(allLamps, this.currentIndex, (v) => v.id)!;
+
+        return {
+            scores: scoreIndexes.slice(0, mostRecentScoreIndex+1).map(i => this.scores[i]![0]),
+            lamps: allLamps.slice(0, mostRecentLampIndex+1),
+        }
     }
 
     // Get all scores for this chart, sorted descending by points
