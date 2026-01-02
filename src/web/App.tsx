@@ -41,15 +41,37 @@ function FileLoadBar(props: { onFileLoad: (data: any) => void }) {
         ref={fileInputRef}
         type="file"
         accept=".json"
-        onChange={handleFileSelect}
         style="font-size: 14px;"
       />
+      <label for="version">
+        Version: 
+      </label>
+      <select
+        id="version"
+        value={settings.version}
+        onChange={(e) => setSettings('version', e.currentTarget.value)}
+      >
+        <option value="latest">latest</option>
+        <option value="beta">beta</option>
+        <option value="mythos">Mythos</option>
+      </select>
+      <label for="mode">
+        Mode: 
+      </label>
+      <select
+        id="mode"
+        value={settings.mode}
+        onChange={(e) => setSettings('mode', e.currentTarget.value)}
+      >
+        <option value={Mode.ONGEKI}>Ongeki</option>
+        <option value={Mode.REFRESH}>Refresh</option>
+      </select>
       <button
         onClick={() => fileInputRef?.click()}
         style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;"
       >
         <Icon icon="lucide:upload" style="vertical-align: middle; margin-right: 4px;" />
-        Choose File
+        Go
       </button>
     </div>
   );
@@ -122,8 +144,7 @@ function SettingsButton() {
 }
 
 function Actual(props: {scoreData: UserScoreDatabase}) {
-  createEffect(on(() => props.scoreData, (data) => {
-      let mode = Mode.REFRESH;
+  createEffect(on(() => [props.scoreData, settings.mode] as const, ([data, mode]) => {
       clearWarnings();
       initializeState(data, mode, { decimalPlaces: settings.decimalPlaces });
   }));
