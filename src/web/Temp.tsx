@@ -12,7 +12,7 @@ import { ImprovementTracker } from './ImprovementTracker';
 import { OngekiRefreshCalculator } from '../rating/OngekiRefreshCalculator';
 import { ImprovementRefreshTracker } from './ImprovementRefreshTracker';
 import { ChartDataType, ExtendedScore, HistoryStore, VersionImproveRenderData, VersionInformation } from './stores/historyStore';
-import { Mode } from './stores/stateStore';
+import { Mode } from "./types";
 import { ChartId } from '../rating/chartdb/ChartDb';
 import { addWarning } from './stores/warningStore';
 import { KamaiScore } from '../get-kamai/UserScores';

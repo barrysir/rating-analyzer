@@ -6,6 +6,7 @@ import { theme } from "./themeStore";
 import { OngekiTheme } from "../themes/ongeki";
 import { ChartId } from "../../rating/chartdb/ChartDb";
 import { createStore } from "solid-js/store";
+import { Mode } from "../types";
 
 export class HistoryHelpers<M extends Mode> {
   history: HistoryStore<M>;
@@ -87,11 +88,6 @@ export class HistoryHelpers<M extends Mode> {
   numPoints() {
     return this.history.chartData.timestamps.length;
   }
-}
-
-export enum Mode {
-    ONGEKI,
-    REFRESH,
 }
 
 // TODO: make types for these

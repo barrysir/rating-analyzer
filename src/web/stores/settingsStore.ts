@@ -1,5 +1,5 @@
 import { createStore } from 'solid-js/store';
-import { Mode } from './stateStore';
+import { Mode } from "../types";
 
 interface SettingsStore {
   decimalPlaces: number;

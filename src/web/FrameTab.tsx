@@ -4,7 +4,8 @@ import { OngekiRecentFrame } from '../rating/frames/OngekiRecentFrame';
 import { OngekiCalculator } from '../rating/OngekiCalculator';
 import { getPlatinumInformation, OngekiRefreshCalculator } from '../rating/OngekiRefreshCalculator';
 import { DisplayFrame, FrameEntry, PlatinumEntry } from './FrameRenderers';
-import { HistoryProvider, Mode, State } from './stores/stateStore';
+import { HistoryProvider, State } from './stores/stateStore';
+import { Mode } from "./types";
 
 function bestEntries<Score extends {points: number, rating: number}>(db: HistoricalChartDb, frame: BestFrame<Score>): FrameEntry[] {
   return frame.frame.map((item) => {

@@ -4,7 +4,8 @@ import "tippy.js/dist/tippy.css";
 import { OngekiJudgementTooltip, OngekiRatingTooltip, RefreshPlatRatingTooltip, RefreshTechRatingTooltip } from "./RatingTooltip";
 import 'tippy.js/themes/light.css';
 import { render } from "solid-js/web";
-import { Mode, unpackHistory } from "./stores/stateStore";
+import { unpackHistory } from "./stores/stateStore";
+import { Mode } from "./types";
 import { decodeRefId, RefId } from "./themes/ongeki";
 
 export function TooltipDelegated(props: {children: JSXElement}) {

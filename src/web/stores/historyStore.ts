@@ -6,7 +6,7 @@ import { RatingAlgo as OngekiScoreAlgo } from '../../rating/OngekiCalculator';
 import { KamaiScore } from '../../get-kamai/UserScores';
 import { FrameRating as OngekiFrameRating } from '../ImprovementTracker';
 import { FrameRating as RefreshFrameRating } from '../ImprovementRefreshTracker';
-import { Mode } from './stateStore';
+import { Mode } from "../types";
 import { RefreshPlatScoreAlgo, RefreshTechScoreAlgo } from '../../rating/OngekiRefreshCalculator';
 import { ChartId } from '../../rating/chartdb/ChartDb';
 

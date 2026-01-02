@@ -5,7 +5,8 @@ import './ImprovementTab.css';
 import { Icon } from "@iconify-icon/solid";
 import { settings } from "./stores/settingsStore";
 import { indexRegion, getRegion } from "../rating/utils";
-import { HistoryProvider, Mode, Theme, unpackHistory } from "./stores/stateStore";
+import { HistoryProvider, Theme, unpackHistory } from "./stores/stateStore";
+import { Mode } from "./types";
 
 function FrameImprovementRender(props: { rating: number, change?: number, color: string }) {
     return <HistoryProvider<Mode.ONGEKI>>{({theme}) => (
