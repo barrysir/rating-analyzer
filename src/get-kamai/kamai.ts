@@ -1,7 +1,7 @@
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { KamaiSongData } from './KamaiSongData';
-import { UserScoreDatabase } from './UserScores';
+import { KamaiChart, KamaiScore, KamaiSong, UserScoreDatabase } from './UserScores';
 import { OngekiDifficulty } from '../rating/data-types';
 import SONG_DB_DATA from "../../data/song-db.json";
 import { ChartId } from '../rating/chartdb/ChartDb';
@@ -27,33 +27,6 @@ let TACHI_ENDPOINT = `https://kamai.tachi.ac/api/v1`;
 //     playtype: string,
 // };
 
-export type OngekiKamaiJudgements = {
-  cbreak: number;
-  break: number;
-  hit: number;
-  miss: number;
-};
-
-export type KamaiScore = {
-  timeAchieved: number;
-  scoreData: {
-    score: number;
-    platinumScore: number;
-    judgements: OngekiKamaiJudgements;
-    optional: {
-      damage: number;
-      bellCount: number;
-    };
-  };
-  chartID: string;
-};
-
-type KamaiSong = { [key: string]: unknown };
-type KamaiChart = { 
-  chartID: string;
-  songID: number;
-  difficulty: string;
-};
 
 type ScoresResponse = {
   success: boolean;

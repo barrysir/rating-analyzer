@@ -3,7 +3,7 @@ import { UserScoreDatabase } from '../../get-kamai/UserScores';
 import { createHistory, HistoryType } from '../Temp';
 import { batch } from 'solid-js';
 import { RatingAlgo as OngekiScoreAlgo } from '../../rating/OngekiCalculator';
-import { KamaiScore } from '../../get-kamai/kamai';
+import { KamaiScore } from '../../get-kamai/UserScores';
 import { FrameRating as OngekiFrameRating } from '../ImprovementTracker';
 import { FrameRating as RefreshFrameRating } from '../ImprovementRefreshTracker';
 import { Mode } from './stateStore';
@@ -91,6 +91,9 @@ type PersonalBestType = ReturnType<typeof createHistory>['bests'];
 
 export type HistoryStore<M extends Mode> = {
   history: HistoryType<M>;
+  // perPoint information
+  // perScore information
+  // perVersion information
   bests: PersonalBestType;
   scores: ExtendedScore<M>[];
   improves: VersionImproveRenderData<M>[];

@@ -15,7 +15,7 @@ import { ChartDataType, ExtendedScore, HistoryStore, VersionImproveRenderData, V
 import { Mode } from './stores/stateStore';
 import { ChartId } from '../rating/chartdb/ChartDb';
 import { addWarning } from './stores/warningStore';
-import { KamaiScore } from '../get-kamai/kamai';
+import { KamaiScore } from '../get-kamai/UserScores';
 
 function dateToUnix(date: Date): number {
   return Math.floor(date.getTime());
