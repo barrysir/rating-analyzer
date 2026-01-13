@@ -1,9 +1,9 @@
 import { createStore } from 'solid-js/store';
-import { Mode } from "../types";
+import { Mode, VersionEnum } from "../types";
 
 interface SettingsStore {
   decimalPlaces: number;
-  version: string;
+  version: VersionEnum;
   mode: Mode;
   showOnlyImprovements: boolean;
 }
@@ -11,7 +11,7 @@ interface SettingsStore {
 const [settings, setSettings] = createStore<SettingsStore>({
   decimalPlaces: 2,
   mode: Mode.ONGEKI,
-  version: 'latest',
+  version: 'MYT',
   showOnlyImprovements: false,
 });
 

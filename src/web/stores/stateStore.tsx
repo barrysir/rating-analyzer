@@ -1,7 +1,7 @@
 import { batch, createSignal, JSXElement } from "solid-js";
 import { UserScoreDatabase } from "../../get-kamai/UserScores";
 import { createHistory } from "../Temp";
-import { HistoryStore, initializeHistory } from "./historyStore";
+import { HistoryStore, initializeHistory, VersionInformation } from "./historyStore";
 import { theme } from "./themeStore";
 import { OngekiTheme } from "../themes/ongeki";
 import { ChartId } from "../../rating/chartdb/ChartDb";
@@ -120,9 +120,9 @@ const [STATE, setState] = createStore<State<Mode.ONGEKI> | State<Mode.REFRESH> |
 });
 
 // todo: rename this function to initializeHistory
-export function initializeState<M extends Mode>(scoredb: UserScoreDatabase, mode: M, options: Parameters<typeof createHistory>[2]) {
+export function initializeState<M extends Mode>(scoredb: UserScoreDatabase, mode: M, versions: VersionInformation[], options: Parameters<typeof createHistory>[3]) {
     batch(() => {
-      let history = initializeHistory(scoredb, mode, options);
+      let history = initializeHistory(scoredb, mode, versions, options);
       // let _state: State<M> = {
       //     mode: mode,
       //     history: history,

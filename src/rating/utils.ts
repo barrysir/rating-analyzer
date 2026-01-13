@@ -183,3 +183,6 @@ export function mapEmplace<K,V>(map: Map<K,V>, key: K, defaultValue: V): V {
         return defaultValue;
     }
 }
+export function dateToUnix(date: Date): number {
+  return Math.floor(date.getTime());
+}

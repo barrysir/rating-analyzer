@@ -118,8 +118,8 @@ export type HistoryStore<M extends Mode> = {
 //   },
 // });
 
-export function initializeHistory<M extends Mode>(scoredb: UserScoreDatabase, mode: M, options: Parameters<typeof createHistory>[2]): HistoryStore<M> {
-  let {history, bests, improves, scores, versions, chartData} = createHistory(scoredb, mode, options);
+export function initializeHistory<M extends Mode>(scoredb: UserScoreDatabase, mode: M, versions: VersionInformation[], options: Parameters<typeof createHistory>[3]): HistoryStore<M> {
+  let {history, bests, improves, scores, chartData} = createHistory(scoredb, mode, versions, options);
   return {
     bests,
     improves,

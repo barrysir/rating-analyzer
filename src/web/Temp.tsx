@@ -17,10 +17,6 @@ import { ChartId } from '../rating/chartdb/ChartDb';
 import { addWarning } from './stores/warningStore';
 import { KamaiScore } from '../get-kamai/UserScores';
 
-function dateToUnix(date: Date): number {
-  return Math.floor(date.getTime());
-}
-
 function calculateMaxOngekiRating(db: HistoricalChartDb) {
   // Returns a calculator
   let ongeki = new OngekiCalculator(db);
@@ -62,27 +58,6 @@ function calculateMaxRefreshRating(db: HistoricalChartDb) {
   }
   return ongeki;
 }
-
-const VERSIONS = [
-  {
-    name: 'bright',
-    version: 'bright',
-    timestamp: 0,
-    plotBackgroundColor: '#3b82f6',
-  },
-  {
-    name: 'bright MEMORY Act.2',
-    version: 'bright MEMORY Act.2',
-    timestamp: dateToUnix(new Date("2023-10-31")),
-    plotBackgroundColor: '#fbbf24',
-  },
-  {
-    name: 'bright MEMORY Act.3',
-    version: 'bright MEMORY Act.3',
-    timestamp: dateToUnix(new Date("2025-04-27")),
-    plotBackgroundColor: '#ef4444',
-  },
-];
 
 class StuffForOngeki {
   makeScores(scores: UserScoreDatabase['scores']) {
@@ -259,9 +234,8 @@ type StuffForType<M extends Mode> =
   
 export type HistoryType<M extends Mode> = ReturnType<typeof makeHistoryTempFunction<StuffForType<M>>>['history'];
 
-export function createHistory<M extends Mode>(scoredb: UserScoreDatabase, mode: M, options: {decimalPlaces: number} = {decimalPlaces: 2}) {
+export function createHistory<M extends Mode>(scoredb: UserScoreDatabase, mode: M, versions: VersionInformation[], options: {decimalPlaces: number} = {decimalPlaces: 2}) {
   let songData = new SongData(SONG_DATA);
-  let versions = structuredClone(VERSIONS) as VersionInformation[];
 
   let getRefresh = function () {
     switch (mode) {

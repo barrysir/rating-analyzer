@@ -10,7 +10,7 @@ import { ImprovementTab } from './ImprovementTab';
 import Slider from './Slider';
 import { TooltipDelegated } from './TooltipDelegatedTest';
 import { HistoryProvider, initializeState } from './stores/stateStore';
-import { Mode } from "./types";
+import { AVAILABLE_ONGEKI_VERSIONS, getVersionsArray, Mode } from "./types";
 import WarningWindow from './WarningWindow';
 import { clearWarnings } from './stores/warningStore';
 import { UserScoreDatabase } from '../get-kamai/UserScores';
@@ -52,9 +52,7 @@ function FileLoadBar(props: { onFileLoad: (data: any) => void }) {
         value={settings.version}
         onChange={(e) => setSettings('version', e.currentTarget.value)}
       >
-        <option value="latest">latest</option>
-        <option value="beta">beta</option>
-        <option value="mythos">Mythos</option>
+        {AVAILABLE_ONGEKI_VERSIONS.map(([k,v]) => <option value={k}>{k}</option>)}
       </select>
       <label for="mode">
         Mode: 
@@ -92,18 +90,6 @@ function SettingsWindow() {
         value={settings.decimalPlaces}
         onInput={(e) => setSettings('decimalPlaces', parseInt(e.currentTarget.value) || 0)}
       />
-      <label for="version">
-        Version
-      </label>
-      <select
-        id="version"
-        value={settings.version}
-        onChange={(e) => setSettings('version', e.currentTarget.value)}
-      >
-        <option value="latest">latest</option>
-        <option value="beta">beta</option>
-        <option value="new">new</option>
-      </select>
       <label for="show-only-improvements">
         Show Only Improvements
       </label>
@@ -145,9 +131,10 @@ function SettingsButton() {
 }
 
 function Actual(props: {scoreData: UserScoreDatabase}) {
-  createEffect(on(() => [props.scoreData, settings.mode] as const, ([data, mode]) => {
+  createEffect(on(() => [props.scoreData, settings.mode, settings.version] as const, ([data, mode]) => {
       clearWarnings();
-      initializeState(data, mode, { decimalPlaces: settings.decimalPlaces });
+      let versions = getVersionsArray(settings.version);
+      initializeState(data, mode, versions, { decimalPlaces: settings.decimalPlaces });
   }));
 
   return <HistoryProvider>{({ mode, history, helpers, theme, setPointId }) => (
