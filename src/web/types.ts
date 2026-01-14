@@ -7,6 +7,10 @@ export enum Mode {
   REFRESH = "refresh"
 }
 
+export enum Game {
+  ONGEKI = "ongeki",
+}
+
 const COLORS = {
   red: "oklch(0.753 0.1642 27.58)",
   yellow: "oklch(0.833 0.1642 83.42)",

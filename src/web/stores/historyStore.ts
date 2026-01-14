@@ -9,6 +9,7 @@ import { FrameRating as RefreshFrameRating } from '../ImprovementRefreshTracker'
 import { Mode } from "../types";
 import { RefreshPlatScoreAlgo, RefreshTechScoreAlgo } from '../../rating/OngekiRefreshCalculator';
 import { ChartId } from '../../rating/chartdb/ChartDb';
+import { SongData } from '../../rating/data/SongData';
 
 export type OngekiJudgements = {
   cbreak: number;
@@ -118,8 +119,8 @@ export type HistoryStore<M extends Mode> = {
 //   },
 // });
 
-export function initializeHistory<M extends Mode>(scoredb: UserScoreDatabase, mode: M, versions: VersionInformation[], options: Parameters<typeof createHistory>[3]): HistoryStore<M> {
-  let {history, bests, improves, scores, chartData} = createHistory(scoredb, mode, versions, options);
+export function initializeHistory<M extends Mode>(scoredb: UserScoreDatabase, db: SongData, mode: M, versions: VersionInformation[], options: Parameters<typeof createHistory>[4]): HistoryStore<M> {
+  let {history, bests, improves, scores, chartData} = createHistory(scoredb, db, mode, versions, options);
   return {
     bests,
     improves,

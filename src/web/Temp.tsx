@@ -2,8 +2,6 @@ import { UserScoreDatabase } from '../get-kamai/UserScores';
 import { RatingHistory } from '../rating/RatingHistory';
 import { OngekiCalculator } from '../rating/OngekiCalculator';
 import { HistoricalChartDb } from '../rating/chartdb/HistoricalChartDb';
-import SONG_DATA from '../../data/song-db.json';
-import MY_SCORE_DATA from '../../data/score-data.json';
 import { SongData } from '../rating/data/SongData';
 import { BellLamp, ClearLamp, OngekiDifficulty } from '../rating/data-types';
 import { VersionChangeHistory } from '../rating/VersionChangeHistory';
@@ -234,9 +232,7 @@ type StuffForType<M extends Mode> =
   
 export type HistoryType<M extends Mode> = ReturnType<typeof makeHistoryTempFunction<StuffForType<M>>>['history'];
 
-export function createHistory<M extends Mode>(scoredb: UserScoreDatabase, mode: M, versions: VersionInformation[], options: {decimalPlaces: number} = {decimalPlaces: 2}) {
-  let songData = new SongData(SONG_DATA);
-
+export function createHistory<M extends Mode>(scoredb: UserScoreDatabase, songData: SongData, mode: M, versions: VersionInformation[], options: {decimalPlaces: number} = {decimalPlaces: 2}) {
   let getRefresh = function () {
     switch (mode) {
       case Mode.ONGEKI: 
@@ -368,8 +364,4 @@ export function createHistory<M extends Mode>(scoredb: UserScoreDatabase, mode: 
     improves: allImproves,
     chartData
   };
-}
-
-export function loadScoreData(): UserScoreDatabase {
-  return MY_SCORE_DATA;
 }

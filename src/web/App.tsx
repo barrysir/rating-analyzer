@@ -1,7 +1,6 @@
 import type { Component } from 'solid-js';
-import { createEffect, createSignal, Match, on, onMount, Show, Switch } from 'solid-js';
+import { createEffect, createResource, createSignal, Match, on, onMount, Show, Suspense, Switch } from 'solid-js';
 import { RatingChart } from './RatingChart';
-import { loadScoreData } from './Temp';
 import { Icon } from '@iconify-icon/solid';
 import { Popover, Tabs } from '@ark-ui/solid';
 import { settings, setSettings } from './stores/settingsStore';
@@ -10,14 +9,17 @@ import { ImprovementTab } from './ImprovementTab';
 import Slider from './Slider';
 import { TooltipDelegated } from './TooltipDelegatedTest';
 import { HistoryProvider, initializeState } from './stores/stateStore';
-import { AVAILABLE_ONGEKI_VERSIONS, getVersionsArray, Mode } from "./types";
+import { AVAILABLE_ONGEKI_VERSIONS, Game, getVersionsArray, Mode } from "./types";
 import WarningWindow from './WarningWindow';
 import { clearWarnings } from './stores/warningStore';
 import { UserScoreDatabase } from '../get-kamai/UserScores';
 import { BestsTab } from './BestsTab';
+import { SongData } from '../rating/data/SongData';
 
 function FileLoadBar(props: { onFileLoad: (data: any) => void }) {
   let fileInputRef: HTMLInputElement | undefined;
+
+  let [fileData, setFileData] = createSignal<null | any>();
 
   const handleFileSelect = async (e: Event) => {
     const target = e.target as HTMLInputElement;
@@ -28,12 +30,19 @@ function FileLoadBar(props: { onFileLoad: (data: any) => void }) {
     try {
       const text = await file.text();
       const data = JSON.parse(text);
-      props.onFileLoad(data);
+      setFileData(data);
     } catch (error) {
       console.error('Error loading file:', error);
       alert('Failed to load file. Please ensure it is a valid JSON file.');
     }
   };
+
+  const goButtonClicked = (ev) => {
+    const data = fileData();
+    if (data !== null) {
+      props.onFileLoad(data);
+    }
+  }
 
   return (
     <div style="width: 100%; background: #f3f4f6; border-bottom: 1px solid #e5e7eb; padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
@@ -43,6 +52,7 @@ function FileLoadBar(props: { onFileLoad: (data: any) => void }) {
         type="file"
         accept=".json"
         style="font-size: 14px;"
+        onchange={handleFileSelect}
       />
       <label for="version">
         Version: 
@@ -66,8 +76,8 @@ function FileLoadBar(props: { onFileLoad: (data: any) => void }) {
         <option value={Mode.REFRESH}>Refresh</option>
       </select>
       <button
-        onClick={() => fileInputRef?.click()}
-        style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;"
+        onClick={goButtonClicked}
+        style="padding: 6px 12px; background: var(--color-blue-500); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;"
       >
         <Icon icon="lucide:upload" style="vertical-align: middle; margin-right: 4px;" />
         Go
@@ -130,11 +140,11 @@ function SettingsButton() {
     </Popover.Root>;
 }
 
-function Actual(props: {scoreData: UserScoreDatabase}) {
-  createEffect(on(() => [props.scoreData, settings.mode, settings.version] as const, ([data, mode]) => {
-      clearWarnings();
-      let versions = getVersionsArray(settings.version);
-      initializeState(data, mode, versions, { decimalPlaces: settings.decimalPlaces });
+function Actual(props: {scoreData: UserScoreDatabase, songDb: SongData}) {
+  createEffect(on(() => [props.scoreData, props.songDb, settings.mode, settings.version] as const, ([data, db, mode, version]) => {
+    clearWarnings();
+    let versions = getVersionsArray(version);
+    initializeState(data, db, mode, versions, { decimalPlaces: settings.decimalPlaces });
   }));
 
   return <HistoryProvider>{({ mode, history, helpers, theme, setPointId }) => (
@@ -188,17 +198,35 @@ function Actual(props: {scoreData: UserScoreDatabase}) {
   )}</HistoryProvider>
 }
 
+function LoadingSongDbBox() {
+  return <div style="margin: 20px; border: 2px solid var(--color-gray-400); background-color: var(--color-gray-300); padding: 20px; width: fit-content; height: fit-content;">
+    <span>Loading song db...</span>
+  </div>
+}
+
 const App: Component = () => {
-  const [scoreData, setScoreData] = createSignal<UserScoreDatabase>(loadScoreData());
+  const [scoreData, setScoreData] = createSignal<UserScoreDatabase | null>(null);
 
   const handleFileLoad = (data: UserScoreDatabase) => {
     console.log(`Loading new score data - ${data.scores.length} scores`);
     setScoreData(data);
   };
 
+  const fetchSongDb = async (game: Game) => {
+    console.log("Fetching game db", game);
+    const res = await fetch("dbs/ongeki.json");
+    return new SongData(await res.json());
+  };
+
+  const [songdb] = createResource(settings.game, fetchSongDb);
+
   return <div style="width: 100vw; height: 100vh; display: flex; flex-direction: column;">
     <FileLoadBar onFileLoad={handleFileLoad} />
-    <Actual scoreData={scoreData()} />
+    <Suspense fallback={<LoadingSongDbBox />}>
+      <Show when={scoreData() !== null}>
+        <Actual scoreData={scoreData()!} songDb={songdb()} />
+      </Show>
+    </Suspense>
   </div>;
 };
 

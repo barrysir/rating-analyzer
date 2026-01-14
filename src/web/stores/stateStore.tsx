@@ -7,6 +7,7 @@ import { OngekiTheme } from "../themes/ongeki";
 import { ChartId } from "../../rating/chartdb/ChartDb";
 import { createStore } from "solid-js/store";
 import { Mode } from "../types";
+import { SongData } from "../../rating/data/SongData";
 
 export class HistoryHelpers<M extends Mode> {
   history: HistoryStore<M>;
@@ -120,9 +121,9 @@ const [STATE, setState] = createStore<State<Mode.ONGEKI> | State<Mode.REFRESH> |
 });
 
 // todo: rename this function to initializeHistory
-export function initializeState<M extends Mode>(scoredb: UserScoreDatabase, mode: M, versions: VersionInformation[], options: Parameters<typeof createHistory>[3]) {
+export function initializeState<M extends Mode>(scoredb: UserScoreDatabase, db: SongData, mode: M, versions: VersionInformation[], options: Parameters<typeof createHistory>[4]) {
     batch(() => {
-      let history = initializeHistory(scoredb, mode, versions, options);
+      let history = initializeHistory(scoredb, db, mode, versions, options);
       // let _state: State<M> = {
       //     mode: mode,
       //     history: history,
