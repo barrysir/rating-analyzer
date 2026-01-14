@@ -38,11 +38,27 @@ function FileLoadBar(props: { onFileLoad: (data: any) => void }) {
   };
 
   const goButtonClicked = (ev) => {
+    const target = ev.currentTarget;
     const data = fileData();
     if (data !== null) {
-      props.onFileLoad(data);
+      let prev = {
+        'bg': target.style['background'],
+        'pe': target.style['pointer-events'],
+      }
+      requestAnimationFrame(() => {
+        target.style['background'] = "var(--color-blue-200)";
+        target.style['pointer-events'] = "none";
+        setTimeout(() => {          
+          try {
+            props.onFileLoad(data);
+          } finally {
+            target.style['background'] = prev.bg;
+            target.style['pointer-events'] = prev.pe;
+          }
+        });
+      });
     }
-  }
+  };
 
   return (
     <div style="width: 100%; background: #f3f4f6; border-bottom: 1px solid #e5e7eb; padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
