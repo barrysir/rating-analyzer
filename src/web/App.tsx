@@ -15,11 +15,12 @@ import { clearWarnings } from './stores/warningStore';
 import { UserScoreDatabase } from '../get-kamai/UserScores';
 import { BestsTab } from './BestsTab';
 import { SongData } from '../rating/data/SongData';
+import { addErrorToast, addToast, addWarningToast, MyToaster } from './components/Toaster';
 
 function FileLoadBar(props: { onFileLoad: (data: any) => void }) {
   let fileInputRef: HTMLInputElement | undefined;
 
-  let [fileData, setFileData] = createSignal<null | any>();
+  let [fileData, setFileData] = createSignal<null | any>(null);
 
   const handleFileSelect = async (e: Event) => {
     const target = e.target as HTMLInputElement;
@@ -28,19 +29,25 @@ function FileLoadBar(props: { onFileLoad: (data: any) => void }) {
     if (!file) return;
 
     try {
+      console.log("Loading file");
       const text = await file.text();
       const data = JSON.parse(text);
       setFileData(data);
-    } catch (error) {
-      console.error('Error loading file:', error);
-      alert('Failed to load file. Please ensure it is a valid JSON file.');
+    } catch (e) {
+      console.error('Error loading file:', e);
+      addErrorToast({title: `Error loading file: ${file.name}`, description: `${e}`});
+      target.value = '';
     }
   };
 
   const goButtonClicked = (ev) => {
     const target = ev.currentTarget;
     const data = fileData();
-    if (data !== null) {
+    if (data == null) {
+      addWarningToast({description: "Please load a file!"});
+    } else {
+      // change the Go button to indicate processing before starting
+      // requestAnimationFrame to make sure the visual change renders before
       let prev = {
         'bg': target.style['background'],
         'pe': target.style['pointer-events'],
@@ -224,8 +231,12 @@ const App: Component = () => {
   const [scoreData, setScoreData] = createSignal<UserScoreDatabase | null>(null);
 
   const handleFileLoad = (data: UserScoreDatabase) => {
-    console.log(`Loading new score data - ${data.scores.length} scores`);
-    setScoreData(data);
+    try {
+      console.log(`Loading new score data - ${data.scores.length} scores`);
+      setScoreData(data);
+    } catch (e) {
+      addErrorToast({title: `Error loading file`, description: `${e}`}); 
+    }
   };
 
   const fetchSongDb = async (game: Game) => {
@@ -243,6 +254,7 @@ const App: Component = () => {
         <Actual scoreData={scoreData()!} songDb={songdb()} />
       </Show>
     </Suspense>
+    <MyToaster />
   </div>;
 };
 
