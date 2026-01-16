@@ -1,9 +1,9 @@
 import { createMutable, createStore } from 'solid-js/store';
-import { UserScoreDatabase } from '../../get-kamai/UserScores';
+import { UserScoreDatabase } from '../../UserScoreDatabase';
 import { createHistory, HistoryType } from '../Temp';
 import { batch } from 'solid-js';
 import { RatingAlgo as OngekiScoreAlgo } from '../../rating/OngekiCalculator';
-import { KamaiScore } from '../../get-kamai/UserScores';
+import { KamaiScore } from "../../get-kamai/kamai-types";
 import { FrameRating as OngekiFrameRating } from '../ImprovementTracker';
 import { FrameRating as RefreshFrameRating } from '../ImprovementRefreshTracker';
 import { Mode } from "../types";

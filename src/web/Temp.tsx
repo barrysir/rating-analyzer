@@ -1,4 +1,4 @@
-import { UserScoreDatabase } from '../get-kamai/UserScores';
+import { UserScoreDatabase } from '../UserScoreDatabase';
 import { RatingHistory } from '../rating/RatingHistory';
 import { OngekiCalculator } from '../rating/OngekiCalculator';
 import { HistoricalChartDb } from '../rating/chartdb/HistoricalChartDb';
@@ -13,7 +13,7 @@ import { ChartDataType, ExtendedScore, HistoryStore, VersionImproveRenderData, V
 import { Mode } from "./types";
 import { ChartId } from '../rating/chartdb/ChartDb';
 import { addWarning } from './stores/warningStore';
-import { KamaiScore } from '../get-kamai/UserScores';
+import { KamaiScore } from "../get-kamai/kamai-types";
 
 function calculateMaxOngekiRating(db: HistoricalChartDb) {
   // Returns a calculator

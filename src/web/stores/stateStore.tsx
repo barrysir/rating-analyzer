@@ -1,5 +1,5 @@
 import { batch, createSignal, JSXElement } from "solid-js";
-import { UserScoreDatabase } from "../../get-kamai/UserScores";
+import { UserScoreDatabase } from "../../UserScoreDatabase";
 import { createHistory } from "../Temp";
 import { HistoryStore, initializeHistory, VersionInformation } from "./historyStore";
 import { theme } from "./themeStore";

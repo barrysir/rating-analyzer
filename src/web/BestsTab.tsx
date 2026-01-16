@@ -1,5 +1,5 @@
 import { createEffect, createMemo, createSignal, For, JSXElement, Match, mergeProps, Show, splitProps, Switch } from "solid-js";
-import { makeChartId } from "../get-kamai/KamaiSongData";
+import { makeChartId } from "../get-kamai/convert-kamai-chart-id";
 import { ChartId } from "../rating/chartdb/ChartDb";
 import { HistoricalChartDb } from "../rating/chartdb/HistoricalChartDb";
 import { BellLamp, ClearLamp, GradeLamp, OngekiDifficulty } from "../rating/data-types";

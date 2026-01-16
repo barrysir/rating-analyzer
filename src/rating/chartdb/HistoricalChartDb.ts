@@ -4,7 +4,7 @@ import { indexRegion } from "../utils";
 import { OngekiDifficulty } from "../data-types";
 import type { ChartDb, ChartId } from "./ChartDb";
 import type { SongData } from "../data/SongData";
-import { makeChartId, parseChartId } from "../../get-kamai/KamaiSongData";
+import { makeChartId, parseChartId } from "../../get-kamai/convert-kamai-chart-id";
 
 export type HistChart = 
     ChartId

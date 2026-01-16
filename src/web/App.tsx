@@ -12,7 +12,7 @@ import { HistoryProvider, initializeState } from './stores/stateStore';
 import { AVAILABLE_ONGEKI_VERSIONS, Game, getVersionsArray, Mode } from "./types";
 import WarningWindow from './WarningWindow';
 import { clearWarnings } from './stores/warningStore';
-import { UserScoreDatabase } from '../get-kamai/UserScores';
+import { UserScoreDatabase } from '../UserScoreDatabase';
 import { BestsTab } from './BestsTab';
 import { SongData } from '../rating/data/SongData';
 import { addErrorToast, addToast, addWarningToast, MyToaster } from './components/Toaster';

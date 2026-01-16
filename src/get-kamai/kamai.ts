@@ -1,151 +1,206 @@
-import yargs from 'yargs';
-import { hideBin } from 'yargs/helpers';
-import { KamaiSongData } from './KamaiSongData';
-import { KamaiChart, KamaiScore, KamaiSong, UserScoreDatabase } from './UserScores';
-import { OngekiDifficulty } from '../rating/data-types';
-import SONG_DB_DATA from "../../data/song-db.json";
-import { ChartId } from '../rating/chartdb/ChartDb';
-
-// Maybe this should be a bookmarklet instead
-
-// type SessionInfo<Game extends GameType> = {
-//   "session": SessionDocument;
-//   "songs": KamaiSongDocument<Game>[];
-//   "charts": KamaiChartDocument<Game>[];
-//   "scores": KamaiScoreDocument<Game>[];
-//   "user": TachiUser;
-//   "scoreInfo": object[];
-// };
-
-// type AnySessionInfo = {[K in GameType]: SessionInfo<K>}[GameType];
+import { UserScoreDatabase } from "../UserScoreDatabase";
+import { Game } from "../web/types";
+import { constructScoreFromKamai, ConvertKamaiIdSchema, processIdTable, processChartTable } from "./convert-kamai-chart-id";
+import { KamaiChart, KamaiSong, KamaiScore } from "./kamai-types";
 
 let TACHI_ENDPOINT = `https://kamai.tachi.ac/api/v1`;
 
-// type TachiInfo = {
-//     user: number,
-//     game: string,
-//     playtype: string,
+// type TachiScoreInfo = {
+//     scoreID: string;
+//     isNewScore: boolean;
+//     deltas: {
+//         score: number;
+//         noteLamp: number;
+//         bellLamp: number;
+//         platinumScore: number;
+//         grade: number;
+//         platinumStars: number;
+//     }
 // };
 
+/**
+ * https://docs.tachi.ac/api/routes/users/#retrieve-user-with-id
+ * 
+ * The :userID param has some special functionality, and any time you see it in these docs, that functionality is supported.
+ * 
+ * You may pass the integer userID for this user - 1.
+ * You may also pass the username - zkldihis is also case-insensitive, so you could pass zklzkldi
+ * You may also pass the special string - `me` - which
+ * will select whatever user you are authenticated as.
+ **/ 
+type KamaiUserIdParam = number | string | "me";
 
-type ScoresResponse = {
-  success: boolean;
-  description: string;
-  body: {
+type KamaiSession = {
+    userID: string;
+    name: string;
+    sessionID: string;
+    desc: null | string;
+    game: string;
+    playtype: string;
+    highlight: boolean;
+    scoreIDs: string[];
+    timeInserted: number;
+    timeStarted: number;
+    timeEnded: number;
+    // calculatedData: { naiveRating: null | number; naiveScoreRating: null | number; starRating: null | number; };
+}
+
+type KamaiCalendarSession = {
+    name: string;
+    sessionID: string;
+    desc: null | string;
+    game: string;
+    playtype: string;
+    highlight: boolean;
+    timeStarted: number;
+    timeEnded: number;
+};
+
+type KamaiResponse<T> = {
+    success: boolean;
+    description: string;
+    body: T;
+}
+
+type ScoresResponse = KamaiResponse<{
     scores: KamaiScore[];
     songs: KamaiSong[];
     charts: KamaiChart[];
-  }
-};
+}>;
 
-let kamaiToOngekiDifficulty: Record<string, OngekiDifficulty> = {
-  "BASIC": OngekiDifficulty.BASIC,
-  "ADVANCED": OngekiDifficulty.ADVANCED,
-  "EXPERT": OngekiDifficulty.EXPERT,
-  "MASTER": OngekiDifficulty.MASTER,
-  "LUNATIC": OngekiDifficulty.LUNATIC,
-};
+type GetSessionResponse = {
+    session: KamaiSession;
+    scores: KamaiScore[];
+    songs: KamaiSong[];
+    charts: KamaiChart[];
+    // user: KamaiUser;
+    // scoreInfo: 
+}
 
+export type SearchParameters = {
+    id: KamaiUserIdParam;
+    game: string; // "ongeki";
+    playtype: string; // "Single";
+}
 
-async function getScoresAll(id: string): Promise<ScoresResponse> {
-  let file = Bun.file("./kamai-cache.json");
-  if (await file.exists()) {
-    return await file.json();
-  }
-  
-  console.log(`Fetching all scores for id ${id}`);
-  let url = `${TACHI_ENDPOINT}/users/${id}/games/ongeki/Single/scores/all`;
+// async function kamaiApiRequest(url: string): Promise<KamaiResponse<any>> {
+//   let resp = await fetch(url);
+//   let data = await resp.json() as KamaiResponse<any>;
+//   return data;
+// }
+
+function checkKamaiResponse(res: KamaiResponse<any>) {
+    if (!res.success) {
+        throw new Error(`${res}`);
+    }
+    return res;
+}
+
+async function getScoresAll(p: SearchParameters): Promise<ScoresResponse> {
+  let url = `${TACHI_ENDPOINT}/users/${p.id}/games/${p.game}/${p.playtype}/scores/all`;
   let resp = await fetch(url);
   let data = await resp.json();
-
-  await Bun.write(file, JSON.stringify(data));
-
   return data;
 }
 
-function loadKamaiSongData(): KamaiSongData {
-  // let file = Bun.file('data/song-db.json');
-  // let data = JSON.parse(await file.text());
-  return new KamaiSongData(SONG_DB_DATA);
+async function getLastSessions(p: SearchParameters): Promise<KamaiResponse<KamaiSession[]>> {
+    // Gets the last 100 session ids in reverse chronological order
+    let url = `${TACHI_ENDPOINT}/users/${p.id}/games/${p.game}/${p.playtype}/sessions/recent`;
+    let resp = await fetch(url);
+    let data = await resp.json();
+    return checkKamaiResponse(data);
 }
 
-function kamaiToChartId(kamai: KamaiSongData, songId: number, difficulty: OngekiDifficulty): ChartId | undefined {
-  return kamai.toChartId(songId, difficulty);
+async function getSessionsCalendar(p: SearchParameters): Promise<KamaiResponse<KamaiCalendarSession[]>> {
+    // Gets all session ids in ascending chronological order
+    let url = `${TACHI_ENDPOINT}/users/${p.id}/games/${p.game}/${p.playtype}/sessions/calendar`;
+    let resp = await fetch(url);
+    let data = await resp.json();
+    return checkKamaiResponse(data);
 }
 
-function convertKamai(resp: ScoresResponse): UserScoreDatabase {
-  let chartIdToChart = new Map<string, KamaiChart>();
-  for (let chart of resp.body.charts) {
-    chartIdToChart.set(chart.chartID, chart);
-  }
+async function getSession(sessionID: string): Promise<KamaiResponse<GetSessionResponse>> {
+    // Get session details
+    let url = `${TACHI_ENDPOINT}/sessions/${sessionID}`;
+    let resp = await fetch(url);
+    let data = await resp.json();
+    return checkKamaiResponse(data);
+}
 
-  let db: UserScoreDatabase = {scores: []};
-  let kamai = loadKamaiSongData();
-  for (let score of resp.body.scores) {
-    let chart = chartIdToChart.get(score.chartID);
-    if (chart === undefined) {
-      throw new Error(`Missing chart data ${score.chartID}, ${JSON.stringify(score)}`);
+type GetUserInfoResponse = {
+    id: number;
+    username: string;
+    usernameLowercase: string;
+    about: string;
+    socialMedia: {} | unknown;
+    status: null | unknown;
+    customBannerLocation: string;   // hash value
+    customPfpLocation: string;  // hash value
+    joinDate: number;
+    lastSeen: number;
+    authLevel: number;
+    badges: unknown[];
+}
+
+async function getUserInfo(id: KamaiUserIdParam): Promise<KamaiResponse<GetUserInfoResponse>> {
+    let url = `${TACHI_ENDPOINT}/users/${id}`;
+    let resp = await fetch(url);
+    let data = await resp.json();
+    return checkKamaiResponse(data);
+}
+
+function asdfasdfasdfCurrentUser(p: Omit<SearchParameters, 'id'>): SearchParameters {
+    return {
+        ...p,
+        id: "me",
+    };
+}
+
+
+
+
+export async function createScoreDatabase(p: SearchParameters, kamaiOngekiIdTable: ConvertKamaiIdSchema): Promise<UserScoreDatabase> {
+    let user = (await getUserInfo(p.id)).body;
+    let scoresResp = (await getScoresAll(p)).body;
+
+    let convertTable = processIdTable(kamaiOngekiIdTable);
+    let chartTable = processChartTable(scoresResp.charts);
+    return {
+        game: Game.ONGEKI,
+        kamaiSearchParams: {
+            game: p.game,
+            playtype: p.playtype,
+        },
+        user: {
+            id: user.id,
+            name: user.username,
+        },
+        scores: scoresResp.scores.map(s => constructScoreFromKamai(s, convertTable, chartTable)),
+    }
+}
+
+export async function updateScoreDatabase(db: UserScoreDatabase, kamaiOngekiIdTable: ConvertKamaiIdSchema) {
+    let lastScoreTimestamp = Math.max(...db.scores.map(s => s.kamai.timeAchieved));
+    let p: SearchParameters = {
+        ...db.kamaiSearchParams,
+        id: db.user.id,
+    };
+
+    let convertTable = processIdTable(kamaiOngekiIdTable);
+
+    let dbScoresById = new Map(db.scores.map(s => [s.kamai.scoreID, s]));
+
+    for (let stub of (await getLastSessions(p)).body) {
+        if (stub.timeEnded < lastScoreTimestamp) {
+            break;
+        }
+        let session = (await getSession(stub.sessionID)).body;
+        let newSessionScores = session.scores.filter(s => !dbScoresById.has(s.scoreID));
+        
+        let chartTable = processChartTable(session.charts);
+        let scoresToInsert = newSessionScores.map(s => constructScoreFromKamai(s, convertTable, chartTable));
+        db.scores.push(...scoresToInsert);
     }
 
-    let difficulty = kamaiToOngekiDifficulty[chart.difficulty];
-    if (difficulty === undefined) {
-      throw new Error(`Unknown kamai difficulty ${chart.difficulty}`);
-    }
-
-    let chartId = kamaiToChartId(kamai, chart.songID, difficulty);
-    if (chartId === undefined) {
-      throw new Error(`Unknown kamai song ID ${chart.songID}`);
-    }
-
-    db.scores.push({
-      chartId: chartId,
-      kamai: score,
-    });
-  }
-
-  return db;
+    db.scores.sort((a,b) => a.kamai.timeAchieved - b.kamai.timeAchieved);
 }
-
-// ------------------------------
-
-const argv = yargs(hideBin(process.argv))
-  .usage('Usage: $0 <user> [options]')
-  .command('$0 <user>', 'Process an ID', (yargs) => {
-    yargs.positional('id', {
-      describe: 'Kamaitachi user id to load scores',
-      type: 'string',
-    });
-  })
-  .option('file', {
-    alias: 'f',
-    describe: 'Filepath to score database you want to create/update',
-    type: 'string',
-  })
-  .help()
-  .argv;
-
-// Get values
-const { user: id, file } = argv;
-
-let bunFile;
-let path;
-if (file === undefined) {
-  path = `./${id}.json`;
-  bunFile = Bun.file(path);
-  
-  // Check if file already exists
-  if (await bunFile.exists()) {
-    throw new Error(`File already exists: ${path}`);
-  }
-} else {
-  bunFile = Bun.file(file);
-  path = file;
-}
-
-// to update scores later -- idk i'll have to think about what i want to do with session data
-
-let response = await getScoresAll(id);
-let db = convertKamai(response);
-
-console.log("Writing to file", path);
-await Bun.write(bunFile, JSON.stringify(db));
