@@ -1,5 +1,6 @@
 import { createStore } from 'solid-js/store';
-import { Game, Mode, VersionEnum } from "../types";
+import { Game, Mode } from "../types";
+import { VersionEnum } from "../versions";
 
 interface SettingsStore {
   decimalPlaces: number;
