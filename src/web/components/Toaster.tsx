@@ -27,7 +27,7 @@ export function MyToaster() {
         <Toast.Title>{toast().title}</Toast.Title>
         <Toast.Description>{toast().description}</Toast.Description>
         <Toast.CloseTrigger>
-          <XIcon />
+          <XIcon size={14} />
         </Toast.CloseTrigger>
       </Toast.Root>
     )}

@@ -2,6 +2,7 @@ import { Component, Show, For } from "solid-js";
 import { Icon } from "@iconify-icon/solid";
 import { warningState, clearWarnings, setExpanded } from "./stores/warningStore";
 import "./WarningWindow.css";
+import { Minus, TriangleAlert, XIcon } from "lucide-solid";
 
 const WarningWindow: Component = () => {
   const hasWarnings = () => warningState.warnings.length > 0;
@@ -17,7 +18,7 @@ const WarningWindow: Component = () => {
             class="warning-button"
             aria-label="Show warnings"
           >
-            <Icon icon="lucide:alert-triangle" style="font-size: 24px;" />
+            <TriangleAlert size={24} />
           </button>
         }
       >
@@ -32,14 +33,14 @@ const WarningWindow: Component = () => {
                 class="warning-header-button"
                 aria-label="Minimize"
               >
-                <Icon icon="lucide:minus" style="font-size: 18px;" />
+                <Minus size={18} />
               </button>
               <button
                 onClick={() => clearWarnings()}
                 class="warning-header-button"
                 aria-label="Close"
               >
-                <Icon icon="lucide:x" style="font-size: 18px;" />
+                <XIcon size={18} />
               </button>
             </div>
           </div>

@@ -17,6 +17,7 @@ import { UserScoreDatabase } from '../UserScoreDatabase';
 import { BestsTab } from './BestsTab';
 import { SongData } from '../rating/data/SongData';
 import { addErrorToast, addToast, addWarningToast, MyToaster } from './components/Toaster';
+import { Settings, Upload } from 'lucide-solid';
 
 function FileLoadBar(props: { onFileLoad: (data: any) => void }) {
   let fileInputRef: HTMLInputElement | undefined;
@@ -103,7 +104,7 @@ function FileLoadBar(props: { onFileLoad: (data: any) => void }) {
         onClick={goButtonClicked}
         style="padding: 6px 12px; background: var(--color-blue-500); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;"
       >
-        <Icon icon="lucide:upload" style="vertical-align: middle; margin-right: 4px;" />
+        <Upload size={14} style="vertical-align: middle; margin-right: 4px;" />
         Go
       </button>
     </div>
@@ -143,7 +144,7 @@ function SettingsButton() {
         style="position: absolute; top: 16px; right: 16px; padding: 8px;"
         aria-label="Settings"
       >
-        <Icon icon="lucide:settings" />
+        <Settings size={14} />
       </Popover.Trigger>
       <Popover.Positioner>
         <Popover.Content
@@ -157,7 +158,7 @@ function SettingsButton() {
             style="position: absolute; top: 8px; right: 8px; padding: 4px;"
             aria-label="Close"
           >
-            <Icon icon="lucide:x" />
+            <XIcon />
           </Popover.CloseTrigger> */}
         </Popover.Content>
       </Popover.Positioner>

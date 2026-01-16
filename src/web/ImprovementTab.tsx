@@ -7,6 +7,7 @@ import { settings } from "./stores/settingsStore";
 import { indexRegion, getRegion } from "../rating/utils";
 import { HistoryProvider, Theme, unpackHistory } from "./stores/stateStore";
 import { Mode } from "./types";
+import { ChevronDown } from "lucide-solid";
 
 function FrameImprovementRender(props: { rating: number, change?: number, color: string }) {
     return <HistoryProvider<Mode.ONGEKI>>{({theme}) => (
@@ -173,7 +174,7 @@ export function ImprovementTab<M extends Mode>(props: { mode: M, improves: Versi
                         <Accordion.ItemTrigger class="accordion-trigger">
                             <span class="accordion-title">{versionDate} - {version.name}</span>
                             <Accordion.ItemIndicator class="accordion-indicator">
-                                <Icon icon="lucide:chevron-down" />
+                                <ChevronDown />
                             </Accordion.ItemIndicator>
                         </Accordion.ItemTrigger>
                         <Accordion.ItemContent class="accordion-content">
