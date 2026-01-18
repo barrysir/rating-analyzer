@@ -17,7 +17,7 @@ import { UserScoreDatabase } from '../UserScoreDatabase';
 import { BestsTab } from './BestsTab';
 import { SongData } from '../rating/data/SongData';
 import { addErrorToast, addToast, addWarningToast, MyToaster } from './components/Toaster';
-import { Settings, Upload } from 'lucide-solid';
+import { ExternalLink, Settings, Upload } from 'lucide-solid';
 
 function FileLoadBar(props: { onFileLoad: (data: any) => void }) {
   let fileInputRef: HTMLInputElement | undefined;
@@ -70,7 +70,8 @@ function FileLoadBar(props: { onFileLoad: (data: any) => void }) {
   };
 
   return (
-    <div style="width: 100%; background: #f3f4f6; border-bottom: 1px solid #e5e7eb; padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
+    <div style="width: 100%; background: #f3f4f6; border-bottom: 1px solid #e5e7eb; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 12px">
       <label style="font-weight: 500; font-size: 14px;">Load Score Data:</label>
       <input
         ref={fileInputRef}
@@ -107,6 +108,10 @@ function FileLoadBar(props: { onFileLoad: (data: any) => void }) {
         <Upload size={14} style="vertical-align: middle; margin-right: 4px;" />
         Go
       </button>
+      </div>
+      <div>
+        <a class="flex justify-between items-center gap-1" target="_blank" href="https://github.com/barrysir/rating-analyzer">Help <ExternalLink /></a>
+      </div>
     </div>
   );
 }
