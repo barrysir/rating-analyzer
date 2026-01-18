@@ -110,7 +110,7 @@ function FileLoadBar(props: { onFileLoad: (data: any) => void }) {
       </button>
       </div>
       <div>
-        <a class="flex justify-between items-center gap-1" target="_blank" href="https://github.com/barrysir/rating-analyzer">Help <ExternalLink /></a>
+        <a class="flex justify-between items-center gap-1" target="_blank" href="https://github.com/barrysir/rating-analyzer">Help <ExternalLink class="my-icon" /></a>
       </div>
     </div>
   );

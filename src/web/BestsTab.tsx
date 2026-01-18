@@ -144,16 +144,16 @@ function PlayHistoryDialog(props: {info: DialogInfo}) {
               <FloatingPanel.Title asChild={(props) => <h4 {...props()} />}>{props.info!.title}</FloatingPanel.Title>
               <FloatingPanel.Control>
                 <FloatingPanel.StageTrigger stage="minimized">
-                  <Minus />
+                  <Minus class="my-icon" />
                 </FloatingPanel.StageTrigger>
                 <FloatingPanel.StageTrigger stage="maximized">
-                  <Maximize2 />
+                  <Maximize2 class="my-icon" />
                 </FloatingPanel.StageTrigger>
                 <FloatingPanel.StageTrigger stage="default">
-                  <ArrowDownLeft />
+                  <ArrowDownLeft class="my-icon" />
                 </FloatingPanel.StageTrigger>
                 <FloatingPanel.CloseTrigger>
-                  <XIcon />
+                  <XIcon class="my-icon" />
                 </FloatingPanel.CloseTrigger>
               </FloatingPanel.Control>
             </FloatingPanel.Header>

@@ -63,3 +63,9 @@ h1, h2, h3, h4, h5, h6 {
 /* @import "tailwindcss/preflight.css" layer(base); */
 
 @import "tailwindcss/utilities.css" layer(utilities);
+
+/* do a rename once i figure out what this css class's real purpose is */
+.my-icon {
+  width: 1em;
+  height: 1em;
+}

@@ -174,7 +174,7 @@ export function ImprovementTab<M extends Mode>(props: { mode: M, improves: Versi
                         <Accordion.ItemTrigger class="accordion-trigger">
                             <span class="accordion-title">{versionDate} - {version.name}</span>
                             <Accordion.ItemIndicator class="accordion-indicator">
-                                <ChevronDown />
+                                <ChevronDown class="my-icon" />
                             </Accordion.ItemIndicator>
                         </Accordion.ItemTrigger>
                         <Accordion.ItemContent class="accordion-content">

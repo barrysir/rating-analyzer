@@ -33,14 +33,14 @@ const WarningWindow: Component = () => {
                 class="warning-header-button"
                 aria-label="Minimize"
               >
-                <Minus size={18} />
+                <Minus class="my-icon" />
               </button>
               <button
                 onClick={() => clearWarnings()}
                 class="warning-header-button"
                 aria-label="Close"
               >
-                <XIcon size={18} />
+                <XIcon class="my-icon" />
               </button>
             </div>
           </div>
