@@ -6,7 +6,7 @@
 To use this program you will have to download your scores from Kamaitachi. I've written a bookmarklet which will download all your scores into a JSON file / update the JSON file with new scores.
 
 ```js
-javascript:(function(d){if(location.origin=="https://kamai.tachi.ac"){var s=d.createElement("script");s.src="https://raw.githubusercontent.com/barrysir/rating-analyzer/main/public/bookmarklet/main.js";s.onload=function(){};d.body.append(s);}else{alert("Please run this bookmarklet on https://kamai.tachi.ac!");}})(document)
+javascript:(function(d){if(location.origin=="https://kamai.tachi.ac"){var s=d.createElement("script");s.src="https://raw.githack.com/barrysir/rating-analyzer/main/public/bookmarklet/main.js";s.onload=function(){};d.body.append(s);}else{alert("Please run this bookmarklet on https://kamai.tachi.ac!");}})(document)
 ```
 
 1. Save the above code as a bookmark and run it on any Kamaitachi page.
