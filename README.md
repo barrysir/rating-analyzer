@@ -1,41 +1,33 @@
-## rating-analyzer
+# rating-analyzer
 
-Rewrite in progress! Still WIP
 
-## Usage
+## Bookmarklet instructions
 
-Those templates dependencies are maintained via [pnpm](https://pnpm.io) via `pnpm up -Lri`.
+To use this program you will have to download your scores from Kamaitachi. I've written a bookmarklet which will download all your scores into a JSON file / update the JSON file with new scores.
 
-This is the reason you see a `pnpm-lock.yaml`. That being said, any package manager will work. This file can be safely be removed once you clone a template.
-
-```bash
-$ npm install # or pnpm install or yarn install
+```js
+javascript:(function(d){if(location.origin=="https://kamai.tachi.ac"){var s=d.createElement("script");s.src="https://raw.githubusercontent.com/barrysir/rating-analyzer/main/public/bookmarklet/main.js";s.onload=function(){};d.body.append(s);}else{alert("Please run this bookmarklet on https://kamai.tachi.ac!");}})(document)
 ```
 
-### Learn more on the [Solid Website](https://solidjs.com) and come chat with us on our [Discord](https://discord.com/invite/solidjs)
+1. Save the above code as a bookmark and run it on any Kamaitachi page.
+2. A file picker will pop up to select your existing score file. If you don't have an existing file, cancel the dialog to create a new database.
+3. Wait for the script to finish processing. If the script looks like it's frozen, look in the browser Dev Tools for the console output of the script.
+4. Once finished it will send the updated file as a download.
 
-## Available Scripts
+## Dev Documentation
 
-In the project directory, you can run:
+* Install dependencies: `npm install`
+* Start the server: `npm run dev`
+  * Server runs at [http://localhost:3000](http://localhost:3000)
+* Build server: `npm run build`
+* Build bookmarklet: `npm run bookmarklet`
 
-### `npm run dev` or `npm start`
+### Bookmarklet
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Here's a developer version of the bookmarklet which points to `localhost`:
 
-The page will reload if you make edits.<br>
+```js
+javascript:(function(d){if(location.origin=="https://kamai.tachi.ac"){var s=d.createElement("script");s.src="http://localhost:3000/bookmarklet/main.js";s.onload=function(){};d.body.append(s);}else{alert("Please run this bookmarklet on https://kamai.tachi.ac!");}})(document)
+```
 
-### `npm run build`
-
-Builds the app for production to the `dist` folder.<br>
-It correctly bundles Solid in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
-
-## Deployment
-
-You can deploy the `dist` folder to any static host provider (netlify, surge, now, etc.)
-
-## This project was created with the [Solid CLI](https://github.com/solidjs-community/solid-cli)
-
+After modifying the bookmarlet source code, compile the bookmarklet to js with `npm run bookmarklet`. Changes will be reflected immediately when you run the bookmarklet again in browser.
