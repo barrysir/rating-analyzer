@@ -96,9 +96,12 @@
     let data = await resp.json();
     return checkKamaiResponse(data);
   }
-  async function createScoreDatabase(p, kamaiOngekiIdTable) {
+  async function createScoreDatabase(p, kamaiOngekiIdTable, display) {
+    await display.update("Fetching full user info...");
     let user = (await getUserInfo(p.id)).body;
+    await display.update("Fetching entire score history...");
     let scoresResp = (await getScoresAll(p)).body;
+    await display.update("Processing scores...");
     let convertTable = processIdTable(kamaiOngekiIdTable);
     let chartTable = processChartTable(scoresResp.charts);
     return {
@@ -114,7 +117,7 @@
       scores: scoresResp.scores.map((s) => constructScoreFromKamai(s, convertTable, chartTable))
     };
   }
-  async function updateScoreDatabase(db, kamaiOngekiIdTable) {
+  async function updateScoreDatabase(db, kamaiOngekiIdTable, display) {
     let lastScoreTimestamp = Math.max(...db.scores.map((s) => s.kamai.timeAchieved));
     let p = {
       ...db.kamaiSearchParams,
@@ -122,17 +125,23 @@
     };
     let convertTable = processIdTable(kamaiOngekiIdTable);
     let dbScoresById = new Map(db.scores.map((s) => [s.kamai.scoreID, s]));
-    for (let stub of (await getLastSessions(p)).body) {
-      if (stub.timeEnded < lastScoreTimestamp) {
-        break;
-      }
+    await display.update("Fetching list of recent sessions...");
+    let newSessions = (await getLastSessions(p)).body.filter((s) => s.timeEnded > lastScoreTimestamp);
+    for (const [i, stub] of newSessions.entries()) {
+      await display.update(`${i + 1}/${newSessions.length}: ${stub.name} (${new Date(stub.timeStarted).toLocaleDateString()})`);
       let session = (await getSession(stub.sessionID)).body;
       let newSessionScores = session.scores.filter((s) => !dbScoresById.has(s.scoreID));
       let chartTable = processChartTable(session.charts);
       let scoresToInsert = newSessionScores.map((s) => constructScoreFromKamai(s, convertTable, chartTable));
       db.scores.push(...scoresToInsert);
     }
-    db.scores.sort((a, b) => a.kamai.timeAchieved - b.kamai.timeAchieved);
+    if (newSessions.length == 0) {
+      await display.update("No new sessions detected, no changes to save.");
+      return false;
+    } else {
+      db.scores.sort((a, b) => a.kamai.timeAchieved - b.kamai.timeAchieved);
+      return true;
+    }
   }
 
   // public/kamai-ongeki-ids.json
@@ -184,7 +193,56 @@
   async function fetchConvertTable() {
     return kamai_ongeki_ids_default;
   }
+  var TestDialog = class {
+    div;
+    message;
+    warning;
+    constructor() {
+      let html = `<div style="
+        position: fixed; top: 80px; left: 50%; transform: translateX(-50%); 
+        width: 300px; height: 100px; 
+        background: yellowgreen; 
+        border: 1px solid black; box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <button
+            style="
+                position: absolute; top: 5px; right: 5px;
+                background: transparent;
+                border: none;
+                font-weight: bold;
+                cursor: pointer;
+            ">\u2715</button>
+            <span class="b-message" style="text-align: center"></span>
+            <span class="b-warning" style="text-align: center"></span>
+        </div>`;
+      let template = document.createElement("template");
+      template.innerHTML = html;
+      this.div = template.content.firstChild;
+      const button = this.div.getElementsByTagName("button")[0];
+      this.message = this.div.getElementsByClassName("b-message")[0];
+      this.warning = this.div.getElementsByClassName("b-warning")[0];
+      button.addEventListener("click", () => {
+        this.close();
+      });
+      document.body.appendChild(this.div);
+    }
+    async update(message) {
+      console.log(message);
+      this.message.innerText = message;
+      await new Promise((resolve) => window.requestAnimationFrame(resolve));
+    }
+    close() {
+      this.div.remove();
+    }
+    async error() {
+      this.div.style.background = "red";
+      this.warning.innerText = "Something went wrong!";
+      await new Promise((resolve) => window.requestAnimationFrame(resolve));
+    }
+  };
   async function main() {
+    let display = new TestDialog();
+    await display.update("Opening file dialog");
     let { db, filename } = await loadDb();
     let p;
     if (db === null) {
@@ -202,14 +260,26 @@
         id: db.user.id
       };
     }
-    let convertTable = await fetchConvertTable();
-    if (db === null) {
-      db = await createScoreDatabase(p, convertTable);
-      filename = `scores-${db.user.name}-${p.game}-${p.playtype}.json`;
-    } else {
-      await updateScoreDatabase(db, convertTable);
+    try {
+      await display.update("Getting ID conversion table for Ongeki");
+      let convertTable = await fetchConvertTable();
+      let dbNeedsSaving = true;
+      if (db === null) {
+        await display.update("Creating new database");
+        db = await createScoreDatabase(p, convertTable, display);
+        filename = `scores-${db.user.name}-${p.game}-${p.playtype}.json`;
+        dbNeedsSaving = true;
+      } else {
+        await display.update("Updating existing database");
+        dbNeedsSaving = await updateScoreDatabase(db, convertTable, display);
+      }
+      if (dbNeedsSaving) {
+        saveJsonToDisk(db, filename);
+      }
+    } catch (error) {
+      display.error();
+      throw error;
     }
-    saveJsonToDisk(db, filename);
   }
   main();
 })();

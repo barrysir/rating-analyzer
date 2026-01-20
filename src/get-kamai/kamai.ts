@@ -156,13 +156,13 @@ function asdfasdfasdfCurrentUser(p: Omit<SearchParameters, 'id'>): SearchParamet
     };
 }
 
-
-
-
-export async function createScoreDatabase(p: SearchParameters, kamaiOngekiIdTable: ConvertKamaiIdSchema): Promise<UserScoreDatabase> {
+export async function createScoreDatabase(p: SearchParameters, kamaiOngekiIdTable: ConvertKamaiIdSchema, display: DisplayToUser): Promise<UserScoreDatabase> {
+    await display.update("Fetching full user info...");
     let user = (await getUserInfo(p.id)).body;
+    await display.update("Fetching entire score history...");
     let scoresResp = (await getScoresAll(p)).body;
 
+    await display.update("Processing scores...");
     let convertTable = processIdTable(kamaiOngekiIdTable);
     let chartTable = processChartTable(scoresResp.charts);
     return {
@@ -179,7 +179,7 @@ export async function createScoreDatabase(p: SearchParameters, kamaiOngekiIdTabl
     }
 }
 
-export async function updateScoreDatabase(db: UserScoreDatabase, kamaiOngekiIdTable: ConvertKamaiIdSchema) {
+export async function updateScoreDatabase(db: UserScoreDatabase, kamaiOngekiIdTable: ConvertKamaiIdSchema, display: DisplayToUser) {
     let lastScoreTimestamp = Math.max(...db.scores.map(s => s.kamai.timeAchieved));
     let p: SearchParameters = {
         ...db.kamaiSearchParams,
@@ -190,10 +190,11 @@ export async function updateScoreDatabase(db: UserScoreDatabase, kamaiOngekiIdTa
 
     let dbScoresById = new Map(db.scores.map(s => [s.kamai.scoreID, s]));
 
-    for (let stub of (await getLastSessions(p)).body) {
-        if (stub.timeEnded < lastScoreTimestamp) {
-            break;
-        }
+    await display.update("Fetching list of recent sessions...");
+    let newSessions = (await getLastSessions(p)).body.filter(s => s.timeEnded > lastScoreTimestamp);
+
+    for (const [i, stub] of newSessions.entries()) {
+        await display.update(`${i+1}/${newSessions.length}: ${stub.name} (${new Date(stub.timeStarted).toLocaleDateString()})`);
         let session = (await getSession(stub.sessionID)).body;
         let newSessionScores = session.scores.filter(s => !dbScoresById.has(s.scoreID));
         
@@ -202,5 +203,15 @@ export async function updateScoreDatabase(db: UserScoreDatabase, kamaiOngekiIdTa
         db.scores.push(...scoresToInsert);
     }
 
-    db.scores.sort((a,b) => a.kamai.timeAchieved - b.kamai.timeAchieved);
+    if (newSessions.length == 0) {
+        await display.update("No new sessions detected, no changes to save.");
+        return false;
+    } else {
+        db.scores.sort((a,b) => a.kamai.timeAchieved - b.kamai.timeAchieved);
+        return true;
+    }
+}
+
+interface DisplayToUser {
+    update(message: string): Promise<void>;
 }
