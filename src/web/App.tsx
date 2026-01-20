@@ -242,6 +242,7 @@ const App: Component = () => {
       console.log(`Loading new score data - ${data.scores.length} scores`);
       setScoreData(data);
     } catch (e) {
+      console.error(e);
       addErrorToast({title: `Error loading file`, description: `${e}`}); 
     }
   };
