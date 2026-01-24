@@ -1,5 +1,8 @@
 # rating-analyzer
 
+**https://barrysir.github.io/rating-analyzer/**
+
+![Screenshot of webapp](/docs/preview.jpg)
 
 ## Bookmarklet instructions
 
